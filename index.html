@@ -18,6 +18,17 @@ body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;display:flex;height:
 .nav-item.active{background:rgba(255,255,255,.13);color:#fff;border-left-color:#4aabf0;}
 .nav-item .nav-icon{font-size:16px;margin-right:10px;width:20px;text-align:center;}
 .nav-badge{margin-left:auto;background:#4aabf0;color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;}
+.auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a3a5c;z-index:99998;display:flex;align-items:center;justify-content:center;}
+.auth-box{background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.3);padding:40px 36px;width:400px;max-width:95vw;}
+.auth-input{width:100%;padding:10px 13px;border:1px solid #ddd;border-radius:7px;font-size:13px;font-family:inherit;box-sizing:border-box;margin-top:5px;}
+.auth-input:focus{outline:none;border-color:#1a3a5c;}
+.auth-btn{width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:7px;font-size:14px;cursor:pointer;font-weight:700;margin-top:6px;}
+.auth-btn:hover{background:#0f2744;}
+.auth-label{font-size:12px;color:#555;display:block;margin-top:13px;margin-bottom:2px;}
+.user-info-bar{padding:12px 18px;border-top:1px solid #2d5a8c;font-size:11px;color:#90b3d1;}
+.user-badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700;}
+.badge-admin{background:#e65100;color:#fff;}
+.badge-user{background:#2d5a8c;color:#fff;}
 .sidebar-footer{padding:12px 18px;font-size:10px;color:#5a7a99;border-top:1px solid #2d5a8c;}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .topbar{background:#fff;padding:12px 25px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.1);flex-shrink:0;}
@@ -414,11 +425,15 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
   <div class="nav-item" onclick="showTab('results',this)">
    <span class="nav-icon">&#127942;</span>검토결과
   </div>
+  <div class="nav-item" id="nav-users" onclick="showTab('users',this)" style="display:none;">
+   <span class="nav-icon">&#128101;</span>회원관리
+  </div>
  </nav>
- <div class="sidebar-footer">2025년도 제안제도</div>
- <div style="padding:6px 18px 10px;font-size:10px;" id="sb-status"></div>
- <div style="padding:0 18px 10px;">
-   <button onclick="sbSync().then(()=>alert('클라우드 업로드 완료!'))" style="width:100%;font-size:10px;padding:4px;background:#1a3a5c;color:#fff;border:none;border-radius:4px;cursor:pointer;">☁ 클라우드에 올리기</button>
+ <div class="user-info-bar" id="user-info-bar"></div>
+ <div style="padding:4px 18px 4px;font-size:10px;" id="sb-status"></div>
+ <div style="padding:0 18px 10px;display:flex;gap:6px;">
+   <button onclick="sbSync().then(()=>alert('클라우드 업로드 완료!'))" style="flex:1;font-size:10px;padding:4px;background:#2d5a8c;color:#fff;border:none;border-radius:4px;cursor:pointer;">☁ 올리기</button>
+   <button onclick="doLogout()" style="flex:1;font-size:10px;padding:4px;background:#c0392b;color:#fff;border:none;border-radius:4px;cursor:pointer;">로그아웃</button>
  </div>
 </div>
 
@@ -768,8 +783,66 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
      </table>
     </div>
    </div>
+   <!-- TAB: 회원관리 (관리자 전용) -->
+  <div class="tab-panel" id="tab-users">
+   <div style="background:#fff;border-radius:10px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px;">
+    <div style="font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:16px;">회원 목록</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+     <thead>
+      <tr style="background:#1a3a5c;color:#fff;">
+       <th style="padding:8px 10px;text-align:center;">팀</th>
+       <th style="padding:8px 10px;text-align:center;">이름</th>
+       <th style="padding:8px 10px;text-align:center;">이메일</th>
+       <th style="padding:8px 10px;text-align:center;">권한</th>
+       <th style="padding:8px 10px;text-align:center;">상태</th>
+       <th style="padding:8px 10px;text-align:center;">가입일</th>
+       <th style="padding:8px 10px;text-align:center;">관리</th>
+      </tr>
+     </thead>
+     <tbody id="users-tbody"></tbody>
+    </table>
+   </div>
   </div>
+ </div>
+</div>
 
+<!-- Auth Overlay -->
+<div id="auth-overlay" class="auth-overlay">
+ <div class="auth-box">
+  <div style="text-align:center;margin-bottom:28px;">
+   <div style="font-size:24px;font-weight:700;color:#1a3a5c;">신성오토텍(주)</div>
+   <div style="font-size:13px;color:#888;margin-top:5px;">원가절감 제안제도 시스템</div>
+  </div>
+  <!-- 로그인 폼 -->
+  <div id="auth-login-form">
+   <label class="auth-label">이메일</label>
+   <input id="auth-email" type="email" class="auth-input" placeholder="이메일 주소 입력">
+   <label class="auth-label">비밀번호</label>
+   <input id="auth-password" type="password" class="auth-input" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')loginSubmit()">
+   <div id="auth-error" style="color:#e74c3c;font-size:12px;margin-top:10px;display:none;"></div>
+   <button class="auth-btn" onclick="loginSubmit()" style="margin-top:18px;">로그인</button>
+   <div style="text-align:center;margin-top:14px;">
+    <a href="#" onclick="showSignupForm();return false;" style="font-size:12px;color:#1a3a5c;text-decoration:none;">회원가입 신청</a>
+   </div>
+  </div>
+  <!-- 회원가입 폼 -->
+  <div id="auth-signup-form" style="display:none;">
+   <label class="auth-label">팀</label>
+   <select id="su-dept" class="auth-input" style="padding:10px 13px;">
+    <option value="">팀 선택</option>
+   </select>
+   <label class="auth-label">이름</label>
+   <input id="su-name" type="text" class="auth-input" placeholder="이름 입력">
+   <label class="auth-label">이메일</label>
+   <input id="su-email" type="email" class="auth-input" placeholder="이메일 주소 입력">
+   <label class="auth-label">비밀번호</label>
+   <input id="su-password" type="password" class="auth-input" placeholder="비밀번호 입력">
+   <div id="su-error" style="color:#e74c3c;font-size:12px;margin-top:10px;display:none;"></div>
+   <button class="auth-btn" onclick="signupSubmit()" style="margin-top:18px;">가입 신청</button>
+   <div style="text-align:center;margin-top:14px;">
+    <a href="#" onclick="showLoginForm();return false;" style="font-size:12px;color:#1a3a5c;text-decoration:none;">로그인으로 돌아가기</a>
+   </div>
+  </div>
  </div>
 </div>
 
@@ -855,6 +928,131 @@ function handleUp(rowId,inp){
 }
 async function delFile(key,rowId){await dbDelFile(key);renderFilesCell(rowId);}
 
+// Auth
+let currentUser=null;
+const ADMIN_EMAIL='kulhyang0117@gmail.com';
+const ADMIN_PW='jxy0830!';
+
+function getUsers(){try{return JSON.parse(localStorage.getItem('ssat_users')||'[]');}catch(e){return[];}}
+function saveUsers(u){localStorage.setItem('ssat_users',JSON.stringify(u));}
+
+function showLoginForm(){
+  document.getElementById('auth-login-form').style.display='';
+  document.getElementById('auth-signup-form').style.display='none';
+  document.getElementById('auth-error').style.display='none';
+}
+function showSignupForm(){
+  document.getElementById('auth-login-form').style.display='none';
+  document.getElementById('auth-signup-form').style.display='';
+  document.getElementById('su-error').style.display='none';
+  const sel=document.getElementById('su-dept');
+  if(sel&&sel.options.length<=1){
+    Object.keys(DP).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  }
+}
+function loginSubmit(){
+  const email=(document.getElementById('auth-email').value||'').trim();
+  const pw=document.getElementById('auth-password').value||'';
+  const errEl=document.getElementById('auth-error');
+  if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력하세요.';errEl.style.display='';return;}
+  if(email===ADMIN_EMAIL&&pw===ADMIN_PW){
+    currentUser={email,name:'관리자',dept:'경영기획실',role:'admin'};
+    sessionStorage.setItem('ssat_session',JSON.stringify(currentUser));
+    onLoginSuccess();return;
+  }
+  const users=getUsers();
+  const u=users.find(x=>x.email===email&&x.password===pw);
+  if(!u){errEl.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';errEl.style.display='';return;}
+  if(u.status==='pending'){errEl.textContent='승인 대기 중입니다. 관리자 승인 후 로그인 가능합니다.';errEl.style.display='';return;}
+  if(u.status==='rejected'){errEl.textContent='가입이 거절되었습니다. 관리자에게 문의하세요.';errEl.style.display='';return;}
+  currentUser={email:u.email,name:u.name,dept:u.dept,role:u.role||'user'};
+  sessionStorage.setItem('ssat_session',JSON.stringify(currentUser));
+  onLoginSuccess();
+}
+function signupSubmit(){
+  const dept=document.getElementById('su-dept').value;
+  const name=(document.getElementById('su-name').value||'').trim();
+  const email=(document.getElementById('su-email').value||'').trim();
+  const pw=document.getElementById('su-password').value||'';
+  const errEl=document.getElementById('su-error');
+  if(!dept||!name||!email||!pw){errEl.textContent='모든 항목을 입력하세요.';errEl.style.display='';return;}
+  if(email===ADMIN_EMAIL){errEl.textContent='이미 사용 중인 이메일입니다.';errEl.style.display='';return;}
+  const users=getUsers();
+  if(users.find(x=>x.email===email)){errEl.textContent='이미 가입된 이메일입니다.';errEl.style.display='';return;}
+  users.push({dept,name,email,password:pw,role:'user',status:'pending',createdAt:new Date().toISOString()});
+  saveUsers(users);
+  sbSyncUsers(users);
+  alert('가입 신청이 완료되었습니다.\n관리자 승인 후 로그인하실 수 있습니다.');
+  showLoginForm();
+}
+function onLoginSuccess(){
+  document.getElementById('auth-overlay').style.display='none';
+  updateUserInfoBar();
+  if(currentUser.role==='admin'){
+    document.getElementById('nav-users').style.display='';
+  }
+}
+function doLogout(){
+  if(!confirm('로그아웃 하시겠습니까?'))return;
+  sessionStorage.removeItem('ssat_session');
+  currentUser=null;
+  document.getElementById('auth-overlay').style.display='flex';
+  document.getElementById('auth-email').value='';
+  document.getElementById('auth-password').value='';
+  document.getElementById('auth-error').style.display='none';
+  showLoginForm();
+  document.getElementById('nav-users').style.display='none';
+  document.getElementById('user-info-bar').innerHTML='';
+}
+function updateUserInfoBar(){
+  const el=document.getElementById('user-info-bar');if(!el||!currentUser)return;
+  const badge=currentUser.role==='admin'
+    ?'<span class="user-badge badge-admin">관리자</span>'
+    :'<span class="user-badge badge-user">일반</span>';
+  el.innerHTML=`<div style="font-weight:700;color:#fff;font-size:12px;">${currentUser.name} ${badge}</div><div style="color:#90b3d1;margin-top:2px;">${currentUser.dept}</div>`;
+}
+function renderUsersTab(){
+  const tbody=document.getElementById('users-tbody');if(!tbody)return;
+  const users=getUsers();
+  if(!users.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa;">등록된 회원이 없습니다.</td></tr>';return;}
+  tbody.innerHTML=users.map((u,i)=>{
+    const statusColor=u.status==='approved'?'#28a745':u.status==='rejected'?'#e74c3c':'#f39c12';
+    const statusText=u.status==='approved'?'승인됨':u.status==='rejected'?'거절됨':'대기중';
+    const roleText=u.role==='admin'?'관리자':'일반';
+    return`<tr style="border-bottom:1px solid #eee;${i%2?'background:#f9f9f9':''}">
+<td style="padding:8px 10px;text-align:center;">${u.dept||''}</td>
+<td style="padding:8px 10px;text-align:center;font-weight:700;">${u.name||''}</td>
+<td style="padding:8px 10px;text-align:center;">${u.email||''}</td>
+<td style="padding:8px 10px;text-align:center;">
+ <select onchange="changeUserRole(${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">
+  <option value="user"${u.role==='user'?' selected':''}>일반</option>
+  <option value="admin"${u.role==='admin'?' selected':''}>관리자</option>
+ </select>
+</td>
+<td style="padding:8px 10px;text-align:center;color:${statusColor};font-weight:700;">${statusText}</td>
+<td style="padding:8px 10px;text-align:center;font-size:11px;color:#aaa;">${(u.createdAt||'').substring(0,10)}</td>
+<td style="padding:8px 10px;text-align:center;">
+ ${u.status==='pending'?`<button onclick="approveUser(${i})" style="background:#28a745;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;margin-right:4px;">승인</button><button onclick="rejectUser(${i})" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">거절</button>`:''}
+ <button onclick="deleteUser(${i})" style="background:#888;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;margin-left:4px;">삭제</button>
+</td>
+</tr>`;
+  }).join('');
+}
+function approveUser(i){const u=getUsers();u[i].status='approved';saveUsers(u);sbSyncUsers(u);renderUsersTab();}
+function rejectUser(i){const u=getUsers();u[i].status='rejected';saveUsers(u);sbSyncUsers(u);renderUsersTab();}
+function deleteUser(i){if(!confirm('이 사용자를 삭제하시겠습니까?'))return;const u=getUsers();u.splice(i,1);saveUsers(u);sbSyncUsers(u);renderUsersTab();}
+function changeUserRole(i,role){const u=getUsers();u[i].role=role;saveUsers(u);sbSyncUsers(u);}
+async function sbSyncUsers(users){
+  try{
+    const awards=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
+    await fetch(SB_URL+'/rest/v1/app_data',{
+      method:'POST',
+      headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({id:1,table_data:tableData,awards,users,updated_at:new Date().toISOString()})
+    });
+  }catch(e){}
+}
+
 // Supabase
 const SB_URL='https://mbbzerxdyxiiwfmvbfns.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iYnplcnhkeXhpaXdmbXZiZm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTkxODIsImV4cCI6MjA5MTk3NTE4Mn0.8uqIFtHs7wBJVYQTGrnhQXho-I57GTOz1S8XGeLK2T0';
@@ -873,7 +1071,7 @@ async function sbSync(){
     const res=await fetch(SB_URL+'/rest/v1/app_data',{
       method:'POST',
       headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
-      body:JSON.stringify({id:1,table_data:tableData,awards,updated_at:new Date().toISOString()})
+      body:JSON.stringify({id:1,table_data:tableData,awards,users:getUsers(),updated_at:new Date().toISOString()})
     });
     setSbStatus(res.ok?'synced':'error',res.ok?null:'HTTP '+res.status);
   }catch(e){setSbStatus('error',e.message);}
@@ -888,6 +1086,7 @@ async function sbLoad(){
       tableData=rows[0].table_data;
       localStorage.setItem('ssat_v4',JSON.stringify(tableData));
       if(rows[0].awards)localStorage.setItem('ssat_awards',JSON.stringify(rows[0].awards));
+      if(rows[0].users)saveUsers(rows[0].users);
       setSbStatus('synced');
       return true;
     }
@@ -1010,7 +1209,8 @@ function renderTable(){
   tbody.innerHTML=rows;
   filtered.forEach(r=>renderFilesCell(r.id));
   updCards(filtered);
-  document.getElementById('badge-count').textContent=tableData.length;
+  const thisYear=String(new Date().getFullYear());
+  document.getElementById('badge-count').textContent=tableData.filter(r=>(r.date||'').startsWith(thisYear)).length;
 }
 
 function showTheme(rid){
@@ -1210,7 +1410,7 @@ function saveRow(){
 }
 
 // Tabs
-const TABS={guidelines:{title:'제안제도 관리지침서',sub:'시상 기준 및 등급별 안내'},summary:{title:'종합현황',sub:'제안부서·제안자별 제안건수 및 효과금액 집계'},proposal:{title:'원가절감 제안서',sub:'원가절감 제안서 작성 및 출력'},register:{title:'접수대장',sub:'제안 관리대장 - 전체 현황'},results:{title:'검토결과',sub:'인원별 시상금액 현황'}};
+const TABS={guidelines:{title:'제안제도 관리지침서',sub:'시상 기준 및 등급별 안내'},summary:{title:'종합현황',sub:'제안부서·제안자별 제안건수 및 효과금액 집계'},proposal:{title:'원가절감 제안서',sub:'원가절감 제안서 작성 및 출력'},register:{title:'접수대장',sub:'제안 관리대장 - 전체 현황'},results:{title:'검토결과',sub:'인원별 시상금액 현황'},users:{title:'회원관리',sub:'사용자 계정 및 권한 관리 (관리자 전용)'}};
 function showTab(id,el){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -1220,6 +1420,7 @@ function showTab(id,el){
   document.getElementById('topbar-sub').textContent=TABS[id].sub;
   if(id==='summary') renderSummary();
   if(id==='proposal') renderProposalList();
+  if(id==='users') renderUsersTab();
 }
 
 // 종합현황
@@ -1843,21 +2044,23 @@ function renderAll(){initYearFilter();initSumYear();renderTable();renderResults(
 window.onload=async function(){
   tableData=loadData();
   renderAll();
-  const localProposalCount=tableData.filter(r=>r.proposal).length;
-  if(localProposalCount>0){
-    // 로컬에 제안서가 있으면 먼저 클라우드에 올린 후 로드
-    await sbSync();
+  // 세션 체크
+  const sess=sessionStorage.getItem('ssat_session');
+  if(sess){
+    try{
+      currentUser=JSON.parse(sess);
+      onLoginSuccess();
+    }catch(e){
+      sessionStorage.removeItem('ssat_session');
+    }
   }
+  const localProposalCount=tableData.filter(r=>r.proposal).length;
+  if(localProposalCount>0){await sbSync();}
   const loaded=await sbLoad();
   if(loaded){
     const cloudProposalCount=tableData.filter(r=>r.proposal).length;
     if(cloudProposalCount>=localProposalCount){renderAll();}
-    else{
-      // 클라우드보다 로컬 제안서가 더 많으면 로컬 유지하고 다시 업로드
-      tableData=loadData();
-      await sbSync();
-      renderAll();
-    }
+    else{tableData=loadData();await sbSync();renderAll();}
   }
   else if(tableData.length>0){sbSync();}
 };
