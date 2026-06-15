@@ -799,6 +799,17 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
        <th style="padding:8px 10px;text-align:center;">관리</th>
       </tr>
      </thead>
+     <tbody>
+      <tr style="border-bottom:1px solid #eee;background:#f0f4f8;">
+       <td style="padding:8px 10px;text-align:center;">조립팀</td>
+       <td style="padding:8px 10px;text-align:center;font-weight:700;">양춘향</td>
+       <td style="padding:8px 10px;text-align:center;">kulhyang0117@gmail.com</td>
+       <td style="padding:8px 10px;text-align:center;"><span style="font-size:11px;font-weight:700;color:#e65100;">관리자</span></td>
+       <td style="padding:8px 10px;text-align:center;color:#28a745;font-weight:700;">승인됨</td>
+       <td style="padding:8px 10px;text-align:center;font-size:11px;color:#aaa;">-</td>
+       <td style="padding:8px 10px;text-align:center;font-size:11px;color:#aaa;">시스템 고정</td>
+      </tr>
+     </tbody>
      <tbody id="users-tbody"></tbody>
     </table>
    </div>
@@ -1031,18 +1042,8 @@ function updateUserInfoBar(){
 function renderUsersTab(){
   const tbody=document.getElementById('users-tbody');if(!tbody)return;
   const users=getUsers();
-  // 관리자 고정 행
-  const adminRow=`<tr style="border-bottom:1px solid #eee;background:#f0f4f8;">
-<td style="padding:8px 10px;text-align:center;">조립팀</td>
-<td style="padding:8px 10px;text-align:center;font-weight:700;">양춘향</td>
-<td style="padding:8px 10px;text-align:center;">${ADMIN_EMAIL}</td>
-<td style="padding:8px 10px;text-align:center;"><span style="font-size:11px;font-weight:700;color:#e65100;">관리자</span></td>
-<td style="padding:8px 10px;text-align:center;color:#28a745;font-weight:700;">승인됨</td>
-<td style="padding:8px 10px;text-align:center;font-size:11px;color:#aaa;">-</td>
-<td style="padding:8px 10px;text-align:center;font-size:11px;color:#aaa;">시스템 고정</td>
-</tr>`;
-  if(!users.length){tbody.innerHTML=adminRow;return;}
-  tbody.innerHTML=adminRow+users.map((u,i)=>{
+  if(!users.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:14px;color:#aaa;">가입 신청한 회원이 없습니다.</td></tr>';return;}
+  tbody.innerHTML=users.map((u,i)=>{
     const statusColor=u.status==='approved'?'#28a745':u.status==='rejected'?'#e74c3c':'#f39c12';
     const statusText=u.status==='approved'?'승인됨':u.status==='rejected'?'거절됨':'대기중';
     return`<tr style="border-bottom:1px solid #eee;${i%2?'background:#f9f9f9':''}">
