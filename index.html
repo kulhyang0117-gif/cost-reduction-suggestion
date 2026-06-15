@@ -956,7 +956,7 @@ function loginSubmit(){
   const errEl=document.getElementById('auth-error');
   if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력하세요.';errEl.style.display='';return;}
   if(email===ADMIN_EMAIL&&pw===ADMIN_PW){
-    currentUser={email,name:'관리자',dept:'경영기획실',role:'admin'};
+    currentUser={email,name:'양춘향',dept:'조립팀',role:'admin'};
     sessionStorage.setItem('ssat_session',JSON.stringify(currentUser));
     onLoginSuccess();return;
   }
@@ -1016,8 +1016,8 @@ function renderUsersTab(){
   const users=getUsers();
   // 관리자 고정 행
   const adminRow=`<tr style="border-bottom:1px solid #eee;background:#f0f4f8;">
-<td style="padding:8px 10px;text-align:center;">경영기획실</td>
-<td style="padding:8px 10px;text-align:center;font-weight:700;">관리자</td>
+<td style="padding:8px 10px;text-align:center;">조립팀</td>
+<td style="padding:8px 10px;text-align:center;font-weight:700;">양춘향</td>
 <td style="padding:8px 10px;text-align:center;">${ADMIN_EMAIL}</td>
 <td style="padding:8px 10px;text-align:center;"><span style="font-size:11px;font-weight:700;color:#e65100;">관리자</span></td>
 <td style="padding:8px 10px;text-align:center;color:#28a745;font-weight:700;">승인됨</td>
