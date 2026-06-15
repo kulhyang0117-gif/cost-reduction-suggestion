@@ -417,6 +417,9 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
  </nav>
  <div class="sidebar-footer">2025년도 제안제도</div>
  <div style="padding:6px 18px 10px;font-size:10px;" id="sb-status"></div>
+ <div style="padding:0 18px 10px;">
+   <button onclick="sbSync().then(()=>alert('클라우드 업로드 완료!'))" style="width:100%;font-size:10px;padding:4px;background:#1a3a5c;color:#fff;border:none;border-radius:4px;cursor:pointer;">☁ 클라우드에 올리기</button>
+ </div>
 </div>
 
 <!-- Main -->
@@ -1840,8 +1843,22 @@ function renderAll(){initYearFilter();initSumYear();renderTable();renderResults(
 window.onload=async function(){
   tableData=loadData();
   renderAll();
+  const localProposalCount=tableData.filter(r=>r.proposal).length;
+  if(localProposalCount>0){
+    // 로컬에 제안서가 있으면 먼저 클라우드에 올린 후 로드
+    await sbSync();
+  }
   const loaded=await sbLoad();
-  if(loaded){renderAll();}
+  if(loaded){
+    const cloudProposalCount=tableData.filter(r=>r.proposal).length;
+    if(cloudProposalCount>=localProposalCount){renderAll();}
+    else{
+      // 클라우드보다 로컬 제안서가 더 많으면 로컬 유지하고 다시 업로드
+      tableData=loadData();
+      await sbSync();
+      renderAll();
+    }
+  }
   else if(tableData.length>0){sbSync();}
 };
 
