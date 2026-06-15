@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>원가절감 제안제도 대시보드 - 신성오토텍</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;display:flex;height:100vh;overflow:hidden;background:#f0f2f5;}
+.sidebar{width:235px;background:#1a3a5c;color:#fff;display:flex;flex-direction:column;flex-shrink:0;box-shadow:2px 0 8px rgba(0,0,0,.3);}
+.sidebar-logo{padding:20px 18px 15px;background:#0f2744;border-bottom:1px solid #2d5a8c;}
+.sidebar-logo .logo-icon{font-size:22px;margin-bottom:4px;}
+.sidebar-logo .logo-title{font-size:15px;font-weight:700;color:#fff;}
+.sidebar-logo .logo-sub{font-size:11px;color:#90b3d1;margin-top:2px;}
+.sidebar nav{flex:1;padding:10px 0;}
+.nav-item{display:flex;align-items:center;padding:14px 20px;color:#b0cce0;text-decoration:none;font-size:13px;border-left:3px solid transparent;cursor:pointer;transition:all .2s;user-select:none;}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,.13);color:#fff;border-left-color:#4aabf0;}
+.nav-item .nav-icon{font-size:16px;margin-right:10px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:#4aabf0;color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;}
+.sidebar-footer{padding:12px 18px;font-size:10px;color:#5a7a99;border-top:1px solid #2d5a8c;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{background:#fff;padding:12px 25px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.1);flex-shrink:0;}
+.topbar-title{font-size:17px;font-weight:700;color:#1a3a5c;}
+.topbar-sub{font-size:12px;color:#888;margin-top:2px;}
+.content{flex:1;overflow:auto;padding:20px 24px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.cards{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+.card{background:#fff;border-radius:10px;padding:16px 20px;flex:1;min-width:130px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #4aabf0;}
+.card.green{border-left-color:#28a745;}
+.card.amber{border-left-color:#ffc107;}
+.card.red{border-left-color:#dc3545;}
+.card.purple{border-left-color:#6f42c1;}
+.card-label{font-size:11px;color:#888;margin-bottom:5px;}
+.card-value{font-size:24px;font-weight:700;color:#1a3a5c;}
+.table-wrap{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;}
+.table-toolbar{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e8ecf0;background:#f8fafc;}
+.table-toolbar h3{font-size:14px;color:#1a3a5c;font-weight:700;}
+.spacer{flex:1;}
+.scroll-outer{overflow-x:auto;max-height:calc(100vh - 285px);}
+table{border-collapse:collapse;width:100%;font-size:11.5px;}
+thead{position:sticky;top:0;z-index:20;}
+thead tr th{background:#1a3a5c;color:#fff;padding:7px 6px;text-align:center;border:1px solid #2d5a8c;white-space:nowrap;font-weight:600;}
+thead tr:nth-child(2) th{background:#2d5a8c;font-size:11px;}
+tbody tr:hover td{background:#f0f5fa!important;}
+tbody tr td{border:1px solid #dde3ea;padding:5px 6px;text-align:center;vertical-align:middle;background:#fff;}
+tbody tr:nth-child(even) td{background:#f9fbfd;}
+td.theme-cell{text-align:left;max-width:230px;font-size:11px;cursor:default;white-space:normal;word-break:keep-all;}
+td.theme-cell:hover{background:inherit!important;color:inherit;}
+.sc-input{width:44px;padding:2px 4px;border:1px solid #c8d0da;border-radius:3px;font-size:11px;text-align:center;font-family:inherit;background:#fff;}
+.sc-input:focus{outline:none;border-color:#4aabf0;background:#f0f8ff;}
+.sc-total{font-weight:700;color:#1a3a5c;font-size:12px;}
+.tbl-select{padding:2px 3px;border:1px solid #c8d0da;border-radius:3px;font-size:11px;font-family:inherit;background:#fff;max-width:80px;}
+.tbl-select:focus{outline:none;border-color:#4aabf0;}
+.tbl-input{width:100%;padding:2px 5px;border:1px solid #c8d0da;border-radius:3px;font-size:11px;font-family:inherit;background:#fff;}
+.tbl-input:focus{outline:none;border-color:#4aabf0;}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10.5px;font-weight:600;}
+.badge-G{background:#d4edda;color:#155724;}
+.badge-Y{background:#fff3cd;color:#856404;}
+.badge-R{background:#f8d7da;color:#721c24;}
+.grade{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:600;white-space:nowrap;}
+.grade-1{background:#7b1fa2;color:#fff;}
+.grade-2{background:#1565c0;color:#fff;}
+.grade-3{background:#1b5e20;color:#fff;}
+.grade-4{background:#e65100;color:#fff;}
+.grade-5{background:#37474f;color:#fff;}
+.grade-6{background:#78909c;color:#fff;}
+.grade-reject{background:#b0bec5;color:#37474f;}
+.grade-review{background:#f57f17;color:#fff;}
+.btn{padding:7px 16px;border:none;border-radius:5px;cursor:pointer;font-size:12.5px;font-family:inherit;font-weight:600;transition:all .15s;}
+.btn-primary{background:#1a3a5c;color:#fff;}
+.btn-primary:hover{background:#2d5a8c;}
+.btn-success{background:#28a745;color:#fff;}
+.btn-success:hover{background:#218838;}
+.btn-file{background:#6c757d;color:#fff;padding:3px 7px;border-radius:3px;font-size:10.5px;cursor:pointer;border:none;font-family:inherit;}
+.btn-file:hover{background:#5a6268;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:flex-start;padding-top:50px;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:12px;width:720px;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+.modal-header{padding:17px 22px;border-bottom:1px solid #e0e6ed;display:flex;align-items:center;justify-content:space-between;background:#1a3a5c;border-radius:12px 12px 0 0;position:sticky;top:0;z-index:5;}
+.modal-header h3{color:#fff;font-size:15px;}
+.modal-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;}
+.modal-body{padding:22px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid-full{grid-column:1/-1;}
+.form-group label{display:block;font-size:11px;color:#666;margin-bottom:5px;font-weight:600;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:1px solid #dee2e6;border-radius:5px;font-size:12.5px;font-family:inherit;transition:border .15s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#4aabf0;}
+.form-group textarea{min-height:75px;resize:vertical;}
+.score-section{background:#f8fafc;border-radius:8px;padding:14px;margin-top:5px;border:1px solid #e8ecf0;}
+.score-section h4{font-size:12px;color:#1a3a5c;margin-bottom:10px;font-weight:700;}
+.score-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.score-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.score-item label{font-size:10px;color:#666;text-align:center;}
+.score-item input{width:58px;padding:6px;border:1px solid #dee2e6;border-radius:4px;font-size:13px;text-align:center;font-family:inherit;}
+.score-summary{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.score-total-box{background:#1a3a5c;color:#fff;padding:8px 14px;border-radius:6px;text-align:center;min-width:65px;}
+.score-total-box .st-label{font-size:10px;color:#90b3d1;}
+.score-total-box .st-value{font-size:18px;font-weight:700;}
+.modal-footer{padding:14px 22px;border-top:1px solid #e0e6ed;display:flex;justify-content:flex-end;gap:10px;background:#f8fafc;border-radius:0 0 12px 12px;}
+.file-list{display:flex;flex-direction:column;gap:3px;}
+.file-item{display:flex;align-items:center;gap:3px;font-size:10px;}
+.file-item a{color:#0066cc;text-decoration:none;max-width:95px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;}
+.file-item a:hover{text-decoration:underline;}
+.file-del{background:none;border:none;color:#dc3545;cursor:pointer;font-size:11px;padding:0;}
+.guidelines-wrap{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:30px;max-width:900px;}
+.doc-header{display:flex;margin-bottom:24px;border:2px solid #333;}
+.doc-header-meta{border-right:2px solid #333;}
+.doc-header-meta table{border-collapse:collapse;}
+.doc-header-meta td{padding:5px 12px;border:1px solid #555;font-size:12px;}
+.doc-header-meta td:nth-child(odd){background:#e0e0e0;font-weight:600;}
+.doc-header-title{flex:1;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;padding:0 30px;}
+.section-title{font-size:14px;font-weight:700;margin:20px 0 12px;color:#1a3a5c;}
+.section-title::before{content:"\u25a0 ";}
+.guide-table{border-collapse:collapse;width:100%;max-width:720px;}
+.guide-table th,.guide-table td{border:1px solid #555;padding:8px 14px;font-size:13px;text-align:center;}
+.guide-table th{background:#1a3a5c;color:#fff;}
+.guide-table .cat{background:#e8ecf0;font-weight:600;}
+.guide-table .remark-cell{font-size:11.5px;color:#555;}
+.results-wrap{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:28px;max-width:600px;}
+.results-table{border-collapse:collapse;width:100%;}
+.results-table th,.results-table td{border:1px solid #dee2e6;padding:10px 18px;font-size:13.5px;}
+.results-table th{background:#1a3a5c;color:#fff;text-align:center;}
+.results-table td{text-align:center;}
+.results-table tbody tr:hover td{background:#f0f5fa;}
+.results-total td{background:#fff3cd;font-weight:700;font-size:14px;}
+.amount-cell{text-align:right!important;font-family:'Courier New',monospace;}
+.theme-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;justify-content:center;align-items:center;}
+.theme-modal.show{display:flex;}
+.theme-box{background:#fff;border-radius:10px;width:540px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:24px;}
+.theme-box h4{font-size:14px;font-weight:700;margin-bottom:12px;color:#1a3a5c;display:flex;align-items:center;justify-content:space-between;}
+.theme-box p{font-size:13px;line-height:1.8;white-space:pre-wrap;color:#333;}
+.tclose{background:none;border:none;font-size:20px;cursor:pointer;color:#999;}
+.no-data{padding:40px;text-align:center;color:#999;font-size:14px;}
+.row-del{background:none;border:none;color:#ddd;cursor:pointer;font-size:14px;padding:2px 4px;}
+.row-del:hover{color:#dc3545;}
+</style>
+</head>
+<body>
+
+<!-- Theme Modal -->
+<div class="theme-modal" id="themeModal" onclick="if(event.target===this)closeTheme()">
+ <div class="theme-box">
+  <h4>제안 테마명 <button class="tclose" onclick="closeTheme()">&#10005;</button></h4>
+  <p id="tmText"></p>
+  <div style="margin-top:14px;">
+   <div style="font-size:11px;color:#888;margin-bottom:5px;font-weight:600;">수정</div>
+   <textarea id="tmEdit" style="width:100%;min-height:80px;padding:8px;border:1px solid #dee2e6;border-radius:5px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+   <div style="text-align:right;margin-top:8px;"><button class="btn btn-primary btn-sm" style="font-size:12px;" onclick="saveTheme()">저장</button></div>
+  </div>
+ </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeModal()">
+ <div class="modal">
+  <div class="modal-header">
+   <h3 id="m-title">&#128221; 새 제안 등록</h3>
+   <button class="modal-close" onclick="closeModal()">&#10005;</button>
+  </div>
+  <div class="modal-body">
+   <div class="form-grid">
+    <div class="form-group"><label>제안일자 *</label><input type="date" id="fd-date"/></div>
+    <div class="form-group"><label>진행상태</label><select id="fd-status"><option value="G">G (완료)</option><option value="Y">Y (진행중)</option><option value="R">R (미진행)</option></select></div>
+    <div class="form-group"><label>제안부서 *</label><select id="fd-dept" onchange="updModalProposer()"><option value="">선택하세요</option></select></div>
+    <div class="form-group"><label>제안자 *</label><select id="fd-proposer"><option value="">부서를 먼저 선택하세요</option></select></div>
+    <div class="form-group form-grid-full"><label>제안 테마명 *</label><textarea id="fd-theme" rows="3" placeholder="제안 내용을 상세히 입력하세요"></textarea></div>
+    <div class="form-group"><label>효과분석</label><select id="fd-effectType"></select></div>
+    <div class="form-group"><label>효과금액</label><input type="text" id="fd-effectAmount" placeholder="예: 1,200,000 또는 -"/></div>
+    <div class="form-group"><label>2차 심사결과 (효과분석)</label><select id="fd-secondReview"></select></div>
+    <div class="form-group"><label>비고</label><input type="text" id="fd-remark" placeholder="비고 입력"/></div>
+   </div>
+   <div class="score-section">
+    <h4>&#128203; 1차 심사결과 점수 (수기 입력)</h4>
+    <div class="score-row">
+     <div class="score-item"><label>유형효과점수<br>(최대 40)</label><input type="number" id="fd-typeScore" min="0" max="40" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>무형효과점수<br>(최대 10)</label><input type="number" id="fd-intangibleScore" min="0" max="10" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>창의성<br>(최대 15)</label><input type="number" id="fd-creativityScore" min="0" max="15" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>실현성<br>(최대 20)</label><input type="number" id="fd-realizabilityScore" min="0" max="20" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>노력도<br>(최대 10)</label><input type="number" id="fd-effortScore" min="0" max="10" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>지속성<br>(최대 5)</label><input type="number" id="fd-continuityScore" min="0" max="5" value="0" oninput="updModalScore()"/></div>
+     <div class="score-summary">
+      <div class="score-total-box"><div class="st-label">채택점수</div><div class="st-value" id="m-tot-score">0</div></div>
+      <div class="score-total-box" style="background:#1b5e20;"><div class="st-label">등급</div><div class="st-value" id="m-grade">-</div></div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <div class="modal-footer">
+   <button class="btn" style="background:#e0e6ed;color:#333;" onclick="closeModal()">취소</button>
+   <button class="btn btn-primary" onclick="saveRow()">&#128190; 저장</button>
+  </div>
+ </div>
+</div>
+
+<!-- Proposal View Modal -->
+<div class="modal-overlay" id="proposalViewModal" onclick="if(event.target===this)closePropView()">
+ <div class="modal" style="width:1100px;max-width:98vw;">
+  <div class="modal-header">
+   <h3>&#128196; 원가절감 제안서</h3>
+   <button class="modal-close" onclick="closePropView()">&#10005;</button>
+  </div>
+  <div class="modal-body" id="pv-body"></div>
+  <div class="modal-footer">
+   <button class="btn" style="background:#e0e6ed;color:#333;" onclick="closePropView()">닫기</button>
+   <button class="btn" style="background:#e65100;color:#fff;" onclick="closePropView();openPropForm(parseInt(document.getElementById('pv-rid').value))">&#9998; 수정</button>
+   <button class="btn" style="background:#28a745;color:#fff;" onclick="downloadPropExcel()">&#128196; Excel 다운로드</button>
+   <button class="btn btn-primary" onclick="printPropView()">&#128424; 인쇄</button>
+  </div>
+ </div>
+</div>
+<input type="hidden" id="pv-rid" value="">
+
+<!-- Proposal Form Modal -->
+<div class="modal-overlay" id="proposalFormModal">
+ <div class="modal" style="width:1150px;max-width:98vw;">
+  <div class="modal-header">
+   <h3 id="pf-modal-title">&#128221; 원가절감 제안서 신규 등록</h3>
+   <button class="modal-close" onclick="closePropForm()">&#10005;</button>
+  </div>
+  <div class="modal-body" style="padding:18px;">
+   <div style="text-align:center;font-size:20px;font-weight:700;letter-spacing:14px;margin-bottom:12px;border-bottom:2px solid #333;padding-bottom:8px;color:#1a1a1a;">제　　　안　　　서</div>
+   <input type="hidden" id="pf-amount" value="-"/>
+   <table style="border-collapse:collapse;width:100%;font-size:12px;">
+    <tbody>
+     <tr>
+      <td style="background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;white-space:nowrap;color:#222;width:62px;">소 속</td>
+      <td style="border:1px solid #888;padding:3px 5px;width:110px;">
+       <select id="pf-dept" onchange="updPfProposer()" style="width:100%;padding:3px;border:none;outline:none;font-size:12px;font-family:inherit;background:transparent;"><option value="">선택하세요</option></select>
+      </td>
+      <td style="background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;white-space:nowrap;color:#222;width:60px;">접수 NO</td>
+      <td style="border:1px solid #888;padding:3px 5px;width:82px;">
+       <input type="text" id="pf-no" placeholder="2026-001" oninput="fmtPropNo(this)" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;"/>
+      </td>
+      <td style="background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;white-space:nowrap;color:#222;width:55px;">제 출 일</td>
+      <td style="border:1px solid #888;padding:3px 5px;width:130px;">
+       <input type="date" id="pf-date" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;"/>
+      </td>
+      <td style="background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;white-space:nowrap;color:#222;width:50px;">성 명</td>
+      <td colspan="2" style="border:1px solid #888;padding:3px 5px;width:110px;">
+       <select id="pf-proposer" style="width:100%;padding:3px;border:none;outline:none;font-size:12px;font-family:inherit;background:transparent;"><option value="">부서를 먼저 선택하세요</option></select>
+      </td>
+      <td style="background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;white-space:nowrap;color:#222;width:62px;">실시구분</td>
+      <td style="border:1px solid #888;padding:4px 8px;">
+       <label style="margin-right:10px;"><input type="radio" name="pf-isImpl" value="실시" checked> 실시</label>
+       <label><input type="radio" name="pf-isImpl" value="미실시"> 미실시</label>
+      </td>
+     </tr>
+     <tr>
+      <td style="background:#e8e8e8;font-weight:700;padding:6px 8px;border:1px solid #888;white-space:nowrap;color:#222;">제 목</td>
+      <td colspan="8" style="border:1px solid #888;padding:3px 6px;">
+       <textarea id="pf-theme" rows="1" placeholder="제안 테마명을 입력하세요" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;resize:none;overflow:hidden;padding:2px 0;line-height:1.5;" oninput="autoH(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey)event.preventDefault();"></textarea>
+      </td>
+      <td style="background:#e8e8e8;font-weight:700;padding:6px 8px;border:1px solid #888;white-space:nowrap;color:#222;text-align:center;">유 형</td>
+      <td style="border:1px solid #888;padding:4px 10px;">
+       <label style="margin-right:10px;"><input type="radio" name="pf-type" value="유형" checked> 유형 O</label>
+       <label><input type="radio" name="pf-type" value="무형"> 무형 O</label>
+      </td>
+     </tr>
+     <tr>
+      <td style="background:#e8e8e8;font-weight:700;padding:6px 8px;border:1px solid #888;white-space:nowrap;color:#222;text-align:center;">효과분석</td>
+      <td colspan="2" style="border:1px solid #888;padding:3px 6px;">
+       <select id="pf-effectType" style="width:100%;padding:4px;border:1px solid #ccc;border-radius:3px;font-size:12px;font-family:inherit;"></select>
+      </td>
+      <td style="background:#e8e8e8;font-weight:700;padding:6px 8px;border:1px solid #888;white-space:nowrap;color:#222;text-align:center;">진행상태</td>
+      <td colspan="5" style="border:1px solid #888;padding:3px 6px;">
+       <select id="pf-status" style="width:100%;padding:4px;border:1px solid #ccc;border-radius:3px;font-size:12px;font-family:inherit;">
+        <option value="Y">Y (진행중)</option>
+        <option value="G">G (완료)</option>
+        <option value="R">R (미진행)</option>
+       </select>
+      </td>
+      <td style="background:#e8e8e8;font-weight:700;padding:6px 8px;border:1px solid #888;white-space:nowrap;color:#222;text-align:center;">실시부서</td>
+      <td style="border:1px solid #888;padding:3px 6px;">
+       <select id="pf-implDept" style="width:100%;padding:3px;border:none;outline:none;font-size:12px;font-family:inherit;background:transparent;"><option value="">선택하세요</option></select>
+      </td>
+     </tr>
+     <tr>
+      <td rowspan="2" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;padding:4px 6px;font-size:11px;white-space:nowrap;vertical-align:middle;">제안내용<br>분류</td>
+      <td colspan="10" style="border:1px solid #888;padding:3px 8px;">
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="1"> ①생산성향상</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="2"> ②품질향상</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="3"> ③원가절감</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="4"> ④환경안전개선</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="5"> ⑤치공구개선</label>
+       <label style="font-size:11px;"><input type="checkbox" class="pf-cat" value="6"> ⑥사무개선</label>
+      </td>
+     </tr>
+     <tr>
+      <td colspan="10" style="border:1px solid #888;padding:3px 8px;">
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="7"> ⑦영업서비스개선</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="8"> ⑧신제품</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="9"> ⑨설비개선</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="10"> ⑩작업방법개선</label>
+       <label style="margin-right:12px;font-size:11px;"><input type="checkbox" class="pf-cat" value="11"> ⑪정보사항</label>
+       <label style="font-size:11px;"><input type="checkbox" class="pf-cat" value="12"> ⑫복지사기개선</label>
+      </td>
+     </tr>
+     <tr>
+      <td rowspan="4" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;writing-mode:vertical-rl;padding:6px;letter-spacing:3px;font-size:11px;">제 안 자 작 성 란</td>
+      <td colspan="6" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;padding:6px;letter-spacing:4px;">개　　선　　전</td>
+      <td colspan="4" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;padding:6px;letter-spacing:4px;">개　　선　　후</td>
+     </tr>
+     <tr>
+      <td colspan="6" style="border:1px solid #888;padding:0;vertical-align:top;">
+       <div style="display:flex;min-height:50px;">
+        <div style="background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.4;">개선<br>Idea</div>
+        <div style="flex:1;padding:3px;">
+         <textarea id="pf-idea" rows="2" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;resize:none;padding:4px 6px;min-height:42px;overflow:hidden;" placeholder="개선 아이디어를 기술하세요" oninput="autoH(this)"></textarea>
+        </div>
+       </div>
+      </td>
+      <td colspan="4" style="border:1px solid #888;padding:0;vertical-align:top;">
+       <div style="display:flex;min-height:50px;">
+        <div style="background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.4;">실 시</div>
+        <div style="flex:1;padding:3px;">
+         <textarea id="pf-after-impl" rows="2" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;resize:none;padding:4px 6px;min-height:42px;overflow:hidden;" placeholder="실시 내용을 기술하세요" oninput="autoH(this)"></textarea>
+        </div>
+       </div>
+      </td>
+     </tr>
+     <tr>
+      <td colspan="6" style="border:1px solid #888;padding:0;vertical-align:top;">
+       <div style="display:flex;min-height:82px;">
+        <div style="background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.4;">기 존<br><span style="font-size:9px;color:#666;">(사진)</span></div>
+        <div style="flex:1;padding:3px;">
+         <div id="pf-before-blocks"></div>
+        </div>
+       </div>
+      </td>
+      <td colspan="4" style="border:1px solid #888;padding:0;vertical-align:top;">
+       <div style="display:flex;min-height:82px;">
+        <div style="background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.4;">변 경<br><span style="font-size:9px;color:#666;">(사진)</span></div>
+        <div style="flex:1;padding:3px;">
+         <div id="pf-after-blocks"></div>
+        </div>
+       </div>
+      </td>
+     </tr>
+     <tr>
+      <td colspan="6" style="border:1px solid #888;padding:0;vertical-align:top;">
+       <div style="display:flex;min-height:122px;">
+        <div style="background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;">문제점</div>
+        <div style="flex:1;padding:3px;">
+         <textarea id="pf-problem" rows="5" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;resize:none;padding:6px;min-height:110px;overflow:hidden;" placeholder="문제점을 기술하세요" oninput="autoH(this)"></textarea>
+        </div>
+       </div>
+      </td>
+      <td colspan="4" style="border:1px solid #888;padding:0;vertical-align:top;">
+       <div style="display:flex;min-height:122px;">
+        <div style="background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;">개 선</div>
+        <div style="flex:1;padding:3px;">
+         <textarea id="pf-after-improve" rows="5" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;resize:none;padding:6px;min-height:110px;overflow:hidden;" placeholder="개선 내용을 기술하세요" oninput="autoH(this)"></textarea>
+        </div>
+       </div>
+      </td>
+     </tr>
+     <tr>
+      <td style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;padding:6px 8px;white-space:nowrap;text-align:center;font-size:11px;vertical-align:middle;">산출근거<br>세부내용</td>
+      <td colspan="10" style="border:1px solid #888;padding:3px;vertical-align:top;">
+       <textarea id="pf-costDetail" rows="4" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;resize:none;padding:6px;min-height:90px;overflow:hidden;" placeholder="산출 근거를 상세히 기술하세요 (예: 절감금액/년 = 소요시간×근무일수×최저시급×12개월 = ...)" oninput="autoH(this)"></textarea>
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;padding:6px 8px;">산출근거</td>
+      <td colspan="2" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;padding:6px;">재료비(A)</td>
+      <td colspan="2" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;padding:6px;">노무비(B)</td>
+      <td colspan="2" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;padding:6px;">투자비용(C)</td>
+      <td colspan="3" style="background:#e8e8e8;font-weight:700;border:1px solid #888;color:#222;text-align:center;padding:6px;">년계(A+B-C)</td>
+     </tr>
+     <tr>
+      <td colspan="2" style="border:1px solid #888;padding:4px 8px;font-size:11px;color:#666;">원</td>
+      <td colspan="2" style="border:1px solid #888;padding:4px 6px;"><input type="text" id="pf-costMaterial" placeholder="0" oninput="calcPropCost()" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;text-align:right;"/></td>
+      <td colspan="2" style="border:1px solid #888;padding:4px 6px;"><input type="text" id="pf-costLabor" placeholder="0" oninput="calcPropCost()" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;text-align:right;"/></td>
+      <td colspan="2" style="border:1px solid #888;padding:4px 6px;"><input type="text" id="pf-costInvest" placeholder="0" oninput="calcPropCost()" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;text-align:right;"/></td>
+      <td colspan="3" style="border:1px solid #888;padding:4px 10px;font-weight:700;color:#1a3a5c;" id="pf-costTotal">-</td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="modal-footer" style="justify-content:space-between;align-items:center;">
+   <span id="pf-draft-status" style="font-size:11px;color:#aaa;">자동저장: 1분마다</span>
+   <div style="display:flex;gap:10px;">
+    <button class="btn" style="background:#e0e6ed;color:#333;" onclick="clearProposalForm()">초기화</button>
+    <button class="btn" style="background:#6c757d;color:#fff;" onclick="closePropForm()">취소</button>
+    <button class="btn btn-success" onclick="saveProposalToRegister()">&#128190; 저장</button>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+ <div class="sidebar-logo">
+  <div class="logo-icon">&#128202;</div>
+  <div class="logo-title">원가절감 대시보드</div>
+  <div class="logo-sub">신성오토텍(주) 2025년</div>
+ </div>
+ <nav>
+  <div class="nav-item active" onclick="showTab('guidelines',this)">
+   <span class="nav-icon">&#128203;</span>제안제도 관리지침서
+  </div>
+  <div class="nav-item" onclick="showTab('summary',this)">
+   <span class="nav-icon">&#128202;</span>종합현황
+  </div>
+  <div class="nav-item" onclick="showTab('proposal',this)">
+   <span class="nav-icon">&#128196;</span>원가절감 제안서
+  </div>
+  <div class="nav-item" onclick="showTab('register',this)">
+   <span class="nav-icon">&#128221;</span>접수대장
+   <span class="nav-badge" id="badge-count">0</span>
+  </div>
+  <div class="nav-item" onclick="showTab('results',this)">
+   <span class="nav-icon">&#127942;</span>검토결과
+  </div>
+ </nav>
+ <div class="sidebar-footer">2025년도 제안제도</div>
+ <div style="padding:6px 18px 10px;font-size:10px;" id="sb-status"></div>
+</div>
+
+<!-- Main -->
+<div class="main">
+ <div class="topbar">
+  <div>
+   <div class="topbar-title" id="topbar-title">제안제도 관리지침서</div>
+   <div class="topbar-sub" id="topbar-sub">시상 기준 및 등급별 안내</div>
+  </div>
+  <div style="font-size:12px;color:#aaa;">경영지원 200208 | 전공정 5/5</div>
+ </div>
+ <div class="content">
+
+  <!-- TAB 1: 관리지침서 -->
+  <div class="tab-panel active" id="tab-guidelines">
+   <div class="guidelines-wrap">
+    <div class="doc-header">
+     <div class="doc-header-meta">
+      <table>
+       <tr><td>No</td><td>경영지원</td><td>구분</td><td>제안제도</td><td>Page</td></tr>
+       <tr><td></td><td>200208</td><td>공정명</td><td>전공정</td><td>5/5</td></tr>
+      </table>
+     </div>
+     <div class="doc-header-title">제안제도 관리 지침서</div>
+    </div>
+    <div class="section-title">제안 효과 분석 결과 등급별 시상 기준</div>
+    <table class="guide-table">
+     <thead><tr><th>구분</th><th>제안상 명</th><th>평가등급</th><th>시상금액</th><th>비고</th></tr></thead>
+     <tbody>
+      <tr>
+       <td class="cat" rowspan="12">개인상</td>
+       <td rowspan="7">제안상</td>
+       <td>1</td><td>별도</td><td rowspan="2"></td>
+      </tr>
+      <tr><td>2</td><td>별도</td></tr>
+      <tr><td>3</td><td>100,000</td><td rowspan="5" class="remark-cell">원/분기</td></tr>
+      <tr><td>4</td><td>50,000</td></tr>
+      <tr><td>5</td><td>30,000</td></tr>
+      <tr><td>6</td><td>10,000</td></tr>
+      <tr><td>불채택</td><td>문화상품권</td></tr>
+      <tr>
+       <td>최우수 제안상 (1명)</td>
+       <td>실시제안 : 10건 이상<br>(실시제안 효과평가)</td>
+       <td>300,000</td>
+       <td rowspan="3" class="remark-cell">년</td>
+      </tr>
+      <tr>
+       <td>우수 제안상 (2명)</td>
+       <td>실시제안 : 5건 이상<br>(실시제안 효과평가)</td>
+       <td>200,000</td>
+      </tr>
+      <tr>
+       <td>장려상 (3명)</td>
+       <td>실시제안 : 3건 이상<br>(실시제안 효과평가)</td>
+       <td>100,000</td>
+      </tr>
+      <tr><td colspan="4" style="height:4px;background:#f0f0f0;"></td></tr>
+      <tr><td colspan="4" style="height:0;padding:0;border:0;"></td></tr>
+      <tr>
+       <td class="cat">단체상</td>
+       <td>제안 우수 부서상</td>
+       <td>부서원 총 제안건수/실시제안 건수 가장 높은 부서</td>
+       <td>500,000</td>
+       <td></td>
+      </tr>
+     </tbody>
+    </table>
+    <div style="margin-top:28px;background:#f0f5fa;border-radius:8px;padding:16px;max-width:720px;">
+     <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">&#128204; 1차 심사 채점 기준 (총 100점)</div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <span style="background:#1a3a5c;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">유형효과점수 40점</span>
+      <span style="background:#2d5a8c;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">무형효과점수 10점</span>
+      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">창의성 15점</span>
+      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">실현성 20점</span>
+      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">노력도 10점</span>
+      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">지속성 5점</span>
+     </div>
+     <div style="font-size:12px;color:#555;">
+      <b>점수별 등급:</b>&nbsp;&nbsp;
+      <span style="background:#1565c0;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">2등급 60점 이상</span>
+      <span style="background:#1b5e20;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">3등급 50~59점</span>
+      <span style="background:#e65100;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">4등급 40~49점</span>
+      <span style="background:#37474f;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">5등급 30~39점</span>
+      <span style="background:#78909c;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">6등급 20~29점</span>
+      <span style="background:#b0bec5;color:#37474f;padding:2px 9px;border-radius:3px;font-size:11px;">불채택 19점 이하</span>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <!-- TAB 종합현황 -->
+  <div class="tab-panel" id="tab-summary">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+     <span style="display:inline-block;width:4px;height:20px;background:#1a3a5c;border-radius:2px;"></span>
+     <span style="font-size:15px;font-weight:700;color:#1a3a5c;" id="sum-title">원가절감 종합현황 (전체)</span>
+    </div>
+    <select id="sum-year" onchange="renderSummary()" style="padding:6px 12px;border:1px solid #c8d0da;border-radius:5px;font-size:13px;font-family:inherit;background:#fff;color:#1a3a5c;font-weight:600;">
+     <option value="">전체</option>
+    </select>
+   </div>
+   <div class="cards" style="margin-bottom:16px;">
+    <div class="card" style="text-align:center;border-left-color:#1a3a5c;">
+     <div class="card-label">총 제안 건수</div>
+     <div class="card-value" id="sum-c-total" style="font-size:32px;color:#1a3a5c;">0</div>
+    </div>
+    <div class="card green" style="text-align:center;">
+     <div class="card-label">완료 (G)</div>
+     <div class="card-value" id="sum-c-g" style="font-size:32px;color:#28a745;">0</div>
+    </div>
+    <div class="card amber" style="text-align:center;">
+     <div class="card-label">진행중 (Y)</div>
+     <div class="card-value" id="sum-c-y" style="font-size:32px;color:#e67e00;">0</div>
+    </div>
+    <div class="card red" style="text-align:center;">
+     <div class="card-label">미진행 (R)</div>
+     <div class="card-value" id="sum-c-r" style="font-size:32px;color:#dc3545;">0</div>
+    </div>
+    <div class="card purple" style="text-align:center;">
+     <div class="card-label">효과금액 합계</div>
+     <div class="card-value" id="sum-c-amount" style="font-size:15px;color:#6f42c1;">0원</div>
+    </div>
+   </div>
+   <div class="table-wrap">
+    <div class="scroll-outer" style="max-height:calc(100vh - 310px);">
+     <table id="sum-table" style="font-size:11.5px;">
+      <thead>
+       <tr>
+        <th rowspan="2" style="min-width:30px;">순</th>
+        <th rowspan="2" style="min-width:70px;">제안부서</th>
+        <th rowspan="2" style="min-width:65px;">제안자</th>
+        <th rowspan="2" style="min-width:42px;">구분</th>
+        <th style="min-width:38px;">1월</th>
+        <th style="min-width:38px;">2월</th>
+        <th style="min-width:38px;">3월</th>
+        <th style="min-width:38px;">4월</th>
+        <th style="min-width:38px;">5월</th>
+        <th style="min-width:38px;">6월</th>
+        <th style="min-width:38px;">7월</th>
+        <th style="min-width:38px;">8월</th>
+        <th style="min-width:38px;">9월</th>
+        <th style="min-width:38px;">10월</th>
+        <th style="min-width:38px;">11월</th>
+        <th style="min-width:38px;">12월</th>
+        <th rowspan="2" style="min-width:55px;background:#0f2744;">합계</th>
+       </tr>
+       <tr>
+        <th style="font-size:10px;background:#2d5a8c;">Jan</th>
+        <th style="font-size:10px;background:#2d5a8c;">Feb</th>
+        <th style="font-size:10px;background:#2d5a8c;">Mar</th>
+        <th style="font-size:10px;background:#2d5a8c;">Apr</th>
+        <th style="font-size:10px;background:#2d5a8c;">May</th>
+        <th style="font-size:10px;background:#2d5a8c;">Jun</th>
+        <th style="font-size:10px;background:#2d5a8c;">Jul</th>
+        <th style="font-size:10px;background:#2d5a8c;">Aug</th>
+        <th style="font-size:10px;background:#2d5a8c;">Sep</th>
+        <th style="font-size:10px;background:#2d5a8c;">Oct</th>
+        <th style="font-size:10px;background:#2d5a8c;">Nov</th>
+        <th style="font-size:10px;background:#2d5a8c;">Dec</th>
+       </tr>
+      </thead>
+      <tbody id="sum-tbody"></tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <!-- TAB 원가절감 제안서 (리스트) -->
+  <div class="tab-panel" id="tab-proposal">
+   <div class="table-wrap">
+    <div class="table-toolbar">
+     <h3>&#128196; 원가절감 제안서 목록</h3>
+     <div style="font-size:11px;color:#888;">* 행 클릭 또는 보기 버튼으로 상세 확인</div>
+     <div class="spacer"></div>
+     <button class="btn btn-success" onclick="openPropForm()">+ 신규 등록</button>
+    </div>
+    <div class="scroll-outer" style="max-height:calc(100vh - 200px);">
+     <table style="font-size:12px;">
+      <thead>
+       <tr>
+        <th style="width:40px;">NO</th>
+        <th style="min-width:100px;">제안일자</th>
+        <th style="min-width:75px;">제안부서</th>
+        <th style="min-width:70px;">제안자</th>
+        <th style="min-width:220px;">제안 테마명</th>
+        <th style="min-width:85px;">제안번호</th>
+        <th style="min-width:120px;">효과금액</th>
+        <th style="width:65px;">상세</th>
+        <th style="width:65px;">수정</th>
+        <th style="width:40px;"></th>
+       </tr>
+      </thead>
+      <tbody id="prop-tbody">
+       <tr><td colspan="10" class="no-data">등록된 제안서가 없습니다.</td></tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <!-- TAB 2: 접수대장 -->
+  <div class="tab-panel" id="tab-register">
+   <div class="cards">
+    <div class="card"><div class="card-label">총 제안 건수</div><div class="card-value" id="c-total">0</div></div>
+    <div class="card green"><div class="card-label">완료 (G)</div><div class="card-value" id="c-g">0</div></div>
+    <div class="card amber"><div class="card-label">진행중 (Y)</div><div class="card-value" id="c-y">0</div></div>
+    <div class="card red"><div class="card-label">미진행 (R)</div><div class="card-value" id="c-r">0</div></div>
+    <div class="card purple"><div class="card-label">효과금액 합계</div><div class="card-value" id="c-amount" style="font-size:16px;">0원</div></div>
+   </div>
+   <div class="table-wrap">
+    <div class="table-toolbar">
+     <h3>&#128196; 제안 관리대장</h3>
+     <div style="font-size:11px;color:#888;">* 테마명 클릭시 상세/수정 가능 &nbsp;|&nbsp; 점수 입력시 채택등급 자동계산</div>
+     <div class="spacer"></div>
+     <select id="filter-year" onchange="applyFilter()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 년도</option></select>
+     <select id="filter-month" onchange="applyFilter()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;">
+      <option value="">전체 월</option>
+      <option value="01">1월</option><option value="02">2월</option><option value="03">3월</option>
+      <option value="04">4월</option><option value="05">5월</option><option value="06">6월</option>
+      <option value="07">7월</option><option value="08">8월</option><option value="09">9월</option>
+      <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+     </select>
+     <button class="btn btn-success" onclick="openModal()">+ 새 제안 등록</button>
+    </div>
+    <div class="scroll-outer">
+     <table>
+      <thead>
+       <tr>
+        <th rowspan="2" style="width:30px;">순</th>
+        <th rowspan="2" style="min-width:72px;">접수NO</th>
+        <th rowspan="2" style="min-width:100px;">제안일자</th>
+        <th rowspan="2" style="min-width:72px;">제안부서</th>
+        <th rowspan="2" style="min-width:65px;">제안자</th>
+        <th rowspan="2" style="min-width:210px;">제안 테마명</th>
+        <th rowspan="2" style="width:50px;">보기</th>
+        <th rowspan="2" style="min-width:70px;">진행상태<br>(R/Y/G)</th>
+        <th rowspan="2" style="min-width:75px;">효과분석</th>
+        <th rowspan="2" style="min-width:100px;">효과금액</th>
+        <th colspan="8" style="background:#163060;min-width:400px;">1차 심사결과</th>
+        <th rowspan="2" style="min-width:75px;">2차 심사결과<br>(효과분석)</th>
+        <th rowspan="2" style="min-width:100px;">결과보고서<br>(Excel/PDF)</th>
+        <th rowspan="2" style="min-width:90px;">비고</th>
+        <th rowspan="2" style="min-width:140px;">제안서 / 수정</th>
+        <th rowspan="2" style="width:30px;"></th>
+       </tr>
+       <tr>
+        <th class="sub-header" style="min-width:50px;">채택<br>(점수)</th>
+        <th class="sub-header" style="min-width:58px;">채택<br>(등급)</th>
+        <th class="sub-header" style="min-width:50px;">유형효과<br>점수(40)</th>
+        <th class="sub-header" style="min-width:50px;">무형효과<br>점수(10)</th>
+        <th class="sub-header" style="min-width:46px;">창의성<br>(15)</th>
+        <th class="sub-header" style="min-width:46px;">실현성<br>(20)</th>
+        <th class="sub-header" style="min-width:46px;">노력도<br>(10)</th>
+        <th class="sub-header" style="min-width:46px;">지속성<br>(5)</th>
+       </tr>
+      </thead>
+      <tbody id="reg-tbody"></tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <!-- TAB 3: 검토결과 -->
+  <div class="tab-panel" id="tab-results">
+   <div class="results-wrap">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+     <div>
+      <h2 id="res-year-title" style="font-size:17px;font-weight:700;color:#1a3a5c;">연간실적 결과보고</h2>
+      <div id="res-year-period" style="font-size:12px;color:#888;margin-top:4px;"></div>
+      <div style="font-size:12px;color:#555;margin-top:6px;">총 제안건수 : <b id="res-total-count">0</b>건</div>
+     </div>
+     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+      <select id="res-year" onchange="renderResults()" style="padding:6px 12px;border:1px solid #c8d0da;border-radius:5px;font-size:13px;font-family:inherit;background:#fff;color:#1a3a5c;font-weight:600;">
+       <option value="">전체</option>
+      </select>
+      <div style="font-size:11px;color:#aaa;text-align:right;">(접수대장 점수 기반 자동계산)</div>
+     </div>
+    </div>
+    <table class="results-table">
+     <thead><tr><th>건수</th><th>대상자</th><th>시상금액</th></tr></thead>
+     <tbody id="res-tbody"></tbody>
+     <tfoot>
+      <tr class="results-total">
+       <td id="res-tc">-</td>
+       <td>합 계</td>
+       <td class="amount-cell">&#8361; <span id="res-grand">0</span></td>
+      </tr>
+     </tfoot>
+    </table>
+    <div style="margin-top:18px;font-size:11.5px;color:#666;background:#f8fafc;border-radius:6px;padding:12px 16px;max-width:480px;line-height:1.7;">
+     <b>시상금액 기준 (분기별 제안상):</b><br>
+     3등급 100,000원 / 4등급 50,000원 / 5등급 30,000원 / 6등급 10,000원<br>
+     <span style="color:#999;">* 1~2등급(별도), 불채택(문화상품권), 재검토(0원)</span>
+    </div>
+
+    <!-- 개인상 검토 결과 -->
+    <div style="margin-top:28px;">
+     <table style="border-collapse:collapse;width:100%;font-size:13px;">
+      <tr>
+       <td colspan="4" style="background:#e8d5f5;font-weight:700;font-size:13px;padding:7px 12px;border:1px solid #888;color:#222;">개인상 검토 결과</td>
+      </tr>
+      <tr>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;width:120px;">제안상 명</th>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;width:120px;">대상자</th>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;">제안명</th>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;width:130px;">시상금액</th>
+      </tr>
+      <tr>
+       <td style="border:1px solid #888;padding:6px 10px;text-align:center;">최우수상</td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-best-person" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-best-theme" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-best-amount" oninput="saveAwards()" placeholder="0" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+      </tr>
+      <tr>
+       <td style="border:1px solid #888;padding:6px 10px;text-align:center;">우수상</td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-good-person" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-good-theme" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-good-amount" oninput="saveAwards()" placeholder="0" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+      </tr>
+      <tr>
+       <td colspan="2" style="border:none;"></td>
+       <td style="background:#ffff00;font-weight:700;border:1px solid #888;padding:7px 10px;text-align:center;">소계</td>
+       <td style="background:#ffff00;font-weight:700;border:1px solid #888;padding:7px 10px;text-align:center;">&#8361; <span id="award-subtotal">-</span></td>
+      </tr>
+     </table>
+    </div>
+
+    <!-- 단체상 -->
+    <div style="margin-top:28px;">
+     <table style="border-collapse:collapse;width:100%;font-size:13px;">
+      <tr>
+       <td colspan="4" style="background:#e8d5f5;font-weight:700;font-size:13px;padding:7px 12px;border:1px solid #888;color:#222;">단체상</td>
+      </tr>
+      <tr>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;width:100px;">제안상 명</th>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;width:140px;">대상팀</th>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;">제안명</th>
+       <th style="background:#c0c0c0;border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;width:130px;">시상금액</th>
+      </tr>
+      <tr>
+       <td style="border:1px solid #888;padding:6px 10px;text-align:center;">단체상</td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-team-name" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-team-theme" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;">500,000</td>
+      </tr>
+     </table>
+    </div>
+   </div>
+  </div>
+
+ </div>
+</div>
+
+<script>
+const DEFAULT_DATA = [{"no": 1, "date": "2025-01-02", "dept": "품질", "proposer": "황재훈", "theme": "LX2 PE COVER REAR에 FELT 부착시 시간 경과후\nFELT 떨어짐 발생-FELT에 칼선 3POINT 추가 하여 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "직무", "remark": ""}, {"no": 2, "date": "2025-01-02", "dept": "후가공", "proposer": "임문호", "theme": "AX EV REAR 1.2층 공용 사용가능 개선\n-안쪽 리브 수정하여  공용 사용 가능하게 구조 변경", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 3, "date": "2025-01-13", "dept": "품질", "proposer": "황재훈", "theme": "CSKD KNOB 외관 취급 불량 발생\n-높이가 낮은 Tray 로 변경 하여 knob 아무리 심해게 \n운송이 되어도 뒤집힘 없도록 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 4, "date": "2025-01-14", "dept": "후가공", "proposer": "임문호", "theme": "SPINDLE 도장 흡착식 드라이어 개선\n-셔틀 벨브 분해하여 양쪽 표시부 사포 작업 하여 유동시 걸림 방지", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 5, "date": "2025-01-15", "dept": "개발", "proposer": "조경환", "theme": "AX EV REAR COVER의 후면 가압시 마찰 이음 발생 개선\n1)REAR COVER의 하단 도장 지그의  HOOK부 밀폐 구조로 \n도장 지그 개선\n2)제품 홀 치수 증대 ( 고객사 설계변경)", "status": "G", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 6, "date": "2025-01-22", "dept": "품질", "proposer": "황재훈", "theme": "MS 신뢰성 항목중 사출 내광성 시험에서 NG 발생되는 Loss 발생됨-도장 내광성 시험만 진행 하고 사출 \n내광성은 제외 하기로 LG 전자와 협의", "status": "G", "effectType": "품질협의", "effectAmount": "3706000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 7, "date": "2025-01", "dept": "사출", "proposer": "김민수", "theme": "냉각라인 자동 스케일제거기 도입 \n-자동 스케일제거 장치 설치", "status": "G", "effectType": "공정개선", "effectAmount": "5700000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 8, "date": "2025-02-01", "dept": "경영지원", "proposer": "임정인", "theme": "사업주훈련지원금 수급(2025년도 사용분)\n-고용노동부 사업주훈련지원금 16,754,244원 수급(교육비 차감 후 미사용금 자동소진), 무상교육 100% 실시", "status": "G", "effectType": "원가검감", "effectAmount": "16754244", "typeScore": 20, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 0, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 9, "date": "2025-02-03", "dept": "후가공", "proposer": "임문호", "theme": "고광택 CAP 류  핀홀 방지제 변경 및 유효기간 변경", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 10, "date": "2025-02-06", "dept": "품질", "proposer": "황재훈", "theme": "SV COVER REAR GAS발생-현수준 GAS 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "29606000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 11, "date": "2025-02-06", "dept": "품질", "proposer": "황재훈", "theme": "SV COVER REAR SPRAY 얼룩 발생-현수준 얼룩 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "29606000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 12, "date": "2025-02-06", "dept": "품질", "proposer": "황재훈", "theme": "AX EV PANEL FRONT LCD창 상단사출 찍힘 발생\n-재고 까지 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "1042000", "typeScore": 5, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 13, "date": "2025-02-10", "dept": "조립", "proposer": "양춘향", "theme": "CD CUV Holder 비전작업 유출불량 개선\n-비전검사 진행, 지그 기존 보유중인 미사용 지그개조", "status": "G", "effectType": "공정개선", "effectAmount": "300000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 14, "date": "2025-02-10", "dept": "조립", "proposer": "양춘향", "theme": "비전지그 보관함 보관수량 확장\n-비전검사 지그 보관용 진열대 세로로 보관가능하도록\n 받침대 설치: 6대 → 18대 보관가능", "status": "G", "effectType": "공정개선", "effectAmount": "100000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 15, "date": "2025-02-14", "dept": "품질", "proposer": "황재훈", "theme": "이관/단종 모델로 도면에 보호 시트가\n사내에서 사용 하지 않는 사양\n-사내 공용으로 사용 하는 보호시트로\n사용 제한(협의 되어 서비스품에 적용)", "status": "G", "effectType": "품질협의", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 16, "date": "2025-02-18", "dept": "구매", "proposer": "김대수", "theme": "SV COVER REAR RESIN 투입 포장단위 개선\n-주머니 포장 상태에서 직접 호퍼로 이동, 작업자 \n소요 공수 감소 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 17, "date": "2025-02-20", "dept": "개발", "proposer": "조경환", "theme": "JK1 PE KNOB ASSY NA의 조립시 KNOB RING부 백화 발생\n으로 도장지그 개선-마스킹 벙위를  2mm이내로 하여 도장 지그를 개선하여 백화 발생을 방지함", "status": "G", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 3, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 18, "date": "2025-02-20", "dept": "구매", "proposer": "김대수", "theme": "공용 50칸 트레이 두께 개선\n-50칸 트레이 두께 0.4T → 0.7T 트레이로 개발 적용하여 작업성 개선과 안정적인 부품 보존에 개선 기여함", "status": "G", "effectType": "공정개선", "effectAmount": "666600", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 19, "date": "2025-02", "dept": "사출", "proposer": "김민수", "theme": "JK1PE HOLDER HAPTIC 수동취출 진행중 \n-전용 취출 JIG 제작 적용", "status": "G", "effectType": "공정개선", "effectAmount": "5700000", "typeScore": 20, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 20, "date": "2025-03-03", "dept": "구매", "proposer": "김대수", "theme": "원재료 창고 RESIN 잔량 우선 소진 관리 개선건\n-선입선출 표식, 잔량포대 표식 별도 구분관리 / 품질팀 협조", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 21, "date": "2025-03-03", "dept": "구매", "proposer": "김대수", "theme": "PC ABS GP5008BFH 스크랩 별도 관리\n-PC ABS GP5008BFH 스크랩, 런너 다른  RESIN과 별도 \n구분 관리", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 22, "date": "2025-03-04", "dept": "후가공", "proposer": "임문호", "theme": "AX EV REAR  NNB/YGN 도료 색상 및 은패력 개선\n- 광택/색상 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 23, "date": "2025-03-06", "dept": "개발", "proposer": "김형권", "theme": "JG CONNECT WIDE HOLDER ANT PCB 체결력 개선\n-HOOK부 텐션 수리/금형 수리 진행", "status": "G", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 24, "date": "2025-03-07", "dept": "품질", "proposer": "황재훈", "theme": "BC3 REAR 조립시 체결 불량\n-벤딩 펀치 이동, 벤딩 다이 연마 진행\n-ASS'Y 재고 864EA 사용 협의", "status": "G", "effectType": "공정개선", "effectAmount": "7161696", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 25, "date": "2025-03-26", "dept": "개발", "proposer": "김형권", "theme": "이중사출 도금버튼 수지 흐름개선\n-표시부 R값추가혀여 2차 수지 충진될수 있도록 구조변경", "status": "G", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 26, "date": "2025-03-27", "dept": "품질", "proposer": "황재훈", "theme": "RJ PE COVER REAR에 FELT 부착시 시간 경과후\nFELT 떨어짐 발생-FELT에 칼선 3POINT 추가 하여 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 27, "date": "2025-03", "dept": "사출", "proposer": "김민수", "theme": "원재료 교체시간 단축 \n-슬라이드 장치 자체 제작 진행으로 통한  원가절검 및\n 원재료 교체시간 단축", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 10, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 28, "date": "2025-04-01", "dept": "구매", "proposer": "김대수", "theme": "CKD 포장자재 받침 팔래트 개선\n-두보산업 CKD 포장자재 입고시 지게차와 수동자키 두가지 도구 모두를 사용 가능한 규격 팔레트에 적재 입고", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 29, "date": "2025-04-04", "dept": "품질", "proposer": "황재훈", "theme": "AX EV PANEL FRONT 배면 사각 코어 파손으로 \n막힘 발생-재고 까지 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "12505200", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 30, "date": "2025-04-07", "dept": "품질", "proposer": "황재훈", "theme": "BD PANEL FRONT 4포인트 치수 미달 발생\n-서비스품 허용 공차 적용 협의 하여 사용", "status": "G", "effectType": "품질협의", "effectAmount": "10595910", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 31, "date": "2025-04-07", "dept": "품질", "proposer": "황재훈", "theme": "BD COVER REAR 4포인트 치수 미달 발생\n-서비스품 허용 공차 적용 협의 하여 사용", "status": "G", "effectType": "품질협의", "effectAmount": "2718496", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 32, "date": "2025-04-07", "dept": "품질", "proposer": "황재훈", "theme": "JC PANEL 2포인트 치수 미달 발생\n-서비스품 허용 공차 적용 협의 하여 사용", "status": "G", "effectType": "품질협의", "effectAmount": "1183200", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 33, "date": "2025-04-10", "dept": "조립", "proposer": "양춘향", "theme": "생산 애로사항 개선\n기존 : 레이저 마킹기 A 라인 1대, B 라인 1대\n변경 : B 라인 레이저 마킹기 1대로만 운영", "status": "G", "effectType": "공정개선", "effectAmount": "40081336", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 34, "date": "2025-04-10", "dept": "품질", "proposer": "황재훈", "theme": "RJ PE PANEL 측면 이물 형상 발생\n-900EA 까지 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "17013600", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 35, "date": "2025-04-11", "dept": "조립", "proposer": "양춘향", "theme": "생산 애로사항 개선\n기존 : 1. JA PE2 레이저 마킹지그 가로방향 셋팅\n       2. 환풍기 1단 적용\n변경 : JA PE2 레이저 마킹지그 세로방향 셋팅\n       레이저 환풍기 2단 적용 \n       (기존 B 라인 모터 1대추가)", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 36, "date": "2025-04-21", "dept": "조립", "proposer": "양춘향", "theme": "라인 공정 재배치 AB NECK TIME 다운\n기존:레이저 마킹+불빛검사+라벨부착+비전기투입 16.4초\n변경:라벨부착작업 2번 공정이동, NECK TIME 3.0초 감축", "status": "G", "effectType": "공정개선", "effectAmount": "10110240", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 5, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 37, "date": "2025-04-22", "dept": "품질", "proposer": "황재훈", "theme": "FE CASE FRONT 고정 찍힘 찍힘 발생\n-700EA 까지 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "18067600", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 38, "date": "2025-04-23", "dept": "품질", "proposer": "황재훈", "theme": "COVER REAR FELT 부착후 들뜸 발생\n-FELT에 칼선 3POINT 추가 하여 개선되도록 요청", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 39, "date": "2025-04-25", "dept": "조립", "proposer": "양춘향", "theme": "생산 애로사항 개선\n기존 : 1. BC3 판넬 스크류 10ea 2명 조립\n       - 총 4명 타임별 2교대 진행\n변경 : 스크류 체결작업 2명 추가 교육진행 \n       - 총 6명 타임별 3교대 진행", "status": "G", "effectType": "공정개선", "effectAmount": "1400000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 40, "date": "2025-04-25", "dept": "개발", "proposer": "조경환", "theme": "BL7M  DATC사양 KNOB ASSY시 HOOOK부 뛰김을 R 형상으로\n하여 품질 개선-LENS KNOB와 KNOB 조립 되는 부위를  \nR 가공하여 뛰김 발생을 최소화", "status": "G", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 41, "date": "2025-04-25", "dept": "개발", "proposer": "김형권", "theme": "이중사출 취출문제 개선\n-1차측 구배값 추가하여  상측물림 개선\n-구배 추가로 인하여  1차 외관 수축 발생-1차측 게이트 Ø 추가하여 사출압 낮추어 양산성 개선", "status": "G", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 42, "date": "2025-04-30", "dept": "품질", "proposer": "황재훈", "theme": "FE VOL KNOB DECO 측면 동일부 찍힘 사용 협의\n-현수준 찍힘 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "4705260", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 43, "date": "2025-04-30", "dept": "품질", "proposer": "황재훈", "theme": "SV COVER REAR WELD 발생\n-현수준 WELD 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "29606000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 44, "date": "2025-04", "dept": "사출", "proposer": "김민수", "theme": "잔량감시 장치 설치\n-자체 부품 구매 / 결선으로 설치 진행", "status": "G", "effectType": "공정개선", "effectAmount": "1052000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 45, "date": "2025-05-08", "dept": "후가공", "proposer": "임문호", "theme": "고광택 cap 류 DATC B/T 개선\n-기포 핀홀 방지제 3% 사용", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 46, "date": "2025-05-20", "dept": "구매", "proposer": "김대수", "theme": "CL4 Bracket RHD, LHD RESIN 수급 개선건\n-현승 → 변경 : 삼진포리머 (수급 루트 이원화 개발)", "status": "G", "effectType": "공정개선", "effectAmount": "960000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 0, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 47, "date": "2025-05-22", "dept": "품질", "proposer": "황재훈", "theme": "FS KNOB VOL DR치수가 배면 HOLE로 설정 되어 \n있으며 측정자에 따른 측정 오차가 심해 측정자에\n따라 NG 발생됨-현재 수준 사용 하는것으로 협의 121EA", "status": "G", "effectType": "품질협의", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 0, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 48, "date": "2025-05", "dept": "사출", "proposer": "김민수", "theme": "JK1PE SUPPORT TOUCH LENS 조립JIG 개선\n-LENS 가조립후 (기울어진 상태)  JIG 안착시 스프링 \n푸쉬블록 GUIDE된 상태에서 압입하는 구조 개선필요 판단", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 10, "realizabilityScore": 10, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 49, "date": "2025-06-02", "dept": "조립", "proposer": "양춘향", "theme": "Neck Time 다운, LOB 개선\n기존 : 1. SV Rear 8명 생산진행\n변경 : SV Rear 9명 생산 → 투입공정 1명 추가", "status": "G", "effectType": "공정개선", "effectAmount": "4357862", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 50, "date": "2025-06-05", "dept": "후가공", "proposer": "윤아뚜", "theme": "XY 도장 급기 모터 보호막 설치\n-모터 보호 커버 설치하여 다운 열기 및 우천시 빗물 \n안들어 가도록 설치", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 51, "date": "2025-06-12", "dept": "구매", "proposer": "김대수", "theme": "사내, 사외 순환 단프라 박스 보관 방법 개선 활동", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 52, "date": "2025-06-16", "dept": "품질", "proposer": "황재훈", "theme": "JG 팝업 모니터 Cover Outer L/R,Coach L/R 4종 \n치수 측정 지그 제작-공용으로 제작 하여 비용 절감", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 53, "date": "2025-06-16", "dept": "경영지원", "proposer": "임정인", "theme": "LCA기반 탄소관리를 위한 중소중견기업용 데이터플랫폼 연구개발 및 실증", "status": "G", "effectType": "경영 개선", "effectAmount": "150000000", "typeScore": 0, "intangibleScore": 0, "creativityScore": 0, "realizabilityScore": 0, "effortScore": 0, "continuityScore": 0, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 54, "date": "2025-06-25", "dept": "후가공", "proposer": "김미희", "theme": "CD CUV REAR 도장지그 수정하여 BC3 REAR L.R  공용 사용가능  개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 55, "date": "2025-06-27", "dept": "조립", "proposer": "양춘향", "theme": "단종 미사용 압착기를 볼륨에 이용\n- 볼륨 지그에 맞춰 홀 4포인트 뚫어서 지그만 \n  교체시 사용가능토록 개조", "status": "G", "effectType": "공정개선", "effectAmount": "1200000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 56, "date": "2025-06", "dept": "사출", "proposer": "김민수", "theme": "BL7m B/T TEMP + GUIDE TEMP 설체결 이슈 개선\n-조립팀 여유 공압 JIG 활용 안착구조물 제작으로 \n비용절감", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 10, "realizabilityScore": 5, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 57, "date": "2025-07-01", "dept": "구매", "proposer": "김대수", "theme": "제품 박스 이동 대차(돌리) 수리 제안건\n-대차 구매업체 현테크 에서 너트,볼트 최소 수량 별도 \n구매 ▶ 대차 수리", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 58, "date": "2025-07-02", "dept": "조립", "proposer": "양춘향", "theme": "판넬 보호필름 인라인 생산", "status": "G", "effectType": "공정개선", "effectAmount": "약 \\9,510,000", "typeScore": 20, "intangibleScore": 5, "creativityScore": 10, "realizabilityScore": 5, "effortScore": 7, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 59, "date": "2025-07-09", "dept": "조립", "proposer": "양춘향", "theme": "ccRC JXFL 보호시트 부착지그 제작\n-안착지그 제작 : 기존 스크류체결지그 개조", "status": "G", "effectType": "공정개선", "effectAmount": "1000000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 60, "date": "2025-07-10", "dept": "품질", "proposer": "황재훈", "theme": "ccIC CHASSIS FRONT WIFI MODUL 단선 발생\n-통전 검사 포인트를 납땜 끝부위로 위치 이동 하여 \n단선시 통전 검사기에서 검출 되도록 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 61, "date": "2025-07-15", "dept": "후가공", "proposer": "윤아뚜", "theme": "집진기 지붕 빗물 샘으로인한 천막 공사\n-집진기 위 천막 공사로 인하여 우천시 빗물샘 방지하여\n 설비 및 전기 안전 가능하도록 설치 됨", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 62, "date": "2025-07-24", "dept": "품질", "proposer": "황재훈", "theme": "ccIC CHASSIS FRONT 휨 발생\n-CHASSIS FRONT 박스 포장 수량 240EA에서 160EA로 변경하여 포장시 제품 변형이 발생 될수 있는 부분 개선\n-가로에서 세로로 포장 수량 변경", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 63, "date": "2025-07-25", "dept": "개발", "proposer": "김형권", "theme": "JG 팝업모니터  COVER OUTER LHD/RHD 취출시 상측 물림\n현상을 개선-하기와 같이  상측에  리브 구배 및 모서리 R 추가 , 하측에 언더컷 부식 처리로  취출시 들뜸을 개선(취출성 개선)", "status": "G", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 0, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 64, "date": "2025-07", "dept": "사출", "proposer": "김민수", "theme": "PCB 설체결시 이탈발생 설체결 기구적 형합개선\n-통전검사기 PCB 손상 안가는 제질로 밀착시키는 구조로 기능보완", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 65, "date": "2025-08-04", "dept": "품질", "proposer": "황재훈", "theme": "JG 팝업 모니터 OUTER LH/RH 사양 혼입 가능성\n-RH 사양 포장지 색상 구분 하여 혼입 방지", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 0, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 66, "date": "2025-08-07", "dept": "구매", "proposer": "김대수", "theme": "JG COVER VERTICAL 포장 트레이 개선건\n-COVER VERTICAL 부품 크기에 맞는 포장 트레이 적용", "status": "G", "effectType": "공정개선", "effectAmount": "273000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 0, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 67, "date": "2025-08-20", "dept": "품질", "proposer": "황재훈", "theme": "CD PE PANEL FRONT 전원 인쇄 좌측으로 기존 재고 보다 치우침-0.5mm\n-LG 전자 한유일 책임,서경준 책임 사용 협의", "status": "G", "effectType": "품질협의", "effectAmount": "73302000", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 2, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 68, "date": "2025-08-20", "dept": "조립", "proposer": "양춘향", "theme": "지그를 활용한 조립불량 제로화\n-압착기 공용, 압착지그 제작 (자체제작)", "status": "G", "effectType": "공정개선", "effectAmount": "1083240", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 69, "date": "2025-08-25", "dept": "개발", "proposer": "김형권", "theme": "COVER OUTER의 치수측정 지그 에 따른 측정 오차 개선\n(도면사양으로 지그 수정)", "status": "G", "effectType": "지그 개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 70, "date": "2025-08-25", "dept": "개발", "proposer": "김형권", "theme": "COVER OUTER의 FELT 부착성 및 조립성을 개선하기 위해\nFELT 형상 변경으로 문제점 개선\n-vending선 추가하여 접착력 증대", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 71, "date": "2025-08-29", "dept": "조립", "proposer": "양춘향", "theme": "BC3 PANEL JIG 긁힘발생 포인트 제거\n-유동방지 가이드라인 간섭부 컷팅", "status": "G", "effectType": "공정개선", "effectAmount": "약, \\2,000,000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 72, "date": "2025-08-29", "dept": "개발", "proposer": "김형권", "theme": "CONNECT WIDE HOLDWER ANTENNA 배면부 리브 미성형 개선\n-고객사 담당자에 검토 요청", "status": "Y", "effectType": "금형개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 73, "date": "2025-08", "dept": "사출", "proposer": "김민수", "theme": "수동취출 > 자동생산\n-이오나이져 기능추가 (자석 거치형)", "status": "G", "effectType": "공정개선", "effectAmount": "추정 \\5,000,000", "typeScore": 20, "intangibleScore": 5, "creativityScore": 10, "realizabilityScore": 10, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 74, "date": "2025-09-09", "dept": "조립", "proposer": "양춘향", "theme": "작업효율 극대화, 압착기로 해결\n-압착기 이용하여 여러 포인트 한번에 압착", "status": "G", "effectType": "공정개선", "effectAmount": "305120", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 75, "date": "2025-09-15", "dept": "구매", "proposer": "김대수", "theme": "지게차 운행 노면 개선 제안건\n-고려기업 인프라일렉 1층으로 이전 운영과 \n 동절기 눈과 지면 얼음 대비 노면 보수 진행", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 76, "date": "2025-09-16", "dept": "구매", "proposer": "김대수", "theme": "원재료 창고와 영업 창고 구분 벽 누수 개선 제안건\n-1층 원재료창고와 영업창고 구분 벽 누수 점증 심화됨 \n원재료 보관, 운반 업무와 누전의 위험이 있어 개선 필요", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 0, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 77, "date": "2025-09-24", "dept": "품질", "proposer": "황재훈", "theme": "VP2NG PANEL 지그 누적 사용에 따른 마스킹 지그 외곽부위 도료 뭉침 현상 발생- 마스킹 지그 사용횟수 단축", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 78, "date": "2025-09-24", "dept": "개발", "proposer": "김형권", "theme": "REAR COVER의 FELT 부착성 및 조립성을 개선하기 위해\nFELT 형상 변경으로 문제점 개선\n-vending선 추가하여 접착력 증대", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 0, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 79, "date": "2025-09-25", "dept": "개발", "proposer": "김형권", "theme": "PCB module 선길이 조절\n-기구개발 담당자와 협의하여 89mm로 확정하여 차기 \nlot부터 진행예정", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 80, "date": "2025-09-25", "dept": "경영지원", "proposer": "임정인", "theme": "중소기업 클라우드서비스 보급, 확산 사업 참여", "status": "G", "effectType": "경영 개선", "effectAmount": "4680000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 81, "date": "2025-09", "dept": "사출", "proposer": "김민수", "theme": "조립 공압JIG 구조개선\n1)  BC3 DECO 조립 받침JIG 내측 지지대 수가\n미사용 공압JIG 활용 이중작업 공수 개선\n2) BL7m DATC MTC 미사용 공압JIG 활용 미체결 이슈 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 82, "date": "2025-10-13", "dept": "품질", "proposer": "황재훈", "theme": "BC3 PANEL JIG 레이저 마킹부에\n도장이 유입 되어 불빛 어두움 발생\n-도장 지그 수정 제안", "status": "Y", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 0, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 83, "date": "2025-10-15", "dept": "후가공", "proposer": "박준성", "theme": "SPINDLE 체인  베어링 교체 개선\n-봉대 유동 이 없어 과도장 .미도장 방지", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 84, "date": "2025-10-16", "dept": "경영지원", "proposer": "임정인", "theme": "안전보건통합패키지 사업 참여\n-산업안전상생재단의 전문 컨설팅을 통한 위험성 평가 \n실시", "status": "G", "effectType": "경영 개선", "effectAmount": "8130000", "typeScore": 20, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 85, "date": "2025-10-18", "dept": "후가공", "proposer": "임문호", "theme": "SPINDLE 집진기 노후로 인한 철망 개선\n-집진기 내부 철망 구매하여 활성탄 거치 가능하도록보안\n-배기 잘되도록 설치 하고 설비 수명 연장.", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 86, "date": "2025-10-24", "dept": "후가공", "proposer": "전선옥", "theme": "봉대 및 건각도계 설치\n-봉 1개당 1개 단순 장착으로 수직 셋팅 가능\n-건각도 정확한 수치 기록 가능", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 10, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 87, "date": "2025-10-24", "dept": "품질", "proposer": "황재훈", "theme": "JA PE KNOB 리플렉터 탈착 발생\n-KNOB을 조립 하는 과정/조립후 외부 압력\n으로 인해HOOK에서 빠지는 경우 발생 되어 HOOK \n보강 하여 개선", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 88, "date": "2025-10-31", "dept": "조립", "proposer": "양춘향", "theme": "이온아이져로 줄이는 작업시간, 높이는 생산성\n-이온아이져 이용으로 에어작업 시간단축", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 89, "date": "2025-10-31", "dept": "개발", "proposer": "김형권", "theme": "도장사양 공용사용으로 변경\n-4X로 도장사양 변경되면서 기존 양산품과 동일한 \n제품으로 품번번경", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 90, "date": "2025-10", "dept": "사출", "proposer": "김민수", "theme": "조립 이오나이져 도입 TIME기능 자체추가 비용절감\n-근접센서 이오나이져 구매후  TIME 기능 자체 추가진행", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 91, "date": "2025-11-08", "dept": "후가공", "proposer": "박준성", "theme": "집진기 필터 변경\n-기존 필터 1/2로 축소하여 설치\n-청소시 작업자 위험 요인 감소", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 92, "date": "2025-11-24", "dept": "품질", "proposer": "황재훈", "theme": "BC3 COVER RAER CHASSIS 휨(변형) 발생\n-GO NO 지그 형식으로 지그 제작 하여\n휨 발생시 지그에 안착 되지 않아 검출 \n되도록 개선(한빛 티앤아이 적용)", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 93, "date": "2025-11-25", "dept": "조립", "proposer": "양춘향", "theme": "ccRC JXFL/RS4 25MY 혼입방지 지그개선\n-ccRC RS4 25MY 스크류 체결지그에 ccRC JXFL 안착 \n  안되도록 가이드 설치", "status": "G", "effectType": "공정개선", "effectAmount": "100030", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 94, "date": "2025-11-28", "dept": "조립", "proposer": "양춘향", "theme": "ccIC JXFL 생산성 향상\n기존 : 총 5명 생산 : 1명 선행준비 작업, 4명 라인작업\n변경 : 총 인원 5명 IN LINE 생산", "status": "G", "effectType": "공정개선", "effectAmount": "3370080", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 95, "date": "2025-11-28", "dept": "조립", "proposer": "양춘향", "theme": "정돈된 작업환경 조성\n-알루미늄 프로파일로 작업표준서 게시", "status": "G", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 96, "date": "2025-11", "dept": "사출", "proposer": "김민수", "theme": "BC3 SCREW CAP RH 혼입불량 / 생산성 향상\n-취출 JIG + Cavity 분류 슈트 제작", "status": "G", "effectType": "공정개선", "effectAmount": "추정 \\ 1,000,000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 10, "realizabilityScore": 10, "effortScore": 7, "continuityScore": 5, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 97, "date": "2025-12-04", "dept": "품질", "proposer": "황재훈", "theme": "PD PE2 COVER REAR에 FELT 부착시 떨어짐 발생\n-FELT에 칼선 1POINT 추가 하여 개선 예정", "status": "Y", "effectType": "공정개선", "effectAmount": "-", "typeScore": 10, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}, {"no": 98, "date": "2025-12-08", "dept": "영업", "proposer": "김성진", "theme": "빠레트 무상공급 협의에 따른 납품 비용 절감 계획(모트렉스)", "status": "G", "effectType": "", "effectAmount": "4000000", "typeScore": 15, "intangibleScore": 5, "creativityScore": 5, "realizabilityScore": 5, "effortScore": 3, "continuityScore": 4, "secondReview": "", "reportFile": "", "remark": ""}];
+
+const DP = {
+  '경영기획실': [],
+  '경지원팀': ['임정인'],
+  '영업구매실': [],
+  '영업팀': ['김성진'],
+  '구매팀': ['김대수'],
+  '생산실': [],
+  '생산관리팀': [],
+  '사출팀': ['김민수'],
+  '후가공팀': ['김미희','박준성','윤아뚜','임문호','전선옥'],
+  '조립팀': ['양춘향'],
+  '품질팀': ['황재훈'],
+  '개발팀': ['김형권','조경환'],
+};
+const ET = ['경영 개선','공정개선','금형개선','원가검감','지그 개선','품질개선'];
+const GA = {'3등급':100000,'4등급':50000,'5등급':30000,'6등급':10000,'불채택':0,'재검토':0,'-':0};
+
+function calcGrade(s){
+  s=parseInt(s)||0;
+  if(s<=0) return '-';
+  if(s>=60) return '2등급';
+  if(s>=50) return '3등급';
+  if(s>=40) return '4등급';
+  if(s>=30) return '5등급';
+  if(s>=20) return '6등급';
+  return '불채택';
+}
+function calcScore(r){return(parseInt(r.typeScore)||0)+(parseInt(r.intangibleScore)||0)+(parseInt(r.creativityScore)||0)+(parseInt(r.realizabilityScore)||0)+(parseInt(r.effortScore)||0)+(parseInt(r.continuityScore)||0);}
+function gradeHtml(g){
+  if(!g||g==='-') return '<span style="color:#aaa">-</span>';
+  const m={'1등급':'grade-1','2등급':'grade-2','3등급':'grade-3','4등급':'grade-4','5등급':'grade-5','6등급':'grade-6','불채택':'grade-reject','재검토':'grade-review'};
+  return '<span class="grade '+(m[g]||'grade-reject')+'">'+g+'</span>';
+}
+
+// DB
+let db=null;
+function openDB(){
+  return new Promise((res,rej)=>{
+    if(db){res(db);return;}
+    const req=indexedDB.open('ssat_db_v2',1);
+    req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('files'))d.createObjectStore('files',{keyPath:'key'});};
+    req.onsuccess=e=>{db=e.target.result;res(db);};
+    req.onerror=e=>rej(e);
+  });
+}
+function dbSaveFile(key,val){return openDB().then(d=>{return new Promise((res,rej)=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').put({key,...val});tx.oncomplete=res;tx.onerror=rej;});});}
+function dbGetFiles(rowId){return openDB().then(d=>{return new Promise(res=>{const all=[];const tx=d.transaction('files','readonly');tx.objectStore('files').openCursor().onsuccess=e=>{const c=e.target.result;if(c){if(c.value.rowId==rowId)all.push(c.value);c.continue();}else res(all);};});});}
+function dbDelFile(key){return openDB().then(d=>{return new Promise(res=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').delete(key);tx.oncomplete=res;});});}
+
+async function renderFilesCell(rowId){
+  const cell=document.getElementById('fc-'+rowId);
+  if(!cell) return;
+  const files=await dbGetFiles(rowId);
+  let html='';
+  if(files.length){
+    html+='<div class="file-list">';
+    files.forEach(f=>{html+='<div class="file-item"><a href="'+f.data+'" download="'+escH(f.name)+'" title="'+escH(f.name)+'">&#128196; '+escH(f.name)+'</a><button class="file-del" onclick="delFile(\''+f.key+'\','+rowId+')">&#10005;</button></div>';});
+    html+='</div>';
+  }
+  html+='<button class="btn-file" style="margin-top:2px;" onclick="trigUp('+rowId+')">&#128206; '+(files.length?'추가':'업로드')+'</button>';
+  html+='<input type="file" id="fi-'+rowId+'" style="display:none" multiple accept=".xlsx,.xls,.pdf" onchange="handleUp('+rowId+',this)">';
+  cell.innerHTML=html;
+}
+function trigUp(rowId){document.getElementById('fi-'+rowId).click();}
+function handleUp(rowId,inp){
+  Array.from(inp.files).forEach(file=>{
+    if(file.size>5*1024*1024){alert(file.name+': 5MB 초과 파일은 업로드할 수 없습니다.');return;}
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      const key='f_'+rowId+'_'+Date.now();
+      await dbSaveFile(key,{rowId,name:file.name,type:file.type,data:e.target.result,date:new Date().toISOString()});
+      renderFilesCell(rowId);
+    };
+    reader.readAsDataURL(file);
+  });
+  inp.value='';
+}
+async function delFile(key,rowId){await dbDelFile(key);renderFilesCell(rowId);}
+
+// Supabase
+const SB_URL='https://mbbzerxdyxiiwfmvbfns.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iYnplcnhkeXhpaXdmbXZiZm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTkxODIsImV4cCI6MjA5MTk3NTE4Mn0.8uqIFtHs7wBJVYQTGrnhQXho-I57GTOz1S8XGeLK2T0';
+const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+function setSbStatus(s){
+  const el=document.getElementById('sb-status');if(!el)return;
+  if(s==='syncing'){el.textContent='☁ 저장 중...';el.style.color='#aaa';}
+  else if(s==='synced'){el.textContent='☁ 클라우드 저장됨';el.style.color='#28a745';}
+  else if(s==='error'){el.textContent='☁ 클라우드 저장 실패';el.style.color='#e74c3c';}
+  else if(s==='loading'){el.textContent='☁ 클라우드 불러오는 중...';el.style.color='#aaa';}
+}
+async function sbSync(){
+  setSbStatus('syncing');
+  try{
+    const awards=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
+    const res=await fetch(SB_URL+'/rest/v1/app_data',{
+      method:'POST',
+      headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({id:1,table_data:tableData,awards,updated_at:new Date().toISOString()})
+    });
+    setSbStatus(res.ok?'synced':'error');
+  }catch(e){setSbStatus('error');}
+}
+async function sbLoad(){
+  setSbStatus('loading');
+  try{
+    const res=await fetch(SB_URL+'/rest/v1/app_data?id=eq.1&select=*',{headers:SB_H});
+    if(!res.ok){setSbStatus('error');return false;}
+    const rows=await res.json();
+    if(rows&&rows[0]&&rows[0].table_data){
+      tableData=rows[0].table_data;
+      localStorage.setItem('ssat_v4',JSON.stringify(tableData));
+      if(rows[0].awards)localStorage.setItem('ssat_awards',JSON.stringify(rows[0].awards));
+      setSbStatus('synced');
+      return true;
+    }
+  }catch(e){}
+  setSbStatus('error');
+  return false;
+}
+
+// Data
+function loadData(){
+  try{const s=localStorage.getItem('ssat_v4');if(s)return JSON.parse(s);}catch(e){}
+  return DEFAULT_DATA.map((r,i)=>({...r,id:Date.now()+i}));
+}
+function saveData(){
+  try{localStorage.setItem('ssat_v4',JSON.stringify(tableData));}catch(e){alert('저장 실패: '+e.message);}
+  sbSync();
+}
+let tableData=[];
+let editId=null;
+
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function buildDeptSelect(cur,rid){
+  return '<select class="tbl-select" onchange="updF('+rid+',\'dept\',this.value)">'+Object.keys(DP).map(d=>'<option value="'+d+'"'+(cur===d?' selected':'')+'>'+d+'</option>').join('')+'</select>';
+}
+function buildProposerSelect(dept,cur,rid){
+  const ps=DP[dept]||[];
+  return '<select class="tbl-select" id="psel-'+rid+'" onchange="updF('+rid+',\'proposer\',this.value)">'+ps.map(p=>'<option value="'+p+'"'+(cur===p?' selected':'')+'>'+p+'</option>').join('')+'</select>';
+}
+function buildStatusSelect(cur,rid){
+  return '<select class="tbl-select" onchange="updF('+rid+',\'status\',this.value)"><option value="G"'+(cur==='G'?' selected':'')+'>G 완료</option><option value="Y"'+(cur==='Y'?' selected':'')+'>Y 진행</option><option value="R"'+(cur==='R'?' selected':'')+'>R 미진행</option></select>';
+}
+function buildETSelect(cur,rid,field){
+  return '<select class="tbl-select" style="max-width:85px;" onchange="updF('+rid+',\''+field+'\',this.value)"><option value="">-</option>'+ET.map(t=>'<option value="'+t+'"'+(cur===t?' selected':'')+'>'+t+'</option>').join('')+'</select>';
+}
+
+function getFilteredData(){
+  const yr=document.getElementById('filter-year')?.value||'';
+  const mo=document.getElementById('filter-month')?.value||'';
+  return tableData.filter(r=>{
+    if(!yr&&!mo) return true;
+    const parts=(r.date||'').split('-');
+    if(yr&&parts[0]!==yr) return false;
+    if(mo&&parts[1]!==mo) return false;
+    return true;
+  });
+}
+function initYearFilter(){
+  const sel=document.getElementById('filter-year');
+  if(!sel) return;
+  const cur=sel.value;
+  const thisYear=String(new Date().getFullYear());
+  const defaultYear=cur||thisYear;
+  const years=[...new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4))].sort();
+  sel.innerHTML='<option value="">전체 년도</option>'+years.map(y=>'<option value="'+y+'"'+(y===defaultYear?' selected':'')+'>'+y+'년</option>').join('');
+}
+function applyFilter(){renderTable();}
+
+// 접수NO 포맷: r.no 기준 순번 + r.date 기준 연도 → "2025-001"
+function fmtAccNo(r){
+  const yr=(r.date||'').substring(0,4);
+  if(!yr||yr.length!==4) return String(r.no||'');
+  const sameYear=[...tableData].filter(x=>(x.date||'').startsWith(yr)).sort((a,b)=>(a.no||0)-(b.no||0));
+  const seq=sameYear.findIndex(x=>x.id===r.id)+1;
+  return yr+'-'+String(seq>0?seq:r.no||0).padStart(3,'0');
+}
+// 다음 접수NO 자동생성 (현재 연도 기준)
+function nextAccNo(){
+  const yr=String(new Date().getFullYear());
+  const nums=tableData
+    .map(r=>(r.proposal?.no||''))
+    .filter(n=>n.startsWith(yr+'-'))
+    .map(n=>parseInt(n.split('-')[1])||0);
+  const next=nums.length?Math.max(...nums)+1:1;
+  return `${yr}-${String(next).padStart(3,'0')}`;
+}
+
+function renderTable(){
+  const tbody=document.getElementById('reg-tbody');
+  const filtered=getFilteredData();
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="21" class="no-data">'+(tableData.length?'조회 조건에 맞는 제안이 없습니다.':'등록된 제안이 없습니다.')+'</td></tr>';updCards(filtered);return;}
+  let rows='';
+  filtered.forEach((r,i)=>{
+    const score=calcScore(r);
+    const grade=r.grade||calcGrade(score);
+    const rid=r.id;
+    const stBadge=r.status==='G'?'<span class="badge badge-G">G 완료</span>':r.status==='Y'?'<span class="badge badge-Y">Y 진행중</span>':'<span class="badge badge-R">R 미진행</span>';
+    rows+=`<tr id="row-${rid}">
+<td style="color:#aaa;font-size:10px;">${i+1}</td>
+<td style="font-weight:700;color:#1a3a5c;white-space:nowrap;">${fmtAccNo(r)}</td>
+<td style="white-space:nowrap;">${escH(r.date||'')}</td>
+<td style="white-space:nowrap;">${escH(r.dept||'')}</td>
+<td style="white-space:nowrap;">${escH(r.proposer||'')}</td>
+<td class="theme-cell">${escH((r.theme||'').replace(/\n/g,' '))}</td>
+<td style="text-align:center;">${r.proposal?`<button onclick="event.stopPropagation();viewProposal(${rid})" style="background:#1a3a5c;color:#fff;border:none;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;">&#128196;</button>`:'-'}</td>
+<td style="text-align:center;">${stBadge}</td>
+<td style="text-align:center;white-space:nowrap;">${escH(r.effectType||'-')}</td>
+<td style="text-align:right;white-space:nowrap;">${escH(r.effectAmount||'-')}</td>
+<td class="sc-total" id="st-${rid}">${score}</td>
+<td id="gc-${rid}">${gradeHtml(grade)}</td>
+<td><input type="number" class="sc-input" min="0" max="40" value="${r.typeScore||0}" onchange="updS(${rid},'typeScore',this.value)"/></td>
+<td><input type="number" class="sc-input" min="0" max="10" value="${r.intangibleScore||0}" onchange="updS(${rid},'intangibleScore',this.value)"/></td>
+<td><input type="number" class="sc-input" min="0" max="15" value="${r.creativityScore||0}" onchange="updS(${rid},'creativityScore',this.value)"/></td>
+<td><input type="number" class="sc-input" min="0" max="20" value="${r.realizabilityScore||0}" onchange="updS(${rid},'realizabilityScore',this.value)"/></td>
+<td><input type="number" class="sc-input" min="0" max="10" value="${r.effortScore||0}" onchange="updS(${rid},'effortScore',this.value)"/></td>
+<td><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" onchange="updS(${rid},'continuityScore',this.value)"/></td>
+<td>${buildETSelect(r.secondReview,rid,'secondReview')}</td>
+<td id="fc-${rid}"></td>
+<td><input class="tbl-input" value="${escH(r.remark||'')}" onchange="updF(${rid},'remark',this.value)"/></td>
+<td style="text-align:center;white-space:nowrap;">${r.proposal
+  ?`<button onclick="event.stopPropagation();openPropForm(${rid})" style="background:#e65100;color:#fff;border:none;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;">&#9998; 수정</button>`
+  :`<button onclick="event.stopPropagation();openModal(${rid})" style="background:#6c757d;color:#fff;border:none;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;">&#9998; 수정</button>`
+}</td>
+<td><button class="row-del" onclick="delRow(${rid})" title="삭제">&#128465;</button></td>
+</tr>`;
+  });
+  tbody.innerHTML=rows;
+  filtered.forEach(r=>renderFilesCell(r.id));
+  updCards(filtered);
+  document.getElementById('badge-count').textContent=tableData.length;
+}
+
+function showTheme(rid){
+  const r=tableData.find(x=>x.id==rid);
+  if(!r) return;
+  const tm=document.getElementById('themeModal');
+  document.getElementById('tmText').textContent=r.theme||'내용 없음';
+  tm.classList.add('show');
+  // edit theme inline
+  document.getElementById('tmEdit').value=r.theme||'';
+  document.getElementById('tmEdit').dataset.rid=rid;
+}
+function closeTheme(){document.getElementById('themeModal').classList.remove('show');}
+function saveTheme(){
+  const ta=document.getElementById('tmEdit');
+  const rid=parseInt(ta.dataset.rid);
+  const r=tableData.find(x=>x.id==rid);
+  if(r){
+    r.theme=ta.value;
+    saveData();
+    const cell=document.getElementById('row-'+rid).querySelector('.theme-cell');
+    if(cell){cell.textContent=(r.theme||'').replace(/\n/g,' ');}
+    document.getElementById('tmText').textContent=r.theme;
+  }
+  closeTheme();
+}
+
+function updF(rid,field,val){
+  const r=tableData.find(x=>x.id==rid);
+  if(!r) return;
+  r[field]=val;
+  if(field==='dept'){
+    const ps=DP[val]||[];
+    const psel=document.getElementById('psel-'+rid);
+    if(psel){psel.innerHTML=ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('');r.proposer=ps[0]||'';}
+  }
+  saveData();
+  updCards();
+}
+function updS(rid,field,val){
+  const r=tableData.find(x=>x.id==rid);
+  if(!r) return;
+  r[field]=parseInt(val)||0;
+  const sc=calcScore(r);
+  r.grade=calcGrade(sc);
+  document.getElementById('st-'+rid).textContent=sc;
+  document.getElementById('gc-'+rid).innerHTML=gradeHtml(r.grade);
+  saveData();
+  renderResults();
+}
+function delRow(rid){
+  if(!confirm('이 제안을 삭제하시겠습니까?')) return;
+  tableData=tableData.filter(x=>x.id!=rid);
+  saveData();
+  initYearFilter();
+  renderTable();
+  renderResults();
+}
+function updCards(data){
+  const d=data||getFilteredData();
+  document.getElementById('c-total').textContent=d.length;
+  document.getElementById('c-g').textContent=d.filter(r=>r.status==='G').length;
+  document.getElementById('c-y').textContent=d.filter(r=>r.status==='Y').length;
+  document.getElementById('c-r').textContent=d.filter(r=>r.status==='R').length;
+  let tot=0;
+  d.forEach(r=>{const v=String(r.effectAmount||'').replace(/[^0-9]/g,'');if(v)tot+=parseInt(v)||0;});
+  document.getElementById('c-amount').textContent=tot.toLocaleString()+'원';
+}
+
+function renderResults(){
+  // 년도 드롭다운 초기화
+  const sel=document.getElementById('res-year');
+  if(sel){
+    const cur=sel.value;
+    const thisYear=String(new Date().getFullYear());
+    const years=[...new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4))].sort();
+    sel.innerHTML='<option value="">전체</option>'+years.map(y=>'<option value="'+y+'"'+(y===(cur||thisYear)?' selected':'')+'>'+y+'년</option>').join('');
+  }
+  const yr=sel?sel.value:'';
+  const data=yr?tableData.filter(r=>(r.date||'').startsWith(yr)):tableData;
+  // 제목/기간 업데이트
+  const titleEl=document.getElementById('res-year-title');
+  const periodEl=document.getElementById('res-year-period');
+  if(titleEl) titleEl.textContent=(yr?yr+'년 ':'')+'연간실적 결과보고';
+  if(periodEl) periodEl.textContent=yr?'기간 : '+yr+'.1월 ~ '+yr+'년 12월':'기간 : 전체';
+  // 집계
+  const amap={},cmap={};
+  data.forEach(r=>{
+    const nm=r.proposer||'';if(!nm)return;
+    cmap[nm]=(cmap[nm]||0)+1;
+    const sc=calcScore(r);
+    const g=r.grade||calcGrade(sc);
+    amap[nm]=(amap[nm]||0)+(GA[g]||0);
+  });
+  const entries=Object.keys(amap).map(n=>({n,c:cmap[n]||0,a:amap[n]}));
+  entries.sort((a,b)=>b.a-a.a||b.c-a.c);
+  let grand=0,tc=0;
+  document.getElementById('res-tbody').innerHTML=entries.map(e=>{grand+=e.a;tc+=e.c;return'<tr><td>'+e.c+'</td><td>'+e.n+'</td><td class="amount-cell">'+e.a.toLocaleString()+'</td></tr>';}).join('');
+  document.getElementById('res-grand').textContent=grand.toLocaleString();
+  document.getElementById('res-tc').textContent=tc+'건';
+  document.getElementById('res-total-count').textContent=data.length;
+  // 개인상 대상자 자동 추천 (건수 1위→최우수상, 2위→우수상)
+  const byCount=[...entries].sort((a,b)=>b.c-a.c||b.a-a.a);
+  const bp=document.getElementById('award-best-person');
+  const gp=document.getElementById('award-good-person');
+  if(bp)bp.value=byCount[0]?.n||'';
+  if(gp)gp.value=byCount[1]?.n||'';
+  // 단체상 대상팀 자동 추천 (부서별 건수 1위)
+  const dmap={};
+  data.forEach(r=>{const d=r.dept||'';if(d)dmap[d]=(dmap[d]||0)+1;});
+  const topDept=Object.entries(dmap).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
+  const tn=document.getElementById('award-team-name');
+  if(tn)tn.value=topDept;
+}
+
+// Modal
+function fillDeptSel(selId){
+  document.getElementById(selId).innerHTML='<option value="">선택하세요</option>'+Object.keys(DP).map(d=>'<option value="'+d+'">'+d+'</option>').join('');
+}
+function fillETSel(selId,cur){
+  document.getElementById(selId).innerHTML='<option value="">선택하세요</option>'+ET.map(t=>'<option value="'+t+'"'+(cur===t?' selected':'')+'>'+t+'</option>').join('');
+}
+function updModalProposer(){
+  const dept=document.getElementById('fd-dept').value;
+  const ps=DP[dept]||[];
+  document.getElementById('fd-proposer').innerHTML=ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('');
+}
+function updModalScore(){
+  const ids=['fd-typeScore','fd-intangibleScore','fd-creativityScore','fd-realizabilityScore','fd-effortScore','fd-continuityScore'];
+  const tot=ids.reduce((s,id)=>s+(parseInt(document.getElementById(id).value)||0),0);
+  document.getElementById('m-tot-score').textContent=tot;
+  document.getElementById('m-grade').textContent=calcGrade(tot);
+}
+function openModal(rid){
+  editId=rid||null;
+  document.getElementById('m-title').textContent=editId?'✏️ 제안 수정':'📝 새 제안 등록';
+  fillDeptSel('fd-dept');
+  fillETSel('fd-effectType','');
+  fillETSel('fd-secondReview','');
+  if(editId){
+    const r=tableData.find(x=>x.id==editId);
+    if(r){
+      document.getElementById('fd-date').value=r.date||'';
+      document.getElementById('fd-status').value=r.status||'G';
+      document.getElementById('fd-dept').value=r.dept||'';
+      updModalProposer();
+      document.getElementById('fd-proposer').value=r.proposer||'';
+      document.getElementById('fd-theme').value=r.theme||'';
+      fillETSel('fd-effectType',r.effectType||'');
+      document.getElementById('fd-effectAmount').value=r.effectAmount||'';
+      fillETSel('fd-secondReview',r.secondReview||'');
+      document.getElementById('fd-remark').value=r.remark||'';
+      document.getElementById('fd-typeScore').value=r.typeScore||0;
+      document.getElementById('fd-intangibleScore').value=r.intangibleScore||0;
+      document.getElementById('fd-creativityScore').value=r.creativityScore||0;
+      document.getElementById('fd-realizabilityScore').value=r.realizabilityScore||0;
+      document.getElementById('fd-effortScore').value=r.effortScore||0;
+      document.getElementById('fd-continuityScore').value=r.continuityScore||0;
+      updModalScore();
+    }
+  } else {
+    document.getElementById('fd-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('fd-status').value='G';
+    document.getElementById('fd-dept').value='';
+    document.getElementById('fd-proposer').innerHTML='<option value="">부서 선택 후 표시됩니다</option>';
+    document.getElementById('fd-theme').value='';
+    document.getElementById('fd-effectAmount').value='';
+    document.getElementById('fd-remark').value='';
+    ['fd-typeScore','fd-intangibleScore','fd-creativityScore','fd-realizabilityScore','fd-effortScore','fd-continuityScore'].forEach(id=>document.getElementById(id).value=0);
+    updModalScore();
+  }
+  document.getElementById('addModal').classList.add('show');
+}
+function closeModal(){document.getElementById('addModal').classList.remove('show');editId=null;}
+function saveRow(){
+  const date=document.getElementById('fd-date').value;
+  const dept=document.getElementById('fd-dept').value;
+  const proposer=document.getElementById('fd-proposer').value;
+  const theme=document.getElementById('fd-theme').value.trim();
+  if(!date||!dept||!proposer||!theme){alert('제안일자, 부서, 제안자, 테마명은 필수입니다.');return;}
+  const sc={typeScore:parseInt(document.getElementById('fd-typeScore').value)||0,intangibleScore:parseInt(document.getElementById('fd-intangibleScore').value)||0,creativityScore:parseInt(document.getElementById('fd-creativityScore').value)||0,realizabilityScore:parseInt(document.getElementById('fd-realizabilityScore').value)||0,effortScore:parseInt(document.getElementById('fd-effortScore').value)||0,continuityScore:parseInt(document.getElementById('fd-continuityScore').value)||0};
+  const score=Object.values(sc).reduce((a,b)=>a+b,0);
+  const grade=calcGrade(score);
+  const base={date,dept,proposer,theme,status:document.getElementById('fd-status').value,effectType:document.getElementById('fd-effectType').value,effectAmount:document.getElementById('fd-effectAmount').value,secondReview:document.getElementById('fd-secondReview').value,remark:document.getElementById('fd-remark').value,grade,...sc};
+  if(editId){
+    const r=tableData.find(x=>x.id==editId);
+    if(r) Object.assign(r,base);
+  } else {
+    const maxNo=tableData.reduce((m,r)=>Math.max(m,r.no||0),0);
+    tableData.push({id:Date.now(),no:maxNo+1,...base,reportFile:''});
+  }
+  saveData();
+  closeModal();
+  initYearFilter();
+  renderTable();
+  renderResults();
+}
+
+// Tabs
+const TABS={guidelines:{title:'제안제도 관리지침서',sub:'시상 기준 및 등급별 안내'},summary:{title:'종합현황',sub:'제안부서·제안자별 제안건수 및 효과금액 집계'},proposal:{title:'원가절감 제안서',sub:'원가절감 제안서 작성 및 출력'},register:{title:'접수대장',sub:'제안 관리대장 - 전체 현황'},results:{title:'검토결과',sub:'인원별 시상금액 현황'}};
+function showTab(id,el){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('topbar-title').textContent=TABS[id].title;
+  document.getElementById('topbar-sub').textContent=TABS[id].sub;
+  if(id==='summary') renderSummary();
+  if(id==='proposal') renderProposalList();
+}
+
+// 종합현황
+function initSumYear(){
+  const sel=document.getElementById('sum-year');
+  if(!sel) return;
+  const cur=sel.value;
+  const thisYear=String(new Date().getFullYear());
+  const defaultYear=cur||thisYear;
+  const years=[...new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4))].sort();
+  sel.innerHTML='<option value="">전체</option>'+years.map(y=>'<option value="'+y+'"'+(y===defaultYear?' selected':'')+'>'+y+'년</option>').join('');
+}
+function renderSummary(){
+  initSumYear();
+  const yr=document.getElementById('sum-year')?.value||'';
+  const MONTHS=['01','02','03','04','05','06','07','08','09','10','11','12'];
+  const data=tableData.filter(r=>!yr||(r.date||'').startsWith(yr));
+  const titleEl=document.getElementById('sum-title');
+  if(titleEl) titleEl.textContent='원가절감 종합현황 ('+(yr?yr+'년':'전체')+')';
+  // Summary cards
+  document.getElementById('sum-c-total').textContent=data.length;
+  document.getElementById('sum-c-g').textContent=data.filter(r=>r.status==='G').length;
+  document.getElementById('sum-c-y').textContent=data.filter(r=>r.status==='Y').length;
+  document.getElementById('sum-c-r').textContent=data.filter(r=>r.status==='R').length;
+  let tot=0;
+  data.forEach(r=>{const v=String(r.effectAmount||'').replace(/[^0-9]/g,'');if(v)tot+=parseInt(v)||0;});
+  document.getElementById('sum-c-amount').textContent=tot.toLocaleString()+'원';
+  // Build structure: dept -> proposer -> month -> {count, amount}
+  const depts={};
+  data.forEach(r=>{
+    const dept=r.dept||'미분류';
+    const proposer=r.proposer||'미지정';
+    const month=(r.date||'').split('-')[1]||'';
+    const amount=parseInt(String(r.effectAmount||'').replace(/[^0-9]/g,''))||0;
+    if(!depts[dept]) depts[dept]={};
+    if(!depts[dept][proposer]){
+      depts[dept][proposer]={};
+      MONTHS.forEach(m=>depts[dept][proposer][m]={count:0,amount:0});
+    }
+    if(month&&MONTHS.includes(month)){
+      depts[dept][proposer][month].count++;
+      depts[dept][proposer][month].amount+=amount;
+    }
+  });
+  const CS='text-align:center;';
+  const RS='text-align:right;font-size:10px;';
+  const deptNames=Object.keys(depts).sort();
+  let rows='';
+  if(!deptNames.length){
+    rows='<tr><td colspan="17" class="no-data">데이터가 없습니다.</td></tr>';
+  } else {
+    deptNames.forEach((dept,di)=>{
+      const proposers=Object.keys(depts[dept]).sort();
+      const rowspan=proposers.length*2+2;
+      proposers.forEach((proposer,pi)=>{
+        const md=depts[dept][proposer];
+        const tc=MONTHS.reduce((s,m)=>s+md[m].count,0);
+        const ta=MONTHS.reduce((s,m)=>s+md[m].amount,0);
+        const cCells=MONTHS.map(m=>{const v=md[m].count;return`<td style="${CS}color:#1a3a5c;font-weight:600;">${v||''}</td>`;}).join('');
+        const aCells=MONTHS.map(m=>{const v=md[m].amount;return`<td style="${RS}color:#28a745;">${v?v.toLocaleString():''}</td>`;}).join('');
+        if(pi===0){
+          rows+=`<tr style="border-top:2px solid #aaa;">
+<td rowspan="${rowspan}" style="${CS}font-weight:700;background:#eef2f8;border-right:2px solid #c8d0da;">${di+1}</td>
+<td rowspan="${rowspan}" style="${CS}font-weight:700;color:#1a3a5c;background:#eef2f8;border-right:2px solid #c8d0da;">${escH(dept)}</td>
+<td rowspan="2" style="${CS}font-size:11px;">${escH(proposer)}</td>
+<td style="${CS}font-size:11px;font-weight:700;color:#1a3a5c;background:#e8f0fa;">건수</td>
+${cCells}<td style="${CS}font-weight:700;color:#1a3a5c;background:#fff3cd;">${tc||''}</td></tr>
+<tr><td style="${CS}font-size:11px;font-weight:700;color:#28a745;background:#e8f9ee;">금액</td>
+${aCells}<td style="${RS}font-weight:700;color:#155724;background:#d4edda;">${ta?ta.toLocaleString():''}</td></tr>`;
+        } else {
+          rows+=`<tr>
+<td rowspan="2" style="${CS}font-size:11px;">${escH(proposer)}</td>
+<td style="${CS}font-size:11px;font-weight:700;color:#1a3a5c;background:#e8f0fa;">건수</td>
+${cCells}<td style="${CS}font-weight:700;color:#1a3a5c;background:#fff3cd;">${tc||''}</td></tr>
+<tr><td style="${CS}font-size:11px;font-weight:700;color:#28a745;background:#e8f9ee;">금액</td>
+${aCells}<td style="${RS}font-weight:700;color:#155724;background:#d4edda;">${ta?ta.toLocaleString():''}</td></tr>`;
+        }
+      });
+      // Dept total
+      const dtc=MONTHS.reduce((s,m)=>s+proposers.reduce((ps,p)=>ps+depts[dept][p][m].count,0),0);
+      const dta=MONTHS.reduce((s,m)=>s+proposers.reduce((ps,p)=>ps+depts[dept][p][m].amount,0),0);
+      const dtcCells=MONTHS.map(m=>{const v=proposers.reduce((ps,p)=>ps+depts[dept][p][m].count,0);return`<td style="${CS}font-weight:700;background:#dce6f0;color:#1a3a5c;">${v||''}</td>`;}).join('');
+      const dtaCells=MONTHS.map(m=>{const v=proposers.reduce((ps,p)=>ps+depts[dept][p][m].amount,0);return`<td style="${RS}background:#dce6f0;color:#333;">${v?v.toLocaleString():''}</td>`;}).join('');
+      rows+=`<tr style="border-top:1px dashed #aaa;">
+<td style="${CS}background:#dce6f0;font-weight:700;font-size:11px;color:#1a3a5c;">부서 합계</td>
+<td style="${CS}font-size:11px;font-weight:700;background:#dce6f0;color:#1a3a5c;">건수</td>
+${dtcCells}<td style="${CS}font-weight:700;background:#b8ccee;color:#1a3a5c;">${dtc||''}</td></tr>
+<tr>
+<td style="background:#dce6f0;"></td>
+<td style="${CS}font-size:11px;font-weight:700;background:#dce6f0;color:#28a745;">금액</td>
+${dtaCells}<td style="${RS}font-weight:700;background:#b8ccee;color:#155724;">${dta?dta.toLocaleString():''}</td></tr>`;
+    });
+    // Grand total
+    const gc=MONTHS.reduce((s,m)=>s+deptNames.reduce((ds,d)=>ds+Object.keys(depts[d]).reduce((ps,p)=>ps+depts[d][p][m].count,0),0),0);
+    const ga=MONTHS.reduce((s,m)=>s+deptNames.reduce((ds,d)=>ds+Object.keys(depts[d]).reduce((ps,p)=>ps+depts[d][p][m].amount,0),0),0);
+    const gcCells=MONTHS.map(m=>{const v=deptNames.reduce((ds,d)=>ds+Object.keys(depts[d]).reduce((ps,p)=>ps+depts[d][p][m].count,0),0);return`<td style="${CS}font-weight:700;background:#1a3a5c;color:#fff;">${v||''}</td>`;}).join('');
+    const gaCells=MONTHS.map(m=>{const v=deptNames.reduce((ds,d)=>ds+Object.keys(depts[d]).reduce((ps,p)=>ps+depts[d][p][m].amount,0),0);return`<td style="${RS}background:#1a3a5c;color:#4aabf0;">${v?v.toLocaleString():''}</td>`;}).join('');
+    rows+=`<tr style="border-top:3px solid #1a3a5c;">
+<td colspan="3" rowspan="2" style="${CS}font-weight:700;background:#1a3a5c;color:#fff;font-size:13px;">합&nbsp;&nbsp;계</td>
+<td style="${CS}font-size:11px;font-weight:700;background:#1a3a5c;color:#fff;">건수</td>
+${gcCells}<td style="${CS}font-weight:700;background:#0f2744;color:#fff;">${gc||''}</td></tr>
+<tr>
+<td style="${CS}font-size:11px;font-weight:700;background:#1a3a5c;color:#4aabf0;">금액</td>
+${gaCells}<td style="${RS}font-weight:700;background:#0f2744;color:#4aabf0;">${ga?ga.toLocaleString():''}</td></tr>`;
+  }
+  document.getElementById('sum-tbody').innerHTML=rows;
+}
+
+// Proposal Form
+function updPfProposer(){
+  const dept=document.getElementById('pf-dept').value;
+  const ps=DP[dept]||[];
+  document.getElementById('pf-proposer').innerHTML=ps.length
+    ? ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('')
+    : '<option value="">제안자 없음</option>';
+}
+let editPropId=null;
+let autoSaveTimer=null;
+let pfBeforeBlocks=[{text:'',imgs:[]}];
+let pfAfterBlocks=[{text:'',imgs:[]}];
+
+function pfRenderBlocks(which){
+  const data=which==='before'?pfBeforeBlocks:pfAfterBlocks;
+  const cid=which==='before'?'pf-before-blocks':'pf-after-blocks';
+  const ph=which==='before'?'기존 내용을 기술하세요':'변경 내용을 기술하세요';
+  const c=document.getElementById(cid);if(!c)return;
+  c.innerHTML='';
+  data.forEach((block,i)=>{
+    const textId=`pf-${which}-text-${i}`;
+    const pzId=`pf-${which}-pz-${i}`;
+    const fileId=`pf-${which}-img-${i}`;
+    const blockDiv=document.createElement('div');
+    blockDiv.style.cssText=(i>0?'border-top:1px solid #ddd;margin-top:8px;padding-top:6px;':'')+'position:relative;';
+    blockDiv.innerHTML=
+      (data.length>1?`<button onclick="pfDeleteBlock('${which}',${i})" style="position:absolute;top:${i>0?'6':'0'}px;right:0;background:none;border:none;color:#bbb;cursor:pointer;font-size:11px;padding:2px 4px;" title="삭제">✕</button>`:'')
+      +`<textarea id="${textId}" rows="3" style="width:100%;border:none;outline:none;font-size:12px;font-family:inherit;resize:none;padding:6px;min-height:70px;overflow:hidden;" placeholder="${ph}" oninput="autoH(this)"></textarea>`
+      +`<div style="margin-top:3px;display:flex;align-items:center;gap:6px;">`
+      +`<label style="font-size:10px;cursor:pointer;background:#e8ecf0;border:1px solid #ccc;border-radius:3px;padding:2px 6px;">&#128247; 사진첨부<input type="file" id="${fileId}" accept="image/*" multiple style="display:none;" onchange="addImgsFromFile(this,'${pzId}')"/></label>`
+      +`</div>`
+      +`<div id="${pzId}" tabindex="0" style="margin-top:4px;min-height:50px;border:2px dashed #ccc;border-radius:4px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px;padding:4px;outline:none;cursor:pointer;position:relative;" onclick="this.focus()" onpaste="addImgFromPaste(event,'${pzId}')" title="클릭 후 Ctrl+V 또는 사진첨부">`
+      +`<span class="paste-hint" style="font-size:10px;color:#bbb;margin:auto;pointer-events:none;">📋 Ctrl+V 또는 사진첨부</span>`
+      +`</div>`;
+    c.appendChild(blockDiv);
+    const ta=document.getElementById(textId);
+    if(ta){ta.value=block.text||'';autoH(ta);}
+    const pz=document.getElementById(pzId);
+    if(pz)(block.imgs||[]).forEach(s=>addImgToContainer(pz,s));
+  });
+  const addBtn=document.createElement('button');
+  addBtn.textContent='+';
+  addBtn.title='내용 추가';
+  addBtn.style.cssText='margin-top:8px;padding:2px 14px;font-size:14px;border:1px solid #ccc;border-radius:3px;cursor:pointer;background:#e8ecf0;color:#555;display:block;';
+  addBtn.onclick=()=>pfAddBlock(which);
+  c.appendChild(addBtn);
+}
+function pfCollectBlocks(which){
+  const data=which==='before'?pfBeforeBlocks:pfAfterBlocks;
+  return data.map((_,i)=>{
+    const ta=document.getElementById(`pf-${which}-text-${i}`);
+    return{text:ta?ta.value:'',imgs:getImgsFromContainer(`pf-${which}-pz-${i}`)};
+  });
+}
+function pfAddBlock(which){
+  const curr=pfCollectBlocks(which);
+  if(which==='before')pfBeforeBlocks=curr;else pfAfterBlocks=curr;
+  (which==='before'?pfBeforeBlocks:pfAfterBlocks).push({text:'',imgs:[]});
+  pfRenderBlocks(which);
+}
+function pfDeleteBlock(which,idx){
+  const curr=pfCollectBlocks(which);
+  if(which==='before')pfBeforeBlocks=curr;else pfAfterBlocks=curr;
+  const data=which==='before'?pfBeforeBlocks:pfAfterBlocks;
+  if(data.length<=1)return;
+  data.splice(idx,1);
+  pfRenderBlocks(which);
+}
+function pfResetBlocks(){
+  pfBeforeBlocks=[{text:'',imgs:[]}];
+  pfAfterBlocks=[{text:'',imgs:[]}];
+}
+
+function autoH(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
+function initAutoH(){document.querySelectorAll('#proposalFormModal textarea[oninput]').forEach(el=>autoH(el));}
+function fmtPropNo(input){
+  const digits=input.value.replace(/[^0-9]/g,'');
+  input.value=digits.length>=5?digits.slice(0,4)+'-'+digits.slice(4):digits;
+}
+function addImgToContainer(container,src){
+  const hint=container.querySelector('.paste-hint');
+  if(hint)hint.style.display='none';
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='position:relative;display:inline-block;';
+  const img=document.createElement('img');
+  img.src=src;
+  img.style.cssText='width:110px;height:90px;object-fit:cover;border-radius:3px;display:block;box-sizing:border-box;cursor:zoom-in;';
+  img.title='클릭하여 확대';
+  const btn=document.createElement('button');
+  btn.textContent='✕';btn.title='삭제';
+  btn.style.cssText='position:absolute;top:2px;right:2px;background:rgba(220,50,50,0.9);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;padding:0;line-height:20px;text-align:center;display:none;';
+  wrapper.onmouseenter=()=>btn.style.display='block';
+  wrapper.onmouseleave=()=>btn.style.display='none';
+  img.onclick=()=>openLightbox(img.src);
+  btn.onclick=(e)=>{
+    e.stopPropagation();
+    wrapper.remove();
+    const hint=container.querySelector('.paste-hint');
+    if(hint&&container.querySelectorAll('img').length===0)hint.style.display='';
+  };
+  wrapper.appendChild(img);wrapper.appendChild(btn);
+  container.appendChild(wrapper);
+}
+function addImgsFromFile(input,containerId){
+  const container=document.getElementById(containerId);if(!container)return;
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>addImgToContainer(container,e.target.result);
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+function addImgFromPaste(e,containerId){
+  const items=(e.clipboardData||e.originalEvent?.clipboardData)?.items;
+  if(!items)return;
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      e.preventDefault();
+      const reader=new FileReader();
+      reader.onload=ev=>{const c=document.getElementById(containerId);if(c)addImgToContainer(c,ev.target.result);};
+      reader.readAsDataURL(item.getAsFile());
+      break;
+    }
+  }
+}
+function getImgsFromContainer(containerId){
+  const c=document.getElementById(containerId);if(!c)return[];
+  return Array.from(c.querySelectorAll('img')).map(i=>i.src).filter(s=>s.startsWith('data:'));
+}
+function fillETSel(selId,val){
+  const el=document.getElementById(selId);if(!el)return;
+  el.innerHTML=ET.map(t=>`<option value="${t}"${t===val?' selected':''}>${t}</option>`).join('');
+}
+function clearProposalForm(){
+  ['pf-date','pf-no','pf-theme','pf-implDept','pf-idea','pf-problem','pf-after-impl','pf-after-improve','pf-costDetail','pf-costMaterial','pf-costLabor','pf-costInvest','pf-amount'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  pfResetBlocks();
+  pfRenderBlocks('before');pfRenderBlocks('after');
+  const deptEl=document.getElementById('pf-dept');if(deptEl)deptEl.value='';
+  const propEl=document.getElementById('pf-proposer');if(propEl)propEl.innerHTML='<option value="">부서를 먼저 선택하세요</option>';
+  document.querySelectorAll('input[name="pf-isImpl"]').forEach(r=>{r.checked=r.value==='실시';});
+  document.querySelectorAll('input[name="pf-type"]').forEach(r=>{r.checked=r.value==='유형';});
+  document.querySelectorAll('.pf-cat').forEach(cb=>{cb.checked=false;});
+  const ct=document.getElementById('pf-costTotal');if(ct)ct.textContent='-';
+  fillETSel('pf-effectType','');
+  const stEl=document.getElementById('pf-status');if(stEl)stEl.value='Y';
+  editPropId=null;
+  localStorage.removeItem('ssat_prop_draft');
+}
+function calcPropCost(){
+  const v=id=>parseInt(String(document.getElementById(id)?.value||'').replace(/[^0-9]/g,''))||0;
+  const total=v('pf-costMaterial')+v('pf-costLabor')-v('pf-costInvest');
+  const ct=document.getElementById('pf-costTotal');
+  if(ct)ct.textContent=total>0?total.toLocaleString()+'원':'-';
+  const am=document.getElementById('pf-amount');
+  if(am)am.value=total>0?total.toLocaleString()+'원':'-';
+}
+function collectProposalFormData(){
+  const date=document.getElementById('pf-date').value;
+  const dept=document.getElementById('pf-dept').value;
+  const proposer=document.getElementById('pf-proposer').value;
+  const theme=document.getElementById('pf-theme').value;
+  const no=document.getElementById('pf-no').value;
+  const isImpl=document.querySelector('input[name="pf-isImpl"]:checked')?.value||'미실시';
+  const type=document.querySelector('input[name="pf-type"]:checked')?.value||'유형';
+  const category=[...document.querySelectorAll('.pf-cat:checked')].map(cb=>cb.value);
+  const implDept=document.getElementById('pf-implDept').value;
+  const idea=document.getElementById('pf-idea').value;
+  const beforeTabs=pfCollectBlocks('before');
+  const beforeText=beforeTabs[0]?.text||'';
+  const beforeImgData=beforeTabs[0]?.imgs||[];
+  const problem=document.getElementById('pf-problem').value;
+  const afterImpl=document.getElementById('pf-after-impl').value;
+  const afterTabs=pfCollectBlocks('after');
+  const afterChange=afterTabs[0]?.text||'';
+  const afterChangeImgData=afterTabs[0]?.imgs||[];
+  const afterImprove=document.getElementById('pf-after-improve').value;
+  const costDetail=document.getElementById('pf-costDetail').value;
+  const costMaterial=document.getElementById('pf-costMaterial').value;
+  const costLabor=document.getElementById('pf-costLabor').value;
+  const costInvest=document.getElementById('pf-costInvest').value;
+  const effectType=document.getElementById('pf-effectType')?.value||'';
+  const status=document.getElementById('pf-status')?.value||'Y';
+  return{date,dept,proposer,theme,no,isImpl,type,category,implDept,idea,beforeText,beforeImgData,beforeTabs,problem,afterImpl,afterChange,afterChangeImgData,afterTabs,afterImprove,costDetail,costMaterial,costLabor,costInvest,effectType,status};
+}
+function autoSaveDraft(){
+  try{
+    const d=collectProposalFormData();
+    calcPropCost();
+    d.amount=document.getElementById('pf-amount').value||'-';
+    localStorage.setItem('ssat_prop_draft',JSON.stringify({editPropId,data:d,ts:Date.now()}));
+    const el=document.getElementById('pf-draft-status');
+    if(el){el.textContent='임시저장 완료 ('+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+')';el.style.color='#28a745';}
+  }catch(e){}
+}
+function startAutoSave(){
+  stopAutoSave();
+  autoSaveTimer=setInterval(autoSaveDraft,60000);
+}
+function stopAutoSave(){
+  if(autoSaveTimer){clearInterval(autoSaveTimer);autoSaveTimer=null;}
+}
+function saveProposalToRegister(){
+  const date=document.getElementById('pf-date').value;
+  const dept=document.getElementById('pf-dept').value;
+  const proposer=document.getElementById('pf-proposer').value;
+  const theme=document.getElementById('pf-theme').value;
+  if(!date||!dept||!proposer||!theme){alert('제출일, 소속, 성명, 제목은 필수 입력 항목입니다.');return;}
+  const d=collectProposalFormData();
+  calcPropCost();
+  const amount=document.getElementById('pf-amount').value||'-';
+  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest};
+  if(editPropId!==null){
+    const idx=tableData.findIndex(r=>r.id===editPropId);
+    if(idx>=0){
+      tableData[idx]={...tableData[idx],date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,proposal};
+    }
+  } else {
+    const maxNo=tableData.reduce((m,r)=>Math.max(m,r.no||0),0);
+    const id=Date.now();
+    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondReview:'',remark:'',typeScore:0,intangibleScore:0,creativityScore:0,realizabilityScore:0,effortScore:0,continuityScore:0,files:[],proposal};
+    tableData.push(row);
+  }
+  saveData();
+  initYearFilter();
+  initSumYear();
+  renderTable();
+  renderResults();
+  renderProposalList();
+  stopAutoSave();
+  localStorage.removeItem('ssat_prop_draft');
+  const wasEdit=editPropId!==null;
+  closePropForm();
+  clearProposalForm();
+  alert(wasEdit?'수정이 저장되었습니다.':'접수대장에 저장되었습니다.');
+}
+function renderProposalList(){
+  const tbody=document.getElementById('prop-tbody');
+  if(!tbody) return;
+  const rows=tableData.filter(r=>r.proposal);
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="10" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
+  tbody.innerHTML=rows.map((r,i)=>`<tr style="cursor:pointer;" onclick="viewProposal(${r.id})">
+<td style="text-align:center;color:#aaa;">${i+1}</td>
+<td style="text-align:center;">${escH(r.date||'')}</td>
+<td style="text-align:center;">${escH(r.dept||'')}</td>
+<td style="text-align:center;">${escH(r.proposer||'')}</td>
+<td style="text-align:left;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escH(r.theme||'')}">${escH(r.theme||'')}</td>
+<td style="text-align:center;">${escH(r.proposal.no||'-')}</td>
+<td style="text-align:right;">${escH(r.effectAmount||'-')}</td>
+<td style="text-align:center;"><button onclick="event.stopPropagation();viewProposal(${r.id})" style="background:#1a3a5c;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">&#128196; 보기</button></td>
+<td style="text-align:center;"><button onclick="event.stopPropagation();openPropForm(${r.id})" style="background:#e65100;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">&#9998; 수정</button></td>
+<td style="text-align:center;"><button onclick="event.stopPropagation();delProposal(${r.id})" class="row-del" title="삭제">&#128465;</button></td>
+</tr>`).join('');
+}
+function delProposal(rid){
+  if(!confirm('이 제안서를 삭제하시겠습니까?\n접수대장에서도 함께 삭제됩니다.')) return;
+  tableData=tableData.filter(x=>x.id!==rid);
+  saveData();initYearFilter();initSumYear();renderTable();renderResults();renderProposalList();
+}
+const CATS=['','①생산성향상','②품질향상','③원가절감','④환경안전개선','⑤치공구개선','⑥사무개선','⑦영업서비스개선','⑧신제품','⑨설비개선','⑩작업방법개선','⑪정보사항','⑫복지사기개선'];
+function propFormHtml(r,forPrint){
+  const p=r.proposal||{};
+  const eh=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pw=s=>eh(s).replace(/\n/g,'<br>');
+  const cat=p.category||[];
+  const LB='background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;color:#222;white-space:nowrap;text-align:center;';
+  const LBL='background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;color:#222;white-space:nowrap;';
+  const TD='border:1px solid #888;padding:4px 7px;';
+  const fs=forPrint?'13px':'12px';
+  const SL='background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.4;';
+  // render tabs content for 기존/변경
+  function renderTabImgs(imgs){
+    const a=Array.isArray(imgs)?imgs:(imgs?[imgs]:[]);
+    return a.filter(s=>s&&s.startsWith('data:')).length
+      ?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">${a.filter(s=>s&&s.startsWith('data:')).map(s=>`<img src="${s}" onclick="openLightbox('${s}')" style="width:110px;height:90px;object-fit:cover;border-radius:3px;cursor:zoom-in;" title="클릭하여 확대"/>`).join('')}</div>`:'';
+  }
+  function renderTabs(tabs,fallbackText,fallbackImgs){
+    const data=tabs&&tabs.length?tabs:[{text:fallbackText||'',imgs:fallbackImgs||[]}];
+    if(data.length===1){
+      return`<div style="padding:4px 6px;white-space:pre-wrap;font-size:${fs};">${pw(data[0].text)||''}${renderTabImgs(data[0].imgs)}</div>`;
+    }
+    return data.map((t,i)=>`
+      <div style="margin-bottom:4px;">
+        <div style="display:inline-block;background:#1a3a5c;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-bottom:2px;">${i+1}</div>
+        <div style="padding:2px 6px;white-space:pre-wrap;font-size:${fs};">${pw(t.text)||''}${renderTabImgs(t.imgs)}</div>
+      </div>`).join('');
+  }
+  return`<div style="text-align:center;font-size:${forPrint?'20px':'18px'};font-weight:700;letter-spacing:14px;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:8px;">제　　　안　　　서</div>
+<table style="border-collapse:collapse;width:100%;font-size:${fs};">
+<tr>
+ <td style="${LBL}width:62px;">소 속</td>
+ <td style="${TD}width:110px;">${eh(r.dept)}</td>
+ <td style="${LBL}width:60px;">접수 NO</td>
+ <td style="${TD}width:82px;">${eh(p.no||'-')}</td>
+ <td style="${LBL}width:55px;">제 출 일</td>
+ <td style="${TD}width:130px;">${eh(r.date)}</td>
+ <td style="${LBL}width:50px;">성 명</td>
+ <td colspan="2" style="${TD}width:110px;">${eh(r.proposer)}</td>
+ <td style="${LBL}width:62px;">실시구분</td>
+ <td style="${TD}">${eh(p.isImpl||'미실시')}</td>
+</tr>
+<tr>
+ <td style="${LBL}">제 목</td>
+ <td colspan="8" style="${TD}">${eh(r.theme)}</td>
+ <td style="${LB}">유 형</td>
+ <td style="${TD}">${eh(p.type||'유형')}</td>
+</tr>
+<tr>
+ <td style="${LB}">효과분석</td>
+ <td colspan="2" style="${TD}">${eh(r.effectType||'-')}</td>
+ <td style="${LB}">진행상태</td>
+ <td colspan="5" style="${TD}">${eh(r.status||'-')}</td>
+ <td style="${LB}">실시부서</td>
+ <td style="${TD}">${eh(p.implDept||'-')}</td>
+</tr>
+<tr>
+ <td rowspan="2" style="${LBL}text-align:center;vertical-align:middle;font-size:11px;padding:4px 6px;">제안내용<br>분류</td>
+ <td colspan="10" style="${TD}font-size:11px;">${CATS.slice(1,7).map((c,i)=>`<label style="margin-right:12px;"><input type="checkbox" disabled ${cat.includes(String(i+1))?'checked':''}> ${c}</label>`).join('')}</td>
+</tr>
+<tr>
+ <td colspan="10" style="${TD}font-size:11px;">${CATS.slice(7,13).map((c,i)=>`<label style="margin-right:12px;"><input type="checkbox" disabled ${cat.includes(String(i+7))?'checked':''}> ${c}</label>`).join('')}</td>
+</tr>
+<tr>
+ <td rowspan="4" style="${LBL}text-align:center;writing-mode:vertical-rl;padding:6px;letter-spacing:3px;font-size:11px;">제 안 자 작 성 란</td>
+ <td colspan="6" style="${LB}padding:6px;letter-spacing:4px;">개　　선　　전</td>
+ <td colspan="4" style="${LB}padding:6px;letter-spacing:4px;">개　　선　　후</td>
+</tr>
+<tr>
+ <td colspan="6" style="${TD}padding:0;vertical-align:top;">
+  <div style="display:flex;min-height:50px;"><div style="${SL}padding:4px 3px;">개선<br>Idea</div>
+  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.idea)||'&nbsp;'}</div></div>
+ </td>
+ <td colspan="4" style="${TD}padding:0;vertical-align:top;">
+  <div style="display:flex;min-height:50px;"><div style="${SL}padding:4px 3px;">실 시</div>
+  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.afterImpl)||'&nbsp;'}</div></div>
+ </td>
+</tr>
+<tr>
+ <td colspan="6" style="${TD}padding:0;vertical-align:top;">
+  <div style="display:flex;"><div style="${SL}padding:4px 3px;">기 존<br><span style="font-size:9px;color:#666;">(사진)</span></div>
+  <div style="flex:1;">${renderTabs(p.beforeTabs,p.beforeText,p.beforeImgData)}</div></div>
+ </td>
+ <td colspan="4" style="${TD}padding:0;vertical-align:top;">
+  <div style="display:flex;"><div style="${SL}padding:4px 3px;">변 경<br><span style="font-size:9px;color:#666;">(사진)</span></div>
+  <div style="flex:1;">${renderTabs(p.afterTabs,p.afterChange,p.afterChangeImgData)}</div></div>
+ </td>
+</tr>
+<tr>
+ <td colspan="6" style="${TD}padding:0;vertical-align:top;">
+  <div style="display:flex;min-height:80px;"><div style="${SL}padding:4px 3px;">문제점</div>
+  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.problem)||'&nbsp;'}</div></div>
+ </td>
+ <td colspan="4" style="${TD}padding:0;vertical-align:top;">
+  <div style="display:flex;min-height:80px;"><div style="${SL}padding:4px 3px;">개 선</div>
+  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.afterImprove)||'&nbsp;'}</div></div>
+ </td>
+</tr>
+<tr>
+ <td style="${LBL}text-align:center;font-size:11px;vertical-align:middle;">산출근거<br>세부내용</td>
+ <td colspan="10" style="${TD}vertical-align:top;white-space:pre-wrap;">${pw(p.costDetail)||'&nbsp;'}</td>
+</tr>
+<tr>
+ <td colspan="2" style="${LBL}">산출근거</td>
+ <td colspan="2" style="${LB}">재료비(A)</td>
+ <td colspan="2" style="${LB}">노무비(B)</td>
+ <td colspan="2" style="${LB}">투자비용(C)</td>
+ <td colspan="3" style="${LB}">년계(A+B-C)</td>
+</tr>
+<tr>
+ <td colspan="2" style="${TD}font-size:11px;color:#666;">원</td>
+ <td colspan="2" style="${TD}text-align:right;">${eh(p.costMaterial||'')}</td>
+ <td colspan="2" style="${TD}text-align:right;">${eh(p.costLabor||'')}</td>
+ <td colspan="2" style="${TD}text-align:right;">${eh(p.costInvest||'')}</td>
+ <td colspan="3" style="${TD}font-weight:700;color:#1a3a5c;">${eh(r.effectAmount||'-')}</td>
+</tr>
+</table>
+<div style="text-align:right;margin-top:10px;font-size:11px;color:#666;">신성오토텍㈜</div>`;
+}
+function viewProposal(rid){
+  const r=tableData.find(x=>x.id==rid);
+  if(!r||!r.proposal) return;
+  document.getElementById('pv-body').innerHTML=propFormHtml(r,false);
+  document.getElementById('pv-rid').value=rid;
+  document.getElementById('proposalViewModal').classList.add('show');
+}
+function closePropView(){document.getElementById('proposalViewModal').classList.remove('show');}
+function openPropForm(rid){
+  clearProposalForm();
+  fillDeptSel('pf-dept');
+  fillDeptSel('pf-implDept');
+  fillETSel('pf-effectType','');
+  if(rid){
+    const r=tableData.find(x=>x.id===rid);
+    if(r){
+      editPropId=rid;
+      const p=r.proposal||{};
+      const sv=id=>v=>{const el=document.getElementById(id);if(el)el.value=v;};
+      sv('pf-date')(r.date||'');
+      sv('pf-no')(p.no||'');
+      sv('pf-theme')(r.theme||'');
+      sv('pf-implDept')(p.implDept||'');
+      sv('pf-idea')(p.idea||'');
+      sv('pf-problem')(p.problem||'');
+      sv('pf-after-impl')(p.afterImpl||'');
+      sv('pf-after-improve')(p.afterImprove||'');
+      sv('pf-costDetail')(p.costDetail||'');
+      sv('pf-costMaterial')(p.costMaterial||'');
+      sv('pf-costLabor')(p.costLabor||'');
+      sv('pf-costInvest')(p.costInvest||'');
+      // dept & proposer
+      const deptEl=document.getElementById('pf-dept');
+      if(deptEl){deptEl.value=r.dept||'';updPfProposer();}
+      const propEl=document.getElementById('pf-proposer');
+      if(propEl)propEl.value=r.proposer||'';
+      // radio
+      document.querySelectorAll('input[name="pf-isImpl"]').forEach(rb=>{rb.checked=rb.value===(p.isImpl||'미실시');});
+      document.querySelectorAll('input[name="pf-type"]').forEach(rb=>{rb.checked=rb.value===(p.type||'유형');});
+      // checkboxes
+      document.querySelectorAll('.pf-cat').forEach(cb=>{cb.checked=(p.category||[]).includes(cb.value);});
+      // effectType & status
+      fillETSel('pf-effectType',r.effectType||'');
+      const stEl=document.getElementById('pf-status');if(stEl)stEl.value=r.status||'Y';
+      // blocks (기존/변경)
+      if(p.beforeTabs&&p.beforeTabs.length){
+        pfBeforeBlocks=p.beforeTabs.map(t=>({text:t.text||'',imgs:t.imgs||[]}));
+      } else {
+        pfBeforeBlocks=[{text:p.beforeText||'',imgs:Array.isArray(p.beforeImgData)?p.beforeImgData:(p.beforeImgData?[p.beforeImgData]:[]).filter(s=>s&&s.startsWith('data:'))}];
+      }
+      pfRenderBlocks('before');
+      if(p.afterTabs&&p.afterTabs.length){
+        pfAfterBlocks=p.afterTabs.map(t=>({text:t.text||'',imgs:t.imgs||[]}));
+      } else {
+        pfAfterBlocks=[{text:p.afterChange||'',imgs:Array.isArray(p.afterChangeImgData)?p.afterChangeImgData:(p.afterChangeImgData?[p.afterChangeImgData]:[]).filter(s=>s&&s.startsWith('data:'))}];
+      }
+      pfRenderBlocks('after');
+      calcPropCost();
+      document.getElementById('pf-modal-title').textContent='✏️ 원가절감 제안서 수정';
+    }
+  } else {
+    document.getElementById('pf-modal-title').textContent='📝 원가절감 제안서 신규 등록';
+    pfRenderBlocks('before');pfRenderBlocks('after');
+    // 접수NO 자동생성
+    const noEl=document.getElementById('pf-no');
+    if(noEl) noEl.value=nextAccNo();
+    // 오늘 날짜 자동입력
+    const dtEl=document.getElementById('pf-date');
+    if(dtEl&&!dtEl.value) dtEl.value=new Date().toISOString().slice(0,10);
+  }
+  document.getElementById('proposalFormModal').classList.add('show');
+  setTimeout(initAutoH, 0);
+  startAutoSave();
+}
+function closePropForm(){
+  stopAutoSave();
+  document.getElementById('proposalFormModal').classList.remove('show');
+}
+function printPropView(){
+  const rid=document.getElementById('pv-rid').value;
+  const r=tableData.find(x=>x.id==rid);
+  if(!r||!r.proposal) return;
+  const w=window.open('','_blank','width=900,height=1100');
+  w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>원가절감 제안서</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Malgun Gothic',sans-serif;padding:20mm 15mm;font-size:13px;}
+input[type=checkbox]{pointer-events:none;}
+@media print{body{padding:10mm;}button{display:none;}}</style></head>
+<body>${propFormHtml(r,true)}
+<div style="text-align:center;margin-top:16px;"><button onclick="window.print()" style="padding:8px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:13px;">인쇄</button></div>
+</body></html>`);
+  w.document.close();
+}
+function downloadPropExcel(){
+  const rid=document.getElementById('pv-rid').value;
+  const r=tableData.find(x=>x.id==rid);
+  if(!r||!r.proposal) return;
+  const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<style>body{font-family:'Malgun Gothic',sans-serif;}table{border-collapse:collapse;width:100%;}td,th{border:1px solid #888;padding:6px 9px;font-size:12px;}
+input[type=checkbox]{pointer-events:none;}</style></head>
+<body>${propFormHtml(r,true)}</body></html>`;
+  const blob=new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  const fname=(r.proposer||'제안서')+'_'+(r.date||'')+'_원가절감제안서.xls';
+  a.download=fname;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function saveAwards(){
+  const v=id=>document.getElementById(id)?.value||'';
+  const d={bestPerson:v('award-best-person'),bestTheme:v('award-best-theme'),bestAmount:v('award-best-amount'),goodPerson:v('award-good-person'),goodTheme:v('award-good-theme'),goodAmount:v('award-good-amount'),teamName:v('award-team-name'),teamTheme:v('award-team-theme')};
+  localStorage.setItem('ssat_awards',JSON.stringify(d));
+  calcAwardSubtotal();
+  sbSync();
+}
+function loadAwards(){
+  try{
+    const d=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
+    const sv=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+    sv('award-best-person',d.bestPerson);sv('award-best-theme',d.bestTheme);sv('award-best-amount',d.bestAmount);
+    sv('award-good-person',d.goodPerson);sv('award-good-theme',d.goodTheme);sv('award-good-amount',d.goodAmount);
+    sv('award-team-name',d.teamName);sv('award-team-theme',d.teamTheme);
+  }catch(e){}
+  calcAwardSubtotal();
+}
+function calcAwardSubtotal(){
+  const n=id=>parseInt(String(document.getElementById(id)?.value||'').replace(/[^0-9]/g,''))||0;
+  const total=n('award-best-amount')+n('award-good-amount');
+  const el=document.getElementById('award-subtotal');
+  if(el)el.textContent=total>0?total.toLocaleString():'-';
+}
+function renderAll(){initYearFilter();initSumYear();renderTable();renderResults();renderProposalList();renderSummary();loadAwards();}
+window.onload=async function(){
+  tableData=loadData();
+  renderAll();
+  const loaded=await sbLoad();
+  if(loaded){renderAll();}
+  else{sbSync();}
+};
+
+function openLightbox(src){
+  const lb=document.getElementById('img-lightbox');
+  document.getElementById('img-lightbox-img').src=src;
+  lb.style.display='flex';
+}
+function closeLightbox(){
+  document.getElementById('img-lightbox').style.display='none';
+  document.getElementById('img-lightbox-img').src='';
+}
+</script>
+
+<div id="img-lightbox" onclick="closeLightbox()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="img-lightbox-img" src="" style="max-width:90vw;max-height:90vh;border-radius:4px;box-shadow:0 4px 40px rgba(0,0,0,0.6);object-fit:contain;" onclick="event.stopPropagation()"/>
+  <button onclick="closeLightbox()" style="position:fixed;top:18px;right:28px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1;opacity:0.8;">✕</button>
+</div>
+</body>
+</html>
