@@ -856,12 +856,12 @@ async function delFile(key,rowId){await dbDelFile(key);renderFilesCell(rowId);}
 const SB_URL='https://mbbzerxdyxiiwfmvbfns.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iYnplcnhkeXhpaXdmbXZiZm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTkxODIsImV4cCI6MjA5MTk3NTE4Mn0.8uqIFtHs7wBJVYQTGrnhQXho-I57GTOz1S8XGeLK2T0';
 const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
-function setSbStatus(s){
+function setSbStatus(s,detail){
   const el=document.getElementById('sb-status');if(!el)return;
   if(s==='syncing'){el.textContent='☁ 저장 중...';el.style.color='#aaa';}
   else if(s==='synced'){el.textContent='☁ 클라우드 저장됨';el.style.color='#28a745';}
-  else if(s==='error'){el.textContent='☁ 클라우드 저장 실패';el.style.color='#e74c3c';}
-  else if(s==='loading'){el.textContent='☁ 클라우드 불러오는 중...';el.style.color='#aaa';}
+  else if(s==='error'){el.textContent='☁ 오류'+(detail?' ('+detail+')':'');el.style.color='#e74c3c';}
+  else if(s==='loading'){el.textContent='☁ 불러오는 중...';el.style.color='#aaa';}
 }
 async function sbSync(){
   setSbStatus('syncing');
@@ -872,25 +872,28 @@ async function sbSync(){
       headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
       body:JSON.stringify({id:1,table_data:tableData,awards,updated_at:new Date().toISOString()})
     });
-    setSbStatus(res.ok?'synced':'error');
-  }catch(e){setSbStatus('error');}
+    setSbStatus(res.ok?'synced':'error',res.ok?null:'HTTP '+res.status);
+  }catch(e){setSbStatus('error',e.message);}
 }
 async function sbLoad(){
   setSbStatus('loading');
   try{
     const res=await fetch(SB_URL+'/rest/v1/app_data?id=eq.1&select=*',{headers:SB_H});
-    if(!res.ok){setSbStatus('error');return false;}
+    if(!res.ok){setSbStatus('error','HTTP '+res.status);return false;}
     const rows=await res.json();
-    if(rows&&rows[0]&&rows[0].table_data){
+    if(rows&&rows[0]&&rows[0].table_data&&rows[0].table_data.length>0){
       tableData=rows[0].table_data;
       localStorage.setItem('ssat_v4',JSON.stringify(tableData));
       if(rows[0].awards)localStorage.setItem('ssat_awards',JSON.stringify(rows[0].awards));
       setSbStatus('synced');
       return true;
     }
-  }catch(e){}
-  setSbStatus('error');
-  return false;
+    setSbStatus('synced');
+    return false;
+  }catch(e){
+    setSbStatus('error',e.message||'네트워크 오류');
+    return false;
+  }
 }
 
 // Data
@@ -1839,7 +1842,7 @@ window.onload=async function(){
   renderAll();
   const loaded=await sbLoad();
   if(loaded){renderAll();}
-  else{sbSync();}
+  else if(tableData.length>0){sbSync();}
 };
 
 function openLightbox(src){
