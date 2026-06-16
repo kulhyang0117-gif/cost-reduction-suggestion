@@ -1106,7 +1106,7 @@ async function sbSync(){
     const res=await fetch(SB_URL+'/rest/v1/app_data',{
       method:'POST',
       headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
-      body:JSON.stringify({id:1,table_data:tableData,awards,users:getUsers(),updated_at:new Date().toISOString()})
+      body:JSON.stringify({id:1,table_data:tableData,awards,updated_at:new Date().toISOString()})
     });
     setSbStatus(res.ok?'synced':'error',res.ok?null:'HTTP '+res.status);
   }catch(e){setSbStatus('error',e.message);}
