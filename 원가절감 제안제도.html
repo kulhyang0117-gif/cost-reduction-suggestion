@@ -1050,7 +1050,7 @@ function onLoginSuccess(){
   const canAccessRegister=isAdmin||['품질팀','공장장','부사장','대표이사'].includes(currentUser.dept);
   document.getElementById('nav-users').style.display=isSysAdmin?'':'none';
   document.getElementById('nav-register').style.display=canAccessRegister?'':'none';
-  document.getElementById('nav-results').style.display=isSysAdmin?'':'none';
+  document.getElementById('nav-results').style.display=isAdmin?'':'none';
   if(isAdmin){
     const pendingCount=getUsers().filter(u=>u.status==='pending').length;
     const badgeEl=document.getElementById('badge-users');
