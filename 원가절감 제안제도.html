@@ -1085,11 +1085,12 @@ function deleteUser(i){if(!confirm('이 사용자를 삭제하시겠습니까?')
 function changeUserRole(i,role){const u=getUsers();u[i].role=role;saveUsers(u);sbSyncUsers(u);}
 async function sbSyncUsers(users){
   try{
-    const awards=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
+    const awardsObj=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
+    const awards={...awardsObj,_users:users};
     const res=await fetch(SB_URL+'/rest/v1/app_data',{
       method:'POST',
       headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
-      body:JSON.stringify({id:1,table_data:tableData,awards,users,updated_at:new Date().toISOString()})
+      body:JSON.stringify({id:1,table_data:tableData,awards,updated_at:new Date().toISOString()})
     });
     if(!res.ok){setSbStatus('error','회원 동기화 실패 HTTP '+res.status);}
   }catch(e){setSbStatus('error','회원 동기화 오류: '+e.message);}
@@ -1100,8 +1101,8 @@ async function reloadUsersFromCloud(){
     const res=await fetch(SB_URL+'/rest/v1/app_data?id=eq.1&select=users',{headers:SB_H});
     if(!res.ok){setSbStatus('error','HTTP '+res.status);return;}
     const rows=await res.json();
-    if(rows&&rows[0]&&rows[0].users){
-      saveUsers(rows[0].users);
+    if(rows&&rows[0]&&rows[0].awards&&rows[0].awards._users){
+      saveUsers(rows[0].awards._users);
       setSbStatus('synced');
     }else{
       setSbStatus('error','클라우드에 회원 데이터 없음');
@@ -1124,7 +1125,8 @@ function setSbStatus(s,detail){
 async function sbSync(){
   setSbStatus('syncing');
   try{
-    const awards=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
+    const awardsObj=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
+    const awards={...awardsObj,_users:getUsers()};
     const res=await fetch(SB_URL+'/rest/v1/app_data',{
       method:'POST',
       headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
@@ -1142,8 +1144,13 @@ async function sbLoad(){
     if(rows&&rows[0]&&rows[0].table_data&&rows[0].table_data.length>0){
       tableData=rows[0].table_data;
       localStorage.setItem('ssat_v4',JSON.stringify(tableData));
-      if(rows[0].awards)localStorage.setItem('ssat_awards',JSON.stringify(rows[0].awards));
-      if(rows[0].users)saveUsers(rows[0].users);
+      if(rows[0].awards){
+        const awardsData=rows[0].awards;
+        if(awardsData._users&&Array.isArray(awardsData._users))saveUsers(awardsData._users);
+        const cleanAwards=Object.assign({},awardsData);
+        delete cleanAwards._users;
+        localStorage.setItem('ssat_awards',JSON.stringify(cleanAwards));
+      }
       setSbStatus('synced');
       return true;
     }
