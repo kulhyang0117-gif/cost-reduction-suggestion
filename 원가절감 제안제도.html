@@ -1041,8 +1041,9 @@ function onLoginSuccess(){
   document.getElementById('auth-overlay').style.display='none';
   updateUserInfoBar();
   const isAdmin=currentUser.role==='admin';
+  const canAccessRegister=isAdmin||['품질팀','공장장','부사장','대표이사'].includes(currentUser.dept);
   document.getElementById('nav-users').style.display=isAdmin?'':'none';
-  document.getElementById('nav-register').style.display=isAdmin?'':'none';
+  document.getElementById('nav-register').style.display=canAccessRegister?'':'none';
   document.getElementById('nav-results').style.display=isAdmin?'':'none';
   if(isAdmin){
     const pendingCount=getUsers().filter(u=>u.status==='pending').length;
@@ -1261,7 +1262,7 @@ function renderTable(){
     const score=calcScore(r);
     const grade=r.grade||calcGrade(score);
     const rid=r.id;
-    const frDis = (!canFR || !(r.secondScore > 0)) ? 'disabled' : '';
+    const frDis = (!canFR || score <= 0) ? 'disabled' : '';
     const fcDis = (!canFC || !r.firstReview) ? 'disabled' : '';
     const scDis = (!canSC || !r.firstConfirmed) ? 'disabled' : '';
     // 1차 심사 점수: 품질팀(1차검토 전)·공장장(1차확정 전)만 수정 가능
@@ -1292,7 +1293,7 @@ function renderTable(){
 <td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="20" value="${r.realizabilityScore||0}" ${scoreDis} onchange="updS(${rid},'realizabilityScore',this.value)" style="${scoreStyle}"/></td>
 <td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="10" value="${r.effortScore||0}" ${scoreDis} onchange="updS(${rid},'effortScore',this.value)" style="${scoreStyle}"/></td>
 <td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" ${scoreDis} onchange="updS(${rid},'continuityScore',this.value)" style="${scoreStyle}"/></td>
-<td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} ${frDis} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;${frDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${frDis?(canFR?'채택 점수 입력 후 가능':'권한 없음'):'1차 검토'}"/></td>
+<td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} ${frDis} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;${frDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${frDis?(canFR?'1차 심사 점수 입력 후 가능':'권한 없음'):'1차 검토'}"/></td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstConfirmed?'checked':''} ${fcDis} onchange="updF(${rid},'firstConfirmed',this.checked)" style="width:16px;height:16px;${fcDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${fcDis?(canFC?'1차 검토 완료 후 가능':'권한 없음'):'1차 심사 확정'}"/></td>
 <td onclick="event.stopPropagation()" style="background:#f0faf5;"><input type="number" class="sc-input" min="0" value="${r.secondScore||0}" ${score2Dis} onchange="updSecond(${rid},this.value)" style="${score2Style}"/></td>
 <td id="sc2g-${rid}" style="background:#f0faf5;">${gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-'))}</td>
