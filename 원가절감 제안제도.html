@@ -423,7 +423,7 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
    <span class="nav-icon">&#128221;</span>접수대장
    <span class="nav-badge" id="badge-count">0</span>
   </div>
-  <div class="nav-item" id="nav-results" onclick="showTab('results',this)" style="display:none;">
+  <div class="nav-item" id="nav-results" onclick="showTab('results',this)" style="display:none!important;">
    <span class="nav-icon">&#127942;</span>검토결과
   </div>
   <div class="nav-item" id="nav-users" onclick="showTab('users',this)" style="display:none;">
@@ -683,9 +683,7 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
         <th rowspan="2" style="background:#2c3e6a;min-width:55px;">1차<br>확정</th>
         <th colspan="2" style="background:#1a5c3a;min-width:130px;">2차 심사결과</th>
         <th rowspan="2" style="background:#1a5c3a;min-width:55px;">2차<br>확정</th>
-        <th rowspan="2" style="min-width:100px;">결과보고서<br>(Excel/PDF)</th>
         <th rowspan="2" style="min-width:90px;">비고</th>
-        <th rowspan="2" style="min-width:140px;">제안서 / 수정</th>
         <th rowspan="2" style="width:30px;"></th>
        </tr>
        <tr>
@@ -1272,8 +1270,9 @@ function renderTable(){
                      (canFC && r.firstConfirmed) ? 'disabled' : '';
     const scoreStyle = scoreDis ? 'opacity:0.5;cursor:not-allowed;' : '';
     // 2차 채택점수: 부사장·대표이사만 수정 가능
-    const score2Dis = !canSC ? 'disabled' : '';
+    const score2Dis = (!canSC || !r.firstConfirmed) ? 'disabled' : '';
     const score2Style = score2Dis ? 'opacity:0.5;cursor:not-allowed;background:#f0faf5;' : 'background:#f0faf5;';
+    const score2Title = !canSC ? '권한 없음' : (!r.firstConfirmed ? '1차 확정시 등록 가능합니다' : '2차 채택점수');
     const stBadge=r.status==='G'?'<span class="badge badge-G">G 완료</span>':r.status==='Y'?'<span class="badge badge-Y">Y 진행중</span>':'<span class="badge badge-R">R 미진행</span>';
     rows+=`<tr id="row-${rid}" onclick="viewRegRow(${rid})" style="cursor:pointer;">
 <td style="color:#aaa;font-size:10px;">${i+1}</td>
@@ -1296,15 +1295,10 @@ function renderTable(){
 <td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" ${scoreDis} onchange="updS(${rid},'continuityScore',this.value)" style="${scoreStyle}"/></td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} ${frDis} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;${frDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${frDis?'권한 없음':'1차 검토'}"/></td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstConfirmed?'checked':''} ${fcDis} onchange="updF(${rid},'firstConfirmed',this.checked)" style="width:16px;height:16px;${fcDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${fcDis?(canFC?'1차 검토 완료 후 가능':'권한 없음'):'1차 심사 확정'}"/></td>
-<td onclick="event.stopPropagation()" style="background:#f0faf5;"><input type="number" class="sc-input" min="0" value="${r.secondScore||0}" ${score2Dis} onchange="updSecond(${rid},this.value)" style="${score2Style}"/></td>
+<td onclick="event.stopPropagation()" style="background:#f0faf5;">${r.firstConfirmed?`<input type="number" class="sc-input" min="0" value="${r.secondScore||0}" ${score2Dis} onchange="updSecond(${rid},this.value)" style="${score2Style}" title="${score2Title}"/>`:`<span style="font-size:10px;color:#999;white-space:nowrap;line-height:1.4;">1차 확정시<br>등록 가능</span>`}</td>
 <td id="sc2g-${rid}" style="background:#f0faf5;">${gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-'))}</td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e0f2ea;"><input type="checkbox" ${r.secondConfirmed?'checked':''} ${scDis} onchange="updF(${rid},'secondConfirmed',this.checked)" style="width:16px;height:16px;${scDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a5c3a;" title="${scDis?(canSC?'1차 확정 후 가능':'권한 없음'):'2차 심사 확정'}"/></td>
-<td id="fc-${rid}"></td>
 <td onclick="event.stopPropagation()"><input class="tbl-input" value="${escH(r.remark||'')}" onchange="updF(${rid},'remark',this.value)"/></td>
-<td onclick="event.stopPropagation()" style="text-align:center;white-space:nowrap;">${r.proposal
-  ?`<button onclick="event.stopPropagation();openPropForm(${rid})" style="background:#e65100;color:#fff;border:none;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;">&#9998; 수정</button>`
-  :`<button onclick="event.stopPropagation();openModal(${rid})" style="background:#6c757d;color:#fff;border:none;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;">&#9998; 수정</button>`
-}</td>
 <td onclick="event.stopPropagation()"><button class="row-del" onclick="delRow(${rid})" title="삭제">&#128465;</button></td>
 </tr>`;
   });
@@ -1373,6 +1367,8 @@ function updS(rid,field,val){
 function updSecond(rid,val){
   const r=tableData.find(x=>x.id==rid);
   if(!r) return;
+  if(!r.firstConfirmed){alert('1차 확정시 등록 가능합니다.');return;}
+  if(!(currentUser&&(currentUser.dept==='부사장'||currentUser.dept==='대표이사'))) return;
   r.secondScore=parseInt(val)||0;
   r.secondGrade=r.secondScore>0?calcGrade(r.secondScore):'-';
   const el=document.getElementById('sc2g-'+rid);
@@ -1907,7 +1903,7 @@ function renderProposalList(){
 <td style="text-align:right;">${escH(r.effectAmount||'-')}</td>
 <td style="text-align:center;"><button onclick="event.stopPropagation();viewProposal(${r.id})" style="background:#1a3a5c;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">&#128196; 보기</button></td>
 <td style="text-align:center;"><button onclick="event.stopPropagation();openPropForm(${r.id})" style="background:#e65100;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">&#9998; 수정</button></td>
-<td style="text-align:center;"><button onclick="event.stopPropagation();delProposal(${r.id})" class="row-del" title="삭제">&#128465;</button></td>
+<td style="text-align:center;">${isAdmin?`<button onclick="event.stopPropagation();delProposal(${r.id})" class="row-del" title="삭제">&#128465;</button>`:''}</td>
 </tr>`).join('');
 }
 function delProposal(rid){
