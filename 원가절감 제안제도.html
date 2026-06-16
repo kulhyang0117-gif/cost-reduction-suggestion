@@ -790,7 +790,10 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
   <!-- TAB: 회원관리 (관리자 전용) -->
   <div class="tab-panel" id="tab-users">
    <div style="background:#fff;border-radius:10px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px;">
-    <div style="font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:16px;">회원 목록</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+     <div style="font-size:15px;font-weight:700;color:#1a3a5c;">회원 목록</div>
+     <button onclick="reloadUsersFromCloud()" style="font-size:11px;padding:5px 12px;background:#2d5a8c;color:#fff;border:none;border-radius:5px;cursor:pointer;">☁ 클라우드에서 새로고침</button>
+    </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;">
      <thead>
       <tr style="background:#1a3a5c;color:#fff;">
@@ -1083,12 +1086,28 @@ function changeUserRole(i,role){const u=getUsers();u[i].role=role;saveUsers(u);s
 async function sbSyncUsers(users){
   try{
     const awards=JSON.parse(localStorage.getItem('ssat_awards')||'{}');
-    await fetch(SB_URL+'/rest/v1/app_data',{
+    const res=await fetch(SB_URL+'/rest/v1/app_data',{
       method:'POST',
       headers:{...SB_H,'Prefer':'resolution=merge-duplicates'},
       body:JSON.stringify({id:1,table_data:tableData,awards,users,updated_at:new Date().toISOString()})
     });
-  }catch(e){}
+    if(!res.ok){setSbStatus('error','회원 동기화 실패 HTTP '+res.status);}
+  }catch(e){setSbStatus('error','회원 동기화 오류: '+e.message);}
+}
+async function reloadUsersFromCloud(){
+  setSbStatus('loading');
+  try{
+    const res=await fetch(SB_URL+'/rest/v1/app_data?id=eq.1&select=users',{headers:SB_H});
+    if(!res.ok){setSbStatus('error','HTTP '+res.status);return;}
+    const rows=await res.json();
+    if(rows&&rows[0]&&rows[0].users){
+      saveUsers(rows[0].users);
+      setSbStatus('synced');
+    }else{
+      setSbStatus('error','클라우드에 회원 데이터 없음');
+    }
+    renderUsersTab();
+  }catch(e){setSbStatus('error',e.message);}
 }
 
 // Supabase
