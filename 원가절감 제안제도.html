@@ -2182,15 +2182,13 @@ window.onload=async function(){
       sessionStorage.removeItem('ssat_session');
     }
   }
-  const localProposalCount=tableData.filter(r=>r.proposal).length;
-  if(localProposalCount>0){await sbSync();}
+  // 클라우드 우선: 로컬 데이터로 덮어쓰지 않고 클라우드에서 먼저 불러옴
   const loaded=await sbLoad();
-  if(loaded){
-    const cloudProposalCount=tableData.filter(r=>r.proposal).length;
-    if(cloudProposalCount>=localProposalCount){renderAll();}
-    else{tableData=loadData();await sbSync();renderAll();}
+  if(loaded){renderAll();}
+  else if(tableData.length>0){
+    // 클라우드가 비어있을 때만 로컬 데이터 업로드
+    sbSync();
   }
-  else if(tableData.length>0){sbSync();}
 };
 
 let _pwChangeTargetIdx=undefined;
