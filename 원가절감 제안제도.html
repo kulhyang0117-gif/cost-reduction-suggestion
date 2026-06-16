@@ -418,11 +418,11 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
   <div class="nav-item" onclick="showTab('proposal',this)">
    <span class="nav-icon">&#128196;</span>원가절감 제안서
   </div>
-  <div class="nav-item" onclick="showTab('register',this)">
+  <div class="nav-item" id="nav-register" onclick="showTab('register',this)" style="display:none;">
    <span class="nav-icon">&#128221;</span>접수대장
    <span class="nav-badge" id="badge-count">0</span>
   </div>
-  <div class="nav-item" onclick="showTab('results',this)">
+  <div class="nav-item" id="nav-results" onclick="showTab('results',this)" style="display:none;">
    <span class="nav-icon">&#127942;</span>검토결과
   </div>
   <div class="nav-item" id="nav-users" onclick="showTab('users',this)" style="display:none;">
@@ -1023,9 +1023,10 @@ function signupSubmit(){
 function onLoginSuccess(){
   document.getElementById('auth-overlay').style.display='none';
   updateUserInfoBar();
-  if(currentUser.role==='admin'){
-    document.getElementById('nav-users').style.display='';
-  }
+  const isAdmin=currentUser.role==='admin';
+  document.getElementById('nav-users').style.display=isAdmin?'':'none';
+  document.getElementById('nav-register').style.display=isAdmin?'':'none';
+  document.getElementById('nav-results').style.display=isAdmin?'':'none';
 }
 function doLogout(){
   if(!confirm('로그아웃 하시겠습니까?'))return;
@@ -1037,6 +1038,8 @@ function doLogout(){
   document.getElementById('auth-error').style.display='none';
   showLoginForm();
   document.getElementById('nav-users').style.display='none';
+  document.getElementById('nav-register').style.display='none';
+  document.getElementById('nav-results').style.display='none';
   document.getElementById('user-info-bar').innerHTML='';
 }
 function updateUserInfoBar(){
