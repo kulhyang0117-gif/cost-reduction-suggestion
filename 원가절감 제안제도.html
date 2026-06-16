@@ -1041,8 +1041,9 @@ function onLoginSuccess(){
   document.getElementById('auth-overlay').style.display='none';
   updateUserInfoBar();
   const isAdmin=currentUser.role==='admin';
+  const isSysAdmin=currentUser.email===ADMIN_EMAIL;
   const canAccessRegister=isAdmin||['품질팀','공장장','부사장','대표이사'].includes(currentUser.dept);
-  document.getElementById('nav-users').style.display=isAdmin?'':'none';
+  document.getElementById('nav-users').style.display=isSysAdmin?'':'none';
   document.getElementById('nav-register').style.display=canAccessRegister?'':'none';
   document.getElementById('nav-results').style.display=isAdmin?'':'none';
   if(isAdmin){
