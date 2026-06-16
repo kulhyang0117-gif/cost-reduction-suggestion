@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/원가절감 제안제도.html" }
+  ]
+}
