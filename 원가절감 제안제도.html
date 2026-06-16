@@ -1002,14 +1002,21 @@ function loginSubmit(){
     sessionStorage.setItem('ssat_session',JSON.stringify(currentUser));
     onLoginSuccess();return;
   }
-  const users=getUsers();
-  const u=users.find(x=>x.email===email&&x.password===pw);
-  if(!u){errEl.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';errEl.style.display='';return;}
-  if(u.status==='pending'){errEl.textContent='승인 대기 중입니다. 관리자 승인 후 로그인 가능합니다.';errEl.style.display='';return;}
-  if(u.status==='rejected'){errEl.textContent='가입이 거절되었습니다. 관리자에게 문의하세요.';errEl.style.display='';return;}
-  currentUser={email:u.email,name:u.name,dept:u.dept,role:u.role||'user'};
-  sessionStorage.setItem('ssat_session',JSON.stringify(currentUser));
-  onLoginSuccess();
+  errEl.textContent='확인 중...';errEl.style.display='';
+  fetch(SB_URL+'/rest/v1/app_data?id=eq.2&select=table_data',{headers:SB_H})
+    .then(r=>r.ok?r.json():Promise.resolve(null))
+    .then(rows=>{if(rows&&rows[0]&&Array.isArray(rows[0].table_data)&&rows[0].table_data.length>0)saveUsers(rows[0].table_data);})
+    .catch(()=>{})
+    .finally(()=>{
+      const users=getUsers();
+      const u=users.find(x=>x.email===email&&x.password===pw);
+      if(!u){errEl.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';errEl.style.display='';return;}
+      if(u.status==='pending'){errEl.textContent='승인 대기 중입니다. 관리자 승인 후 로그인 가능합니다.';errEl.style.display='';return;}
+      if(u.status==='rejected'){errEl.textContent='가입이 거절되었습니다. 관리자에게 문의하세요.';errEl.style.display='';return;}
+      currentUser={email:u.email,name:u.name,dept:u.dept,role:u.role||'user'};
+      sessionStorage.setItem('ssat_session',JSON.stringify(currentUser));
+      onLoginSuccess();
+    });
 }
 function signupSubmit(){
   const dept=document.getElementById('su-dept').value;
