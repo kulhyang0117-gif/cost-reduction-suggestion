@@ -1885,7 +1885,8 @@ function saveProposalToRegister(){
 function renderProposalList(){
   const tbody=document.getElementById('prop-tbody');
   if(!tbody) return;
-  const rows=tableData.filter(r=>r.proposal);
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  const rows=tableData.filter(r=>r.proposal&&(isAdmin||!currentUser||(r.dept===currentUser.dept)));
   if(!rows.length){tbody.innerHTML='<tr><td colspan="10" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
   tbody.innerHTML=rows.map((r,i)=>`<tr style="cursor:pointer;" onclick="viewProposal(${r.id})">
 <td style="text-align:center;color:#aaa;">${i+1}</td>
