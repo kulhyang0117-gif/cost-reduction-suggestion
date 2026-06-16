@@ -179,7 +179,8 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
     <div class="form-group form-grid-full"><label>제안 테마명 *</label><textarea id="fd-theme" rows="3" placeholder="제안 내용을 상세히 입력하세요"></textarea></div>
     <div class="form-group"><label>효과분석</label><select id="fd-effectType"></select></div>
     <div class="form-group"><label>효과금액</label><input type="text" id="fd-effectAmount" placeholder="예: 1,200,000 또는 -"/></div>
-    <div class="form-group"><label>2차 심사결과 (효과분석)</label><select id="fd-secondReview"></select></div>
+    <div class="form-group"><label>2차 심사결과 - 채택(점수)</label><input type="number" id="fd-secondScore" min="0" value="0" oninput="updModalSecond()" style="width:100%;padding:8px 10px;border:1px solid #dee2e6;border-radius:5px;font-size:12.5px;font-family:inherit;"/></div>
+    <div class="form-group"><label>2차 심사결과 - 채택(등급)</label><div id="fd-secondGradeDisplay" style="padding:8px 10px;font-weight:700;font-size:13px;color:#1a3a5c;">-</div></div>
     <div class="form-group"><label>비고</label><input type="text" id="fd-remark" placeholder="비고 입력"/></div>
    </div>
    <div class="score-section">
@@ -677,7 +678,7 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
         <th rowspan="2" style="min-width:75px;">효과분석</th>
         <th rowspan="2" style="min-width:100px;">효과금액</th>
         <th colspan="8" style="background:#163060;min-width:400px;">1차 심사결과</th>
-        <th rowspan="2" style="min-width:75px;">2차 심사결과<br>(효과분석)</th>
+        <th colspan="2" style="background:#163060;min-width:130px;">2차 심사결과</th>
         <th rowspan="2" style="min-width:100px;">결과보고서<br>(Excel/PDF)</th>
         <th rowspan="2" style="min-width:90px;">비고</th>
         <th rowspan="2" style="min-width:140px;">제안서 / 수정</th>
@@ -692,6 +693,8 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
         <th class="sub-header" style="min-width:46px;">실현성<br>(20)</th>
         <th class="sub-header" style="min-width:46px;">노력도<br>(10)</th>
         <th class="sub-header" style="min-width:46px;">지속성<br>(5)</th>
+        <th class="sub-header" style="min-width:60px;">채택<br>(점수)</th>
+        <th class="sub-header" style="min-width:70px;">채택<br>(등급)</th>
        </tr>
       </thead>
       <tbody id="reg-tbody"></tbody>
@@ -1256,7 +1259,8 @@ function renderTable(){
 <td><input type="number" class="sc-input" min="0" max="20" value="${r.realizabilityScore||0}" onchange="updS(${rid},'realizabilityScore',this.value)"/></td>
 <td><input type="number" class="sc-input" min="0" max="10" value="${r.effortScore||0}" onchange="updS(${rid},'effortScore',this.value)"/></td>
 <td><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" onchange="updS(${rid},'continuityScore',this.value)"/></td>
-<td>${buildETSelect(r.secondReview,rid,'secondReview')}</td>
+<td><input type="number" class="sc-input" min="0" value="${r.secondScore||0}" onchange="updSecond(${rid},this.value)"/></td>
+<td id="sc2g-${rid}">${gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-'))}</td>
 <td id="fc-${rid}"></td>
 <td><input class="tbl-input" value="${escH(r.remark||'')}" onchange="updF(${rid},'remark',this.value)"/></td>
 <td style="text-align:center;white-space:nowrap;">${r.proposal
@@ -1320,6 +1324,20 @@ function updS(rid,field,val){
   document.getElementById('gc-'+rid).innerHTML=gradeHtml(r.grade);
   saveData();
   renderResults();
+}
+function updSecond(rid,val){
+  const r=tableData.find(x=>x.id==rid);
+  if(!r) return;
+  r.secondScore=parseInt(val)||0;
+  r.secondGrade=r.secondScore>0?calcGrade(r.secondScore):'-';
+  const el=document.getElementById('sc2g-'+rid);
+  if(el)el.innerHTML=gradeHtml(r.secondGrade);
+  saveData();
+}
+function updModalSecond(){
+  const sc=parseInt(document.getElementById('fd-secondScore').value)||0;
+  const grade=sc>0?calcGrade(sc):'-';
+  document.getElementById('fd-secondGradeDisplay').textContent=grade;
 }
 function delRow(rid){
   if(!confirm('이 제안을 삭제하시겠습니까?')) return;
@@ -1409,7 +1427,8 @@ function openModal(rid){
   document.getElementById('m-title').textContent=editId?'✏️ 제안 수정':'📝 새 제안 등록';
   fillDeptSel('fd-dept');
   fillETSel('fd-effectType','');
-  fillETSel('fd-secondReview','');
+  document.getElementById('fd-secondScore').value=0;
+  document.getElementById('fd-secondGradeDisplay').textContent='-';
   if(editId){
     const r=tableData.find(x=>x.id==editId);
     if(r){
@@ -1421,7 +1440,8 @@ function openModal(rid){
       document.getElementById('fd-theme').value=r.theme||'';
       fillETSel('fd-effectType',r.effectType||'');
       document.getElementById('fd-effectAmount').value=r.effectAmount||'';
-      fillETSel('fd-secondReview',r.secondReview||'');
+      document.getElementById('fd-secondScore').value=r.secondScore||0;
+      document.getElementById('fd-secondGradeDisplay').textContent=r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-');
       document.getElementById('fd-remark').value=r.remark||'';
       document.getElementById('fd-typeScore').value=r.typeScore||0;
       document.getElementById('fd-intangibleScore').value=r.intangibleScore||0;
@@ -1454,7 +1474,7 @@ function saveRow(){
   const sc={typeScore:parseInt(document.getElementById('fd-typeScore').value)||0,intangibleScore:parseInt(document.getElementById('fd-intangibleScore').value)||0,creativityScore:parseInt(document.getElementById('fd-creativityScore').value)||0,realizabilityScore:parseInt(document.getElementById('fd-realizabilityScore').value)||0,effortScore:parseInt(document.getElementById('fd-effortScore').value)||0,continuityScore:parseInt(document.getElementById('fd-continuityScore').value)||0};
   const score=Object.values(sc).reduce((a,b)=>a+b,0);
   const grade=calcGrade(score);
-  const base={date,dept,proposer,theme,status:document.getElementById('fd-status').value,effectType:document.getElementById('fd-effectType').value,effectAmount:document.getElementById('fd-effectAmount').value,secondReview:document.getElementById('fd-secondReview').value,remark:document.getElementById('fd-remark').value,grade,...sc};
+  const base={date,dept,proposer,theme,status:document.getElementById('fd-status').value,effectType:document.getElementById('fd-effectType').value,effectAmount:document.getElementById('fd-effectAmount').value,secondScore:parseInt(document.getElementById('fd-secondScore').value)||0,secondGrade:document.getElementById('fd-secondGradeDisplay').textContent||'-',remark:document.getElementById('fd-remark').value,grade,...sc};
   if(editId){
     const r=tableData.find(x=>x.id==editId);
     if(r) Object.assign(r,base);
@@ -1810,7 +1830,7 @@ function saveProposalToRegister(){
   } else {
     const maxNo=tableData.reduce((m,r)=>Math.max(m,r.no||0),0);
     const id=Date.now();
-    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondReview:'',remark:'',typeScore:0,intangibleScore:0,creativityScore:0,realizabilityScore:0,effortScore:0,continuityScore:0,files:[],proposal};
+    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondScore:0,secondGrade:'-',remark:'',typeScore:0,intangibleScore:0,creativityScore:0,realizabilityScore:0,effortScore:0,continuityScore:0,files:[],proposal};
     tableData.push(row);
   }
   saveData();
