@@ -679,6 +679,7 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
         <th rowspan="2" style="min-width:75px;">효과분석</th>
         <th rowspan="2" style="min-width:100px;">효과금액</th>
         <th colspan="8" style="background:#163060;min-width:400px;">1차 심사결과</th>
+        <th rowspan="2" style="background:#2c3e6a;min-width:55px;">1차<br>검토</th>
         <th rowspan="2" style="background:#2c3e6a;min-width:55px;">1차<br>확정</th>
         <th colspan="2" style="background:#1a5c3a;min-width:130px;">2차 심사결과</th>
         <th rowspan="2" style="background:#1a5c3a;min-width:55px;">2차<br>확정</th>
@@ -1277,6 +1278,7 @@ function renderTable(){
 <td><input type="number" class="sc-input" min="0" max="20" value="${r.realizabilityScore||0}" onchange="updS(${rid},'realizabilityScore',this.value)"/></td>
 <td><input type="number" class="sc-input" min="0" max="10" value="${r.effortScore||0}" onchange="updS(${rid},'effortScore',this.value)"/></td>
 <td><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" onchange="updS(${rid},'continuityScore',this.value)"/></td>
+<td style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#1a3a5c;" title="1차 검토"/></td>
 <td style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstConfirmed?'checked':''} onchange="updF(${rid},'firstConfirmed',this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#1a3a5c;" title="1차 심사 확정"/></td>
 <td style="background:#f0faf5;"><input type="number" class="sc-input" min="0" value="${r.secondScore||0}" onchange="updSecond(${rid},this.value)" style="background:#f0faf5;"/></td>
 <td id="sc2g-${rid}" style="background:#f0faf5;">${gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-'))}</td>
@@ -1850,7 +1852,7 @@ function saveProposalToRegister(){
   } else {
     const maxNo=tableData.reduce((m,r)=>Math.max(m,r.no||0),0);
     const id=Date.now();
-    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondScore:0,secondGrade:'-',firstConfirmed:false,secondConfirmed:false,remark:'',typeScore:0,intangibleScore:0,creativityScore:0,realizabilityScore:0,effortScore:0,continuityScore:0,files:[],proposal};
+    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondScore:0,secondGrade:'-',firstReview:false,firstConfirmed:false,secondConfirmed:false,remark:'',typeScore:0,intangibleScore:0,creativityScore:0,realizabilityScore:0,effortScore:0,continuityScore:0,files:[],proposal};
     tableData.push(row);
   }
   saveData();
