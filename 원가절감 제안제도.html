@@ -428,6 +428,7 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
   </div>
   <div class="nav-item" id="nav-users" onclick="showTab('users',this)" style="display:none;">
    <span class="nav-icon">&#128101;</span>회원관리
+   <span class="nav-badge" id="badge-users" style="display:none;">0</span>
   </div>
  </nav>
  <div class="user-info-bar" id="user-info-bar"></div>
@@ -1033,6 +1034,11 @@ function onLoginSuccess(){
   document.getElementById('nav-users').style.display=isAdmin?'':'none';
   document.getElementById('nav-register').style.display=isAdmin?'':'none';
   document.getElementById('nav-results').style.display=isAdmin?'':'none';
+  if(isAdmin){
+    const pendingCount=getUsers().filter(u=>u.status==='pending').length;
+    const badgeEl=document.getElementById('badge-users');
+    if(badgeEl){badgeEl.textContent=pendingCount;badgeEl.style.display=pendingCount>0?'':'none';}
+  }
 }
 function doLogout(){
   if(!confirm('로그아웃 하시겠습니까?'))return;
@@ -1058,6 +1064,9 @@ function updateUserInfoBar(){
 function renderUsersTab(){
   const tbody=document.getElementById('users-tbody');if(!tbody)return;
   const users=getUsers();
+  const pendingCount=users.filter(u=>u.status==='pending').length;
+  const badgeEl=document.getElementById('badge-users');
+  if(badgeEl){badgeEl.textContent=pendingCount;badgeEl.style.display=pendingCount>0?'':'none';}
   if(!users.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:14px;color:#aaa;">가입 신청한 회원이 없습니다.</td></tr>';return;}
   tbody.innerHTML=users.map((u,i)=>{
     const statusColor=u.status==='approved'?'#28a745':u.status==='rejected'?'#e74c3c':'#f39c12';
