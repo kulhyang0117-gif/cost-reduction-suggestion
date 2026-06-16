@@ -423,7 +423,7 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
    <span class="nav-icon">&#128221;</span>접수대장
    <span class="nav-badge" id="badge-count">0</span>
   </div>
-  <div class="nav-item" id="nav-results" onclick="showTab('results',this)" style="display:none!important;">
+  <div class="nav-item" id="nav-results" onclick="showTab('results',this)" style="display:none;">
    <span class="nav-icon">&#127942;</span>검토결과
   </div>
   <div class="nav-item" id="nav-users" onclick="showTab('users',this)" style="display:none;">
@@ -722,11 +722,12 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
      </div>
     </div>
     <table class="results-table">
-     <thead><tr><th>건수</th><th>대상자</th><th>시상금액</th></tr></thead>
+     <thead><tr><th>건수</th><th>채택건수</th><th>대상자</th><th>시상금액</th></tr></thead>
      <tbody id="res-tbody"></tbody>
      <tfoot>
       <tr class="results-total">
        <td id="res-tc">-</td>
+       <td id="res-adopt-tc">-</td>
        <td>합 계</td>
        <td class="amount-cell">&#8361; <span id="res-grand">0</span></td>
       </tr>
@@ -763,6 +764,12 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
        <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-good-amount" oninput="saveAwards()" placeholder="0" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
       </tr>
       <tr>
+       <td style="border:1px solid #888;padding:6px 10px;text-align:center;">장려상</td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-encour-person" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-encour-theme" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-encour-amount" oninput="saveAwards()" placeholder="0" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
+      </tr>
+      <tr>
        <td colspan="2" style="border:none;"></td>
        <td style="background:#ffff00;font-weight:700;border:1px solid #888;padding:7px 10px;text-align:center;">소계</td>
        <td style="background:#ffff00;font-weight:700;border:1px solid #888;padding:7px 10px;text-align:center;">&#8361; <span id="award-subtotal">-</span></td>
@@ -786,7 +793,7 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
        <td style="border:1px solid #888;padding:6px 10px;text-align:center;">단체상</td>
        <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-team-name" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
        <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-team-theme" oninput="saveAwards()" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
-       <td style="border:1px solid #888;padding:6px 10px;text-align:center;font-weight:700;">500,000</td>
+       <td style="border:1px solid #888;padding:3px 5px;text-align:center;"><input id="award-team-amount" oninput="saveAwards()" placeholder="0" style="width:100%;border:none;outline:none;font-size:13px;font-family:inherit;text-align:center;" /></td>
       </tr>
      </table>
     </div>
@@ -1043,7 +1050,7 @@ function onLoginSuccess(){
   const canAccessRegister=isAdmin||['품질팀','공장장','부사장','대표이사'].includes(currentUser.dept);
   document.getElementById('nav-users').style.display=isSysAdmin?'':'none';
   document.getElementById('nav-register').style.display=canAccessRegister?'':'none';
-  document.getElementById('nav-results').style.display=isAdmin?'':'none';
+  document.getElementById('nav-results').style.display=isSysAdmin?'':'none';
   if(isAdmin){
     const pendingCount=getUsers().filter(u=>u.status==='pending').length;
     const badgeEl=document.getElementById('badge-users');
@@ -1415,34 +1422,45 @@ function renderResults(){
   const periodEl=document.getElementById('res-year-period');
   if(titleEl) titleEl.textContent=(yr?yr+'년 ':'')+'연간실적 결과보고';
   if(periodEl) periodEl.textContent=yr?'기간 : '+yr+'.1월 ~ '+yr+'년 12월':'기간 : 전체';
-  // 집계
-  const amap={},cmap={};
+  // 집계 (2차 채택점수 기반)
+  const cmap={},adoptMap={},sc2map={},amap={};
   data.forEach(r=>{
     const nm=r.proposer||'';if(!nm)return;
     cmap[nm]=(cmap[nm]||0)+1;
-    const sc=calcScore(r);
-    const g=r.grade||calcGrade(sc);
+    // 채택건수: 2차 secondScore > 0 이고 등급이 불채택이 아닌 경우
+    const sg=r.secondGrade||(r.secondScore>0?calcGrade(r.secondScore):'-');
+    if((r.secondScore||0)>0 && sg!=='불채택'){adoptMap[nm]=(adoptMap[nm]||0)+1;}
+    // 2차 채택점수 합계
+    sc2map[nm]=(sc2map[nm]||0)+(r.secondScore||0);
+    // 시상금액: 1차 등급 기반
+    const g=r.grade||calcGrade(calcScore(r));
     amap[nm]=(amap[nm]||0)+(GA[g]||0);
   });
-  const entries=Object.keys(amap).map(n=>({n,c:cmap[n]||0,a:amap[n]}));
+  const allNames=new Set([...Object.keys(cmap)]);
+  const entries=[...allNames].map(n=>({n,c:cmap[n]||0,adopt:adoptMap[n]||0,sc2:sc2map[n]||0,a:amap[n]||0}));
+  // 시상금액 높은 순 정렬
   entries.sort((a,b)=>b.a-a.a||b.c-a.c);
-  let grand=0,tc=0;
-  document.getElementById('res-tbody').innerHTML=entries.map(e=>{grand+=e.a;tc+=e.c;return'<tr><td>'+e.c+'</td><td>'+e.n+'</td><td class="amount-cell">'+e.a.toLocaleString()+'</td></tr>';}).join('');
+  let grand=0,tc=0,adoptTc=0;
+  document.getElementById('res-tbody').innerHTML=entries.map(e=>{grand+=e.a;tc+=e.c;adoptTc+=e.adopt;return'<tr><td>'+e.c+'</td><td>'+e.adopt+'</td><td>'+e.n+'</td><td class="amount-cell">'+e.a.toLocaleString()+'</td></tr>';}).join('');
   document.getElementById('res-grand').textContent=grand.toLocaleString();
   document.getElementById('res-tc').textContent=tc+'건';
+  const adoptTcEl=document.getElementById('res-adopt-tc');
+  if(adoptTcEl)adoptTcEl.textContent=adoptTc+'건';
   document.getElementById('res-total-count').textContent=data.length;
-  // 개인상 대상자 자동 추천 (건수 1위→최우수상, 2위→우수상)
-  const byCount=[...entries].sort((a,b)=>b.c-a.c||b.a-a.a);
+  // 개인상 자동 추천: 2차 채택점수 합계 순위
+  const byScore2=[...entries].sort((a,b)=>b.sc2-a.sc2);
   const bp=document.getElementById('award-best-person');
   const gp=document.getElementById('award-good-person');
-  if(bp)bp.value=byCount[0]?.n||'';
-  if(gp)gp.value=byCount[1]?.n||'';
-  // 단체상 대상팀 자동 추천 (부서별 건수 1위)
+  const ep=document.getElementById('award-encour-person');
+  if(bp&&!bp.value)bp.value=byScore2[0]?.n||'';
+  if(gp&&!gp.value)gp.value=byScore2[1]?.n||'';
+  if(ep&&!ep.value)ep.value=byScore2[2]?.n||'';
+  // 단체상 자동 추천: 부서별 2차 채택점수 합계 1위
   const dmap={};
-  data.forEach(r=>{const d=r.dept||'';if(d)dmap[d]=(dmap[d]||0)+1;});
+  data.forEach(r=>{const d=r.dept||'';if(d)dmap[d]=(dmap[d]||0)+(r.secondScore||0);});
   const topDept=Object.entries(dmap).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
   const tn=document.getElementById('award-team-name');
-  if(tn)tn.value=topDept;
+  if(tn&&!tn.value)tn.value=topDept;
 }
 
 // Modal
@@ -2141,7 +2159,7 @@ input[type=checkbox]{pointer-events:none;}</style></head>
 
 function saveAwards(){
   const v=id=>document.getElementById(id)?.value||'';
-  const d={bestPerson:v('award-best-person'),bestTheme:v('award-best-theme'),bestAmount:v('award-best-amount'),goodPerson:v('award-good-person'),goodTheme:v('award-good-theme'),goodAmount:v('award-good-amount'),teamName:v('award-team-name'),teamTheme:v('award-team-theme')};
+  const d={bestPerson:v('award-best-person'),bestTheme:v('award-best-theme'),bestAmount:v('award-best-amount'),goodPerson:v('award-good-person'),goodTheme:v('award-good-theme'),goodAmount:v('award-good-amount'),encourPerson:v('award-encour-person'),encourTheme:v('award-encour-theme'),encourAmount:v('award-encour-amount'),teamName:v('award-team-name'),teamTheme:v('award-team-theme'),teamAmount:v('award-team-amount')};
   localStorage.setItem('ssat_awards',JSON.stringify(d));
   calcAwardSubtotal();
   sbSync();
@@ -2152,13 +2170,14 @@ function loadAwards(){
     const sv=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
     sv('award-best-person',d.bestPerson);sv('award-best-theme',d.bestTheme);sv('award-best-amount',d.bestAmount);
     sv('award-good-person',d.goodPerson);sv('award-good-theme',d.goodTheme);sv('award-good-amount',d.goodAmount);
-    sv('award-team-name',d.teamName);sv('award-team-theme',d.teamTheme);
+    sv('award-encour-person',d.encourPerson);sv('award-encour-theme',d.encourTheme);sv('award-encour-amount',d.encourAmount);
+    sv('award-team-name',d.teamName);sv('award-team-theme',d.teamTheme);sv('award-team-amount',d.teamAmount);
   }catch(e){}
   calcAwardSubtotal();
 }
 function calcAwardSubtotal(){
   const n=id=>parseInt(String(document.getElementById(id)?.value||'').replace(/[^0-9]/g,''))||0;
-  const total=n('award-best-amount')+n('award-good-amount');
+  const total=n('award-best-amount')+n('award-good-amount')+n('award-encour-amount');
   const el=document.getElementById('award-subtotal');
   if(el)el.textContent=total>0?total.toLocaleString():'-';
 }
