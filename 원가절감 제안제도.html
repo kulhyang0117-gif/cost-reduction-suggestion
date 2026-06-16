@@ -146,6 +146,45 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
 .no-data{padding:40px;text-align:center;color:#999;font-size:14px;}
 .row-del{background:none;border:none;color:#ddd;cursor:pointer;font-size:14px;padding:2px 4px;}
 .row-del:hover{color:#dc3545;}
+
+/* ===== PC/Mobile 뷰 토글 ===== */
+.view-toggle{display:flex;gap:3px;background:#f0f2f5;border-radius:6px;padding:3px;}
+.view-btn{padding:5px 13px;border:none;border-radius:4px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:600;color:#888;background:transparent;transition:all .15s;}
+.view-btn.active{background:#1a3a5c;color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+
+/* ===== 모바일 모드 전체 레이아웃 ===== */
+body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:column;}
+.mobile-mode .sidebar{display:none!important;}
+.mobile-mode .main{height:auto;min-height:100vh;overflow:visible;}
+.mobile-mode .topbar{padding:10px 14px;}
+.mobile-mode .content{padding:12px 10px 75px;}
+.mobile-mode .cards{flex-direction:column;gap:8px;}
+.mobile-mode .card{min-width:unset;padding:12px 14px;}
+.mobile-mode .card-value{font-size:20px;}
+.mobile-mode .scroll-outer{max-height:none;overflow-x:hidden;}
+.mobile-mode .table-wrap table{display:none;}
+.mobile-mode .results-wrap{max-width:100%;padding:16px 12px;}
+
+/* ===== 모바일 하단 내비게이션 ===== */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#1a3a5c;z-index:600;flex-direction:row;box-shadow:0 -2px 10px rgba(0,0,0,.3);overflow-x:auto;}
+.mobile-mode .mobile-nav{display:flex;}
+.mob-nav-item{flex:1;min-width:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 2px 5px;color:#90b3d1;font-size:9px;cursor:pointer;border-top:2px solid transparent;gap:2px;transition:all .15s;white-space:nowrap;}
+.mob-nav-item.active{color:#fff;border-top-color:#4aabf0;background:rgba(255,255,255,.08);}
+.mob-nav-item .mob-icon{font-size:19px;line-height:1;}
+
+/* ===== 모바일 카드 (접수대장/제안서) ===== */
+.mob-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.1);padding:14px;margin-bottom:10px;border-left:4px solid #1a3a5c;cursor:pointer;transition:box-shadow .15s;}
+.mob-card:active{box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.mob-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.mob-card-no{font-size:12px;font-weight:700;color:#1a3a5c;}
+.mob-card-date{font-size:11px;color:#aaa;}
+.mob-card-title{font-size:13px;font-weight:700;color:#222;margin-bottom:7px;line-height:1.4;}
+.mob-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;}
+.mob-card-item{font-size:11.5px;display:flex;gap:4px;}
+.mob-card-lbl{color:#999;flex-shrink:0;}
+.mob-card-val{color:#333;font-weight:600;}
+.mob-card-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.mob-reg-empty{text-align:center;padding:40px 20px;color:#aaa;font-size:14px;}
 </style>
 </head>
 <body>
@@ -449,7 +488,14 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
    <div class="topbar-title" id="topbar-title">제안제도 관리지침서</div>
    <div class="topbar-sub" id="topbar-sub">시상 기준 및 등급별 안내</div>
   </div>
-  <div style="font-size:12px;color:#aaa;">경영지원 200208 | 전공정 5/5</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+   <div class="view-toggle">
+    <button class="view-btn active" id="btn-pc-view" onclick="setViewMode('pc')">💻 PC</button>
+    <button class="view-btn" id="btn-mob-view" onclick="setViewMode('mobile')">📱 모바일</button>
+   </div>
+   <span style="font-size:11px;color:#ccc;">|</span>
+   <span style="font-size:11px;color:#aaa;">경영지원 200208</span>
+  </div>
  </div>
  <div class="content">
 
@@ -701,6 +747,8 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
       <tbody id="reg-tbody"></tbody>
      </table>
     </div>
+    <!-- 모바일 카드 뷰 -->
+    <div id="mob-reg-cards" style="display:none;padding:4px 0;"></div>
    </div>
   </div>
 
@@ -1050,6 +1098,11 @@ function onLoginSuccess(){
   document.getElementById('nav-users').style.display=isSysAdmin?'':'none';
   document.getElementById('nav-register').style.display=canAccessRegister?'':'none';
   document.getElementById('nav-results').style.display=isAdmin?'':'none';
+  // 모바일 nav 탭도 동기화
+  const mn=id=>document.getElementById('mob-nav-'+id);
+  if(mn('users')) mn('users').style.display=isSysAdmin?'':'none';
+  if(mn('register')) mn('register').style.display=canAccessRegister?'':'none';
+  if(mn('results')) mn('results').style.display=isAdmin?'':'none';
   if(isAdmin){
     const pendingCount=getUsers().filter(u=>u.status==='pending').length;
     const badgeEl=document.getElementById('badge-users');
@@ -1552,13 +1605,18 @@ const TABS={guidelines:{title:'제안제도 관리지침서',sub:'시상 기준 
 function showTab(id,el){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
-  el.classList.add('active');
+  if(el) el.classList.add('active');
+  const mobEl=document.getElementById('mob-nav-'+id);
+  if(mobEl) mobEl.classList.add('active');
   document.getElementById('topbar-title').textContent=TABS[id].title;
   document.getElementById('topbar-sub').textContent=TABS[id].sub;
   if(id==='summary') renderSummary();
   if(id==='proposal') renderProposalList();
   if(id==='users') renderUsersTab();
+  if(id==='register'&&document.body.classList.contains('mobile-mode')) renderTableMobile();
+  if(document.body.classList.contains('mobile-mode')) window.scrollTo(0,0);
 }
 
 // 종합현황
@@ -2180,7 +2238,65 @@ function calcAwardSubtotal(){
   const el=document.getElementById('award-subtotal');
   if(el)el.textContent=total>0?total.toLocaleString():'-';
 }
-function renderAll(){initYearFilter();initSumYear();loadAwards();renderTable();renderResults();renderProposalList();renderSummary();}
+function renderAll(){
+  initYearFilter();initSumYear();loadAwards();renderTable();renderResults();renderProposalList();renderSummary();
+  if(document.body.classList.contains('mobile-mode')) renderTableMobile();
+}
+
+/* ===== 뷰 모드 전환 ===== */
+function setViewMode(mode){
+  localStorage.setItem('ssat_view_mode',mode);
+  const isMob=mode==='mobile';
+  document.body.classList.toggle('mobile-mode',isMob);
+  document.getElementById('btn-pc-view').classList.toggle('active',!isMob);
+  document.getElementById('btn-mob-view').classList.toggle('active',isMob);
+  // 접수대장 테이블/카드 전환
+  const tbl=document.querySelector('#tab-register .scroll-outer');
+  const cards=document.getElementById('mob-reg-cards');
+  if(tbl) tbl.style.display=isMob?'none':'';
+  if(cards) cards.style.display=isMob?'block':'none';
+  if(isMob) renderTableMobile();
+}
+
+/* ===== 모바일 접수대장 카드 렌더링 ===== */
+function renderTableMobile(){
+  const container=document.getElementById('mob-reg-cards');
+  if(!container) return;
+  const filtered=getFilteredData();
+  if(!filtered.length){container.innerHTML='<div class="mob-reg-empty">등록된 제안이 없습니다.</div>';return;}
+  const stColor={G:'#28a745',Y:'#e6a817',R:'#e74c3c'};
+  const stLabel={G:'G 완료',Y:'Y 진행중',R:'R 미진행'};
+  container.innerHTML=filtered.map(r=>{
+    const score=calcScore(r);
+    const grade=r.grade||calcGrade(score);
+    const chk=v=>v?'<span style="color:#28a745;font-weight:700;">✔</span>':'<span style="color:#ddd;">-</span>';
+    const sg=r.secondGrade||(r.secondScore>0?calcGrade(r.secondScore):'-');
+    return `<div class="mob-card" onclick="viewRegRow(${r.id})">
+  <div class="mob-card-head">
+    <span class="mob-card-no">${escH(fmtAccNo(r))}</span>
+    <span class="mob-card-date">${escH(r.date||'')}</span>
+  </div>
+  <div class="mob-card-title">${escH((r.theme||'').replace(/\n/g,' '))}</div>
+  <div class="mob-card-grid">
+    <div class="mob-card-item"><span class="mob-card-lbl">부서</span><span class="mob-card-val">${escH(r.dept||'-')}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">제안자</span><span class="mob-card-val">${escH(r.proposer||'-')}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">1차합계</span><span class="mob-card-val">${score}점</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">1차등급</span><span class="mob-card-val">${grade}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">1차검토</span><span class="mob-card-val">${chk(r.firstReview)}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">1차확정</span><span class="mob-card-val">${chk(r.firstConfirmed)}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">2차점수</span><span class="mob-card-val">${r.secondScore||0}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">2차등급</span><span class="mob-card-val">${sg}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">2차확정</span><span class="mob-card-val">${chk(r.secondConfirmed)}</span></div>
+    <div class="mob-card-item"><span class="mob-card-lbl">효과금액</span><span class="mob-card-val">${escH(r.effectAmount||'-')}</span></div>
+  </div>
+  <div class="mob-card-tags">
+    <span class="badge" style="background:${stColor[r.status]||'#aaa'};color:#fff;">${stLabel[r.status]||'-'}</span>
+    ${r.proposal?'<span style="background:#1a3a5c;color:#fff;font-size:10px;padding:2px 8px;border-radius:8px;">📄 제안서</span>':''}
+  </div>
+</div>`;
+  }).join('');
+}
+
 window.onload=async function(){
   tableData=loadData();
   renderAll();
@@ -2196,6 +2312,9 @@ window.onload=async function(){
       sessionStorage.removeItem('ssat_session');
     }
   }
+  // 저장된 뷰 모드 복원
+  const savedMode=localStorage.getItem('ssat_view_mode')||'pc';
+  if(savedMode==='mobile') setViewMode('mobile');
   // 클라우드 우선: 로컬 데이터로 덮어쓰지 않고 클라우드에서 먼저 불러옴
   const loaded=await sbLoad();
   if(loaded){renderAll();}
@@ -2323,6 +2442,16 @@ function closeLightbox(){
   </div>
  </div>
 </div>
+<!-- 모바일 하단 내비게이션 -->
+<div class="mobile-nav" id="mobile-nav">
+ <div class="mob-nav-item" id="mob-nav-guidelines" onclick="showTab('guidelines',null)"><span class="mob-icon">📋</span>지침서</div>
+ <div class="mob-nav-item" id="mob-nav-summary" onclick="showTab('summary',null)"><span class="mob-icon">📊</span>현황</div>
+ <div class="mob-nav-item" id="mob-nav-proposal" onclick="showTab('proposal',null)"><span class="mob-icon">📄</span>제안서</div>
+ <div class="mob-nav-item" id="mob-nav-register" onclick="showTab('register',null)" style="display:none;"><span class="mob-icon">📝</span>접수대장</div>
+ <div class="mob-nav-item" id="mob-nav-results" onclick="showTab('results',null)" style="display:none;"><span class="mob-icon">🏆</span>검토결과</div>
+ <div class="mob-nav-item" id="mob-nav-users" onclick="showTab('users',null)" style="display:none;"><span class="mob-icon">👥</span>회원관리</div>
+</div>
+
 <div id="img-lightbox" onclick="closeLightbox()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out;">
   <img id="img-lightbox-img" src="" style="max-width:90vw;max-height:90vh;border-radius:4px;box-shadow:0 4px 40px rgba(0,0,0,0.6);object-fit:contain;" onclick="event.stopPropagation()"/>
   <button onclick="closeLightbox()" style="position:fixed;top:18px;right:28px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1;opacity:0.8;">✕</button>
