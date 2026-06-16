@@ -1273,7 +1273,7 @@ function renderTable(){
     const score2Dis = !canSC ? 'disabled' : '';
     const score2Style = score2Dis ? 'opacity:0.5;cursor:not-allowed;background:#f0faf5;' : 'background:#f0faf5;';
     const stBadge=r.status==='G'?'<span class="badge badge-G">G 완료</span>':r.status==='Y'?'<span class="badge badge-Y">Y 진행중</span>':'<span class="badge badge-R">R 미진행</span>';
-    rows+=`<tr id="row-${rid}">
+    rows+=`<tr id="row-${rid}" onclick="viewRegRow(${rid})" style="cursor:pointer;">
 <td style="color:#aaa;font-size:10px;">${i+1}</td>
 <td style="font-weight:700;color:#1a3a5c;white-space:nowrap;">${fmtAccNo(r)}</td>
 <td style="white-space:nowrap;">${escH(r.date||'')}</td>
@@ -1286,24 +1286,24 @@ function renderTable(){
 <td style="text-align:right;white-space:nowrap;">${escH(r.effectAmount||'-')}</td>
 <td class="sc-total" id="st-${rid}">${score}</td>
 <td id="gc-${rid}">${gradeHtml(grade)}</td>
-<td><input type="number" class="sc-input" min="0" max="40" value="${r.typeScore||0}" ${scoreDis} onchange="updS(${rid},'typeScore',this.value)" style="${scoreStyle}"/></td>
-<td><input type="number" class="sc-input" min="0" max="10" value="${r.intangibleScore||0}" ${scoreDis} onchange="updS(${rid},'intangibleScore',this.value)" style="${scoreStyle}"/></td>
-<td><input type="number" class="sc-input" min="0" max="15" value="${r.creativityScore||0}" ${scoreDis} onchange="updS(${rid},'creativityScore',this.value)" style="${scoreStyle}"/></td>
-<td><input type="number" class="sc-input" min="0" max="20" value="${r.realizabilityScore||0}" ${scoreDis} onchange="updS(${rid},'realizabilityScore',this.value)" style="${scoreStyle}"/></td>
-<td><input type="number" class="sc-input" min="0" max="10" value="${r.effortScore||0}" ${scoreDis} onchange="updS(${rid},'effortScore',this.value)" style="${scoreStyle}"/></td>
-<td><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" ${scoreDis} onchange="updS(${rid},'continuityScore',this.value)" style="${scoreStyle}"/></td>
-<td style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} ${frDis} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;${frDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${frDis?(canFR?'채택 점수 입력 후 가능':'권한 없음'):'1차 검토'}"/></td>
-<td style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstConfirmed?'checked':''} ${fcDis} onchange="updF(${rid},'firstConfirmed',this.checked)" style="width:16px;height:16px;${fcDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${fcDis?(canFC?'1차 검토 완료 후 가능':'권한 없음'):'1차 심사 확정'}"/></td>
-<td style="background:#f0faf5;"><input type="number" class="sc-input" min="0" value="${r.secondScore||0}" ${score2Dis} onchange="updSecond(${rid},this.value)" style="${score2Style}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="40" value="${r.typeScore||0}" ${scoreDis} onchange="updS(${rid},'typeScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="10" value="${r.intangibleScore||0}" ${scoreDis} onchange="updS(${rid},'intangibleScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="15" value="${r.creativityScore||0}" ${scoreDis} onchange="updS(${rid},'creativityScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="20" value="${r.realizabilityScore||0}" ${scoreDis} onchange="updS(${rid},'realizabilityScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="10" value="${r.effortScore||0}" ${scoreDis} onchange="updS(${rid},'effortScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" ${scoreDis} onchange="updS(${rid},'continuityScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} ${frDis} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;${frDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${frDis?(canFR?'채택 점수 입력 후 가능':'권한 없음'):'1차 검토'}"/></td>
+<td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstConfirmed?'checked':''} ${fcDis} onchange="updF(${rid},'firstConfirmed',this.checked)" style="width:16px;height:16px;${fcDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${fcDis?(canFC?'1차 검토 완료 후 가능':'권한 없음'):'1차 심사 확정'}"/></td>
+<td onclick="event.stopPropagation()" style="background:#f0faf5;"><input type="number" class="sc-input" min="0" value="${r.secondScore||0}" ${score2Dis} onchange="updSecond(${rid},this.value)" style="${score2Style}"/></td>
 <td id="sc2g-${rid}" style="background:#f0faf5;">${gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-'))}</td>
-<td style="text-align:center;background:#e0f2ea;"><input type="checkbox" ${r.secondConfirmed?'checked':''} ${scDis} onchange="updF(${rid},'secondConfirmed',this.checked)" style="width:16px;height:16px;${scDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a5c3a;" title="${scDis?(canSC?'1차 확정 후 가능':'권한 없음'):'2차 심사 확정'}"/></td>
+<td onclick="event.stopPropagation()" style="text-align:center;background:#e0f2ea;"><input type="checkbox" ${r.secondConfirmed?'checked':''} ${scDis} onchange="updF(${rid},'secondConfirmed',this.checked)" style="width:16px;height:16px;${scDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a5c3a;" title="${scDis?(canSC?'1차 확정 후 가능':'권한 없음'):'2차 심사 확정'}"/></td>
 <td id="fc-${rid}"></td>
-<td><input class="tbl-input" value="${escH(r.remark||'')}" onchange="updF(${rid},'remark',this.value)"/></td>
-<td style="text-align:center;white-space:nowrap;">${r.proposal
+<td onclick="event.stopPropagation()"><input class="tbl-input" value="${escH(r.remark||'')}" onchange="updF(${rid},'remark',this.value)"/></td>
+<td onclick="event.stopPropagation()" style="text-align:center;white-space:nowrap;">${r.proposal
   ?`<button onclick="event.stopPropagation();openPropForm(${rid})" style="background:#e65100;color:#fff;border:none;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;">&#9998; 수정</button>`
   :`<button onclick="event.stopPropagation();openModal(${rid})" style="background:#6c757d;color:#fff;border:none;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;">&#9998; 수정</button>`
 }</td>
-<td><button class="row-del" onclick="delRow(${rid})" title="삭제">&#128465;</button></td>
+<td onclick="event.stopPropagation()"><button class="row-del" onclick="delRow(${rid})" title="삭제">&#128465;</button></td>
 </tr>`;
   });
   tbody.innerHTML=rows;
@@ -2202,6 +2202,41 @@ function openPwChangeModal(idx){
 function closePwChangeModal(){
   document.getElementById('pw-change-modal').style.display='none';
 }
+function viewRegRow(rid){
+  const r=tableData.find(x=>x.id==rid);
+  if(!r) return;
+  const score=calcScore(r);
+  const grade=r.grade||calcGrade(score);
+  const stLabel=r.status==='G'?'G 완료':r.status==='Y'?'Y 진행중':'R 미진행';
+  const stColor=r.status==='G'?'#28a745':r.status==='Y'?'#e6a817':'#e74c3c';
+  function row2(l1,v1,l2,v2){
+    return `<tr><td style="background:#f0f4f8;font-weight:600;padding:7px 10px;border:1px solid #dde;white-space:nowrap;width:90px;">${l1}</td><td style="padding:7px 10px;border:1px solid #dde;">${v1}</td><td style="background:#f0f4f8;font-weight:600;padding:7px 10px;border:1px solid #dde;white-space:nowrap;width:90px;">${l2}</td><td style="padding:7px 10px;border:1px solid #dde;">${v2}</td></tr>`;
+  }
+  function secH(title,color){return `<tr><td colspan="4" style="background:${color};color:#fff;font-weight:700;padding:7px 12px;font-size:12px;">${title}</td></tr>`;}
+  const chk=(v)=>v?'<span style="color:#1a5c3a;font-weight:700;">✔ 완료</span>':'<span style="color:#aaa;">-</span>';
+  const html=`<table style="width:100%;border-collapse:collapse;font-size:13px;">
+${secH('기본 정보','#1a3a5c')}
+${row2('접수 NO',`<b>${escH(fmtAccNo(r))}</b>`,'제안일자',escH(r.date||'-'))}
+${row2('제안부서',escH(r.dept||'-'),'제안자',escH(r.proposer||'-'))}
+${row2('진행상태',`<span style="color:${stColor};font-weight:700;">${stLabel}</span>`,'효과구분',escH(r.effectType||'-'))}
+${row2('효과금액',escH(r.effectAmount||'-'),'제안주제','<span style="white-space:pre-wrap;">'+escH(r.theme||'-')+'</span>')}
+${secH('1차 심사결과','#2c3e6a')}
+${row2('유형점수(40)',r.typeScore||0,'무형점수(10)',r.intangibleScore||0)}
+${row2('창의성(15)',r.creativityScore||0,'실현성(20)',r.realizabilityScore||0)}
+${row2('노력도(10)',r.effortScore||0,'계속성(5)',r.continuityScore||0)}
+${row2('1차 합계',`<b>${score}점</b>`,'1차 등급',gradeHtml(grade))}
+${row2('1차 검토',chk(r.firstReview),'1차 확정',chk(r.firstConfirmed))}
+${secH('2차 심사결과','#1a5c3a')}
+${row2('채택점수',r.secondScore||0,'채택등급',gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-')))}
+${row2('2차 확정',chk(r.secondConfirmed),'비고',escH(r.remark||'-'))}
+</table>`;
+  document.getElementById('reg-view-body').innerHTML=html;
+  const propBtn=document.getElementById('reg-view-prop-btn');
+  if(r.proposal){propBtn.style.display='';propBtn.onclick=function(){closeRegView();viewProposal(rid);};}
+  else{propBtn.style.display='none';}
+  document.getElementById('reg-view-modal').style.display='flex';
+}
+function closeRegView(){document.getElementById('reg-view-modal').style.display='none';}
 function submitPwChange(){
   const newPw=document.getElementById('pw-change-new').value;
   const confirmPw=document.getElementById('pw-change-confirm').value;
@@ -2235,6 +2270,20 @@ function closeLightbox(){
 }
 </script>
 
+<!-- 접수대장 행 보기 모달 -->
+<div id="reg-view-modal" onclick="if(event.target===this)closeRegView()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99996;justify-content:center;align-items:flex-start;padding-top:40px;">
+ <div style="background:#fff;border-radius:12px;width:680px;max-width:98vw;max-height:88vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.3);">
+  <div style="padding:15px 20px;background:#163060;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;">
+   <span style="color:#fff;font-size:14px;font-weight:700;">&#128203; 접수대장 상세</span>
+   <button onclick="closeRegView()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+  </div>
+  <div id="reg-view-body" style="padding:20px;"></div>
+  <div style="padding:12px 20px 16px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #e0e6ed;">
+   <button id="reg-view-prop-btn" onclick="" style="background:#1a3a5c;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-size:13px;cursor:pointer;display:none;">&#128196; 제안서 보기</button>
+   <button onclick="closeRegView()" style="background:#e0e6ed;color:#333;border:none;border-radius:5px;padding:8px 18px;font-size:13px;cursor:pointer;">닫기</button>
+  </div>
+ </div>
+</div>
 <div id="pw-change-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99997;justify-content:center;align-items:center;">
  <div style="background:#fff;border-radius:12px;width:360px;max-width:95vw;box-shadow:0 10px 40px rgba(0,0,0,.3);">
   <div style="padding:16px 20px;background:#1a3a5c;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
