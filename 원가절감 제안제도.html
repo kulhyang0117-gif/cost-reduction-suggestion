@@ -1263,7 +1263,7 @@ function renderTable(){
     const score=calcScore(r);
     const grade=r.grade||calcGrade(score);
     const rid=r.id;
-    const frDis = !canFR ? 'disabled' : '';
+    const frDis = (!canFR || r.firstConfirmed) ? 'disabled' : '';
     const fcDis = (!canFC || !r.firstReview) ? 'disabled' : '';
     const scDis = (!canSC || !r.firstConfirmed) ? 'disabled' : '';
     // 1차 심사 점수: 품질팀(1차검토 전)·공장장(1차확정 전)만 수정 가능
@@ -1343,6 +1343,12 @@ function saveTheme(){
 function updF(rid,field,val){
   const r=tableData.find(x=>x.id==rid);
   if(!r) return;
+  // 체크박스 권한 검증
+  if(field==='firstReview' && !(currentUser&&currentUser.dept==='품질팀')) return;
+  if(field==='firstConfirmed' && !(currentUser&&currentUser.dept==='공장장')) return;
+  if(field==='secondConfirmed' && !(currentUser&&(currentUser.dept==='부사장'||currentUser.dept==='대표이사'))) return;
+  // 상위 단계 확정 후 하위 변경 방지
+  if(field==='firstReview' && r.firstConfirmed) return;
   r[field]=val;
   if(field==='dept'){
     const ps=DP[val]||[];
