@@ -1351,6 +1351,7 @@ function updF(rid,field,val){
   }
   saveData();
   updCards();
+  if(['firstReview','firstConfirmed','secondConfirmed'].includes(field)) renderTable();
 }
 function updS(rid,field,val){
   const r=tableData.find(x=>x.id==rid);
