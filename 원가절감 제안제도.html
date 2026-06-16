@@ -2180,7 +2180,7 @@ function calcAwardSubtotal(){
   const el=document.getElementById('award-subtotal');
   if(el)el.textContent=total>0?total.toLocaleString():'-';
 }
-function renderAll(){initYearFilter();initSumYear();renderTable();renderResults();renderProposalList();renderSummary();loadAwards();}
+function renderAll(){initYearFilter();initSumYear();loadAwards();renderTable();renderResults();renderProposalList();renderSummary();}
 window.onload=async function(){
   tableData=loadData();
   renderAll();
