@@ -2007,7 +2007,7 @@ function delProposal(rid){
   saveData();initYearFilter();initSumYear();renderTable();renderResults();renderProposalList();
 }
 const CATS=['','①생산성향상','②품질향상','③원가절감','④환경안전개선','⑤치공구개선','⑥사무개선','⑦영업서비스개선','⑧신제품','⑨설비개선','⑩작업방법개선','⑪정보사항','⑫복지사기개선'];
-function propFormHtml(r,forPrint){
+function propFormHtml(r,forPrint,forExcel,imgReg){
   const p=r.proposal||{};
   const eh=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const pw=s=>eh(s).replace(/\n/g,'<br>');
@@ -2015,46 +2015,91 @@ function propFormHtml(r,forPrint){
   const LB='background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;color:#222;white-space:nowrap;text-align:center;';
   const LBL='background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;color:#222;white-space:nowrap;';
   const TD='border:1px solid #888;padding:4px 7px;';
-  const fs=forPrint?'13px':'12px';
-  const SL='background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:11px;width:46px;min-width:46px;border-right:1px solid #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.4;';
+  const fs=forExcel?'11pt':forPrint?'13px':'12px';
+  const SL=`background:#f0f0f0;font-weight:700;color:#222;text-align:center;font-size:${forExcel?'11pt':'11px'};width:46px;min-width:46px;border:none;border-right:1px solid #ccc;line-height:1.4;vertical-align:middle;`;
+  const ITD='border:none;padding:4px 6px;vertical-align:top;';
   // render tabs content for 기존/변경
   function renderTabImgs(imgs){
     const a=Array.isArray(imgs)?imgs:(imgs?[imgs]:[]);
-    return a.filter(s=>s&&s.startsWith('data:')).length
-      ?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">${a.filter(s=>s&&s.startsWith('data:')).map(s=>`<img src="${s}" onclick="openLightbox('${s}')" style="width:110px;height:90px;object-fit:cover;border-radius:3px;cursor:zoom-in;" title="클릭하여 확대"/>`).join('')}</div>`:'';
+    const valid=a.filter(s=>s&&s.startsWith('data:'));
+    if(!valid.length) return '';
+    if(forExcel&&imgReg){
+      return`<div style="margin-top:4px;">${valid.map(s=>{const nm=imgReg(s);return`<img src="${nm}" style="width:110px;height:90px;object-fit:cover;border-radius:3px;display:inline-block;margin:2px;">`;}).join('')}</div>`;
+    }
+    if(forExcel) return`<div style="color:#888;font-size:10pt;">[사진 ${valid.length}장]</div>`;
+    return`<div style="margin-top:4px;">${valid.map(s=>`<img src="${s}" ${forPrint?'':'onclick="openLightbox(\''+s+'\')" '}style="width:110px;height:90px;object-fit:cover;border-radius:3px;${forPrint?'':'cursor:zoom-in;'}display:inline-block;margin:2px;" ${forPrint?'':'title="클릭하여 확대"'}/>`).join('')}</div>`;
   }
+  function renderImgPlaceholder(imgs){return '';}
   function renderTabs(tabs,fallbackText,fallbackImgs){
     const data=tabs&&tabs.length?tabs:[{text:fallbackText||'',imgs:fallbackImgs||[]}];
     if(data.length===1){
-      return`<div style="padding:4px 6px;white-space:pre-wrap;font-size:${fs};">${pw(data[0].text)||''}${renderTabImgs(data[0].imgs)}</div>`;
+      return`<div style="padding:4px 6px;white-space:pre-wrap;font-size:${fs};">${pw(data[0].text)||''}${renderTabImgs(data[0].imgs)}${renderImgPlaceholder(data[0].imgs)}</div>`;
     }
     return data.map((t,i)=>`
       <div style="margin-bottom:4px;">
         <div style="display:inline-block;background:#1a3a5c;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-bottom:2px;">${i+1}</div>
-        <div style="padding:2px 6px;white-space:pre-wrap;font-size:${fs};">${pw(t.text)||''}${renderTabImgs(t.imgs)}</div>
+        <div style="padding:2px 6px;white-space:pre-wrap;font-size:${fs};">${pw(t.text)||''}${renderTabImgs(t.imgs)}${renderImgPlaceholder(t.imgs)}</div>
       </div>`).join('');
   }
-  return`<div style="text-align:center;font-size:${forPrint?'20px':'18px'};font-weight:700;letter-spacing:14px;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:8px;">제　　　안　　　서</div>
-<table style="border-collapse:collapse;width:100%;font-size:${fs};">
-<tr>
- <td style="${LBL}width:62px;">소 속</td>
- <td style="${TD}width:110px;">${eh(r.dept)}</td>
- <td style="${LBL}width:60px;">접수 NO</td>
- <td style="${TD}width:82px;">${eh(p.no||'-')}</td>
- <td style="${LBL}width:55px;">제 출 일</td>
- <td style="${TD}width:130px;">${eh(r.date)}</td>
- <td style="${LBL}width:50px;">성 명</td>
- <td colspan="2" style="${TD}width:110px;">${eh(r.proposer)}</td>
- <td style="${LBL}width:62px;">실시구분</td>
- <td style="${TD}">${eh(p.isImpl||'미실시')}</td>
+  // 열 너비: Excel 전용 (A열=20단위≈25px, C~F=14단위≈17px)
+  // A=15, J=10, K=20 Excel단위 → 실측비율(34단위=42px) 적용
+  const cw=forExcel?{a:'36px',b:'70px',c:'17px',d:'17px',e:'17px',f:'17px',g:'40px',h:'80px',i:'32px',j:'144px'}
+                   :{a:'62px',b:'110px',c:'60px',d:'82px',e:'55px',f:'130px',g:'50px',h:'110px',i:'62px',j:''};
+  // 행 높이: Excel은 더 넓게
+  const H=forExcel?{hdr:'42px',cat:'38px',subhdr:'34px',idea:'110px',photo:'165px',prob:'125px',costdet:'70px',costhdr:'38px',costval:'44px'}
+                  :{hdr:'32px',cat:'30px',subhdr:'28px',idea:'75px',photo:'150px',prob:'90px',costdet:'55px',costhdr:'30px',costval:'34px'};
+  const titleHtml=forExcel
+    ?`<table style="border-collapse:collapse;width:100%;"><tr style="height:53px;"><td colspan="10" style="text-align:center;font-size:20pt;font-weight:700;letter-spacing:14px;border:none;border-bottom:2px solid #333;padding-bottom:8px;">제　　　안　　　서</td><td style="border:none;font-size:8pt;color:red;vertical-align:bottom;text-align:right;">${new Date().toLocaleTimeString()}</td></tr></table>`
+    :`<div style="text-align:center;font-size:${forPrint?'20px':'18px'};font-weight:700;letter-spacing:14px;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:8px;">제　　　안　　　서</div>`;
+  // 열 너비: colgroup + 숨김 행(td width 속성) 이중 적용
+  const colgroup=forExcel?`<colgroup>
+<col width="36" style="mso-width-source:userset;mso-width-alt:1316;width:27pt">
+<col width="70" style="mso-width-source:userset;mso-width-alt:2560;width:52pt">
+<col width="17" style="mso-width-source:userset;mso-width-alt:622;width:13pt">
+<col width="17" style="mso-width-source:userset;mso-width-alt:622;width:13pt">
+<col width="17" style="mso-width-source:userset;mso-width-alt:622;width:13pt">
+<col width="17" style="mso-width-source:userset;mso-width-alt:622;width:13pt">
+<col width="40" style="mso-width-source:userset;mso-width-alt:1463;width:30pt">
+<col width="70" style="mso-width-source:userset;mso-width-alt:2560;width:52pt">
+<col width="10" style="mso-width-source:userset;mso-width-alt:366;width:8pt">
+<col width="32" style="mso-width-source:userset;mso-width-alt:1170;width:24pt">
+<col width="144" style="mso-width-source:userset;mso-width-alt:5266;width:108pt">
+</colgroup>
+<tr style="height:0;line-height:0;font-size:0;">
+<td width="36" style="border:none;padding:0;"></td>
+<td width="70" style="border:none;padding:0;"></td>
+<td width="17" style="border:none;padding:0;"></td>
+<td width="17" style="border:none;padding:0;"></td>
+<td width="17" style="border:none;padding:0;"></td>
+<td width="17" style="border:none;padding:0;"></td>
+<td width="40" style="border:none;padding:0;"></td>
+<td width="70" style="border:none;padding:0;"></td>
+<td width="10" style="border:none;padding:0;"></td>
+<td width="32" style="border:none;padding:0;"></td>
+<td width="144" style="border:none;padding:0;"></td>
+</tr>`:'';
+  return`${titleHtml}
+<table style="border-collapse:collapse;${forExcel?'':'width:100%;'}font-size:${fs};">
+${colgroup}
+<tr style="height:${H.hdr};">
+ <td style="${LBL}width:${cw.a};">소 속</td>
+ <td style="${TD}width:${cw.b};">${eh(r.dept)}</td>
+ <td style="${LBL}width:${cw.c};">접수 NO</td>
+ <td style="${TD}width:${cw.d};">${eh(p.no||'-')}</td>
+ <td style="${LBL}width:${cw.e};">제 출 일</td>
+ <td style="${TD}width:${cw.f};">${eh(r.date)}</td>
+ <td style="${LBL}width:${cw.g};">성 명</td>
+ <td colspan="2" style="${TD}width:${cw.h};">${eh(r.proposer)}</td>
+ <td style="${LBL}width:${cw.i};">실시구분</td>
+ <td style="${TD}${cw.j?'width:'+cw.j+';':''}">${eh(p.isImpl||'미실시')}</td>
 </tr>
-<tr>
+<tr style="height:${H.hdr};">
  <td style="${LBL}">제 목</td>
  <td colspan="8" style="${TD}">${eh(r.theme)}</td>
  <td style="${LB}">유 형</td>
  <td style="${TD}">${eh(p.type||'유형')}</td>
 </tr>
-<tr>
+<tr style="height:${H.hdr};">
  <td style="${LB}">효과분석</td>
  <td colspan="2" style="${TD}">${eh(r.effectType||'-')}</td>
  <td style="${LB}">진행상태</td>
@@ -2062,60 +2107,72 @@ function propFormHtml(r,forPrint){
  <td style="${LB}">실시부서</td>
  <td style="${TD}">${eh(p.implDept||'-')}</td>
 </tr>
-<tr>
- <td rowspan="2" style="${LBL}text-align:center;vertical-align:middle;font-size:11px;padding:4px 6px;">제안내용<br>분류</td>
- <td colspan="10" style="${TD}font-size:11px;">${CATS.slice(1,7).map((c,i)=>`<label style="margin-right:12px;"><input type="checkbox" disabled ${cat.includes(String(i+1))?'checked':''}> ${c}</label>`).join('')}</td>
+<tr style="height:${H.cat};">
+ <td rowspan="2" style="${LBL}text-align:center;vertical-align:middle;font-size:${forExcel?'11pt':'11px'};padding:4px 6px;">제안내용<br>분류</td>
+ <td colspan="10" style="${TD}font-size:${forExcel?'11pt':'11px'};">${CATS.slice(1,7).map((c,i)=>forExcel?`<span style="margin-right:10px;font-size:11pt;">${cat.includes(String(i+1))?'☑':'☐'} ${c}</span>`:`<label style="margin-right:12px;"><input type="checkbox" disabled ${cat.includes(String(i+1))?'checked':''}> ${c}</label>`).join('')}</td>
 </tr>
-<tr>
- <td colspan="10" style="${TD}font-size:11px;">${CATS.slice(7,13).map((c,i)=>`<label style="margin-right:12px;"><input type="checkbox" disabled ${cat.includes(String(i+7))?'checked':''}> ${c}</label>`).join('')}</td>
+<tr style="height:${H.cat};">
+ <td colspan="10" style="${TD}font-size:${forExcel?'11pt':'11px'};">${CATS.slice(7,13).map((c,i)=>forExcel?`<span style="margin-right:10px;font-size:11pt;">${cat.includes(String(i+7))?'☑':'☐'} ${c}</span>`:`<label style="margin-right:12px;"><input type="checkbox" disabled ${cat.includes(String(i+7))?'checked':''}> ${c}</label>`).join('')}</td>
 </tr>
-<tr>
- <td rowspan="4" style="${LBL}text-align:center;writing-mode:vertical-rl;padding:6px;letter-spacing:3px;font-size:11px;">제 안 자 작 성 란</td>
+<tr style="height:${H.subhdr};">
+ <td rowspan="4" style="${LBL}text-align:center;writing-mode:vertical-rl;padding:6px;letter-spacing:3px;font-size:${forExcel?'11pt':'11px'};">제 안 자 작 성 란</td>
  <td colspan="6" style="${LB}padding:6px;letter-spacing:4px;">개　　선　　전</td>
  <td colspan="4" style="${LB}padding:6px;letter-spacing:4px;">개　　선　　후</td>
 </tr>
-<tr>
+<tr style="height:${H.idea};">
  <td colspan="6" style="${TD}padding:0;vertical-align:top;">
-  <div style="display:flex;min-height:50px;"><div style="${SL}padding:4px 3px;">개선<br>Idea</div>
-  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.idea)||'&nbsp;'}</div></div>
+  <table style="width:100%;border-collapse:collapse;height:${H.idea};"><tr style="height:${H.idea};">
+   <td style="${SL}padding:4px 3px;width:46px;height:${H.idea};">개선<br>Idea</td>
+   <td style="${ITD}white-space:pre-wrap;font-size:${fs};">${pw(p.idea)||'&nbsp;'}</td>
+  </tr></table>
  </td>
  <td colspan="4" style="${TD}padding:0;vertical-align:top;">
-  <div style="display:flex;min-height:50px;"><div style="${SL}padding:4px 3px;">실 시</div>
-  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.afterImpl)||'&nbsp;'}</div></div>
+  <table style="width:100%;border-collapse:collapse;height:${H.idea};"><tr style="height:${H.idea};">
+   <td style="${SL}padding:4px 3px;width:46px;height:${H.idea};">실 시</td>
+   <td style="${ITD}white-space:pre-wrap;font-size:${fs};">${pw(p.afterImpl)||'&nbsp;'}</td>
+  </tr></table>
  </td>
 </tr>
-<tr>
+<tr style="height:${H.photo};">
  <td colspan="6" style="${TD}padding:0;vertical-align:top;">
-  <div style="display:flex;"><div style="${SL}padding:4px 3px;">기 존<br><span style="font-size:9px;color:#666;">(사진)</span></div>
-  <div style="flex:1;">${renderTabs(p.beforeTabs,p.beforeText,p.beforeImgData)}</div></div>
+  <table style="width:100%;border-collapse:collapse;height:${H.photo};"><tr style="height:${H.photo};">
+   <td style="${SL}padding:4px 3px;width:46px;height:${H.photo};">기 존<br><span style="font-size:9px;color:#666;">(사진)</span></td>
+   <td style="${ITD}">${renderTabs(p.beforeTabs,p.beforeText,p.beforeImgData)}</td>
+  </tr></table>
  </td>
  <td colspan="4" style="${TD}padding:0;vertical-align:top;">
-  <div style="display:flex;"><div style="${SL}padding:4px 3px;">변 경<br><span style="font-size:9px;color:#666;">(사진)</span></div>
-  <div style="flex:1;">${renderTabs(p.afterTabs,p.afterChange,p.afterChangeImgData)}</div></div>
+  <table style="width:100%;border-collapse:collapse;height:${H.photo};"><tr style="height:${H.photo};">
+   <td style="${SL}padding:4px 3px;width:46px;height:${H.photo};">변 경<br><span style="font-size:9px;color:#666;">(사진)</span></td>
+   <td style="${ITD}">${renderTabs(p.afterTabs,p.afterChange,p.afterChangeImgData)}</td>
+  </tr></table>
  </td>
 </tr>
-<tr>
+<tr style="height:${H.prob};">
  <td colspan="6" style="${TD}padding:0;vertical-align:top;">
-  <div style="display:flex;min-height:80px;"><div style="${SL}padding:4px 3px;">문제점</div>
-  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.problem)||'&nbsp;'}</div></div>
+  <table style="width:100%;border-collapse:collapse;height:${H.prob};"><tr style="height:${H.prob};">
+   <td style="${SL}padding:4px 3px;width:46px;height:${H.prob};">문제점</td>
+   <td style="${ITD}white-space:pre-wrap;font-size:${fs};">${pw(p.problem)||'&nbsp;'}</td>
+  </tr></table>
  </td>
  <td colspan="4" style="${TD}padding:0;vertical-align:top;">
-  <div style="display:flex;min-height:80px;"><div style="${SL}padding:4px 3px;">개 선</div>
-  <div style="flex:1;padding:4px 6px;white-space:pre-wrap;">${pw(p.afterImprove)||'&nbsp;'}</div></div>
+  <table style="width:100%;border-collapse:collapse;height:${H.prob};"><tr style="height:${H.prob};">
+   <td style="${SL}padding:4px 3px;width:46px;height:${H.prob};">개 선</td>
+   <td style="${ITD}white-space:pre-wrap;font-size:${fs};">${pw(p.afterImprove)||'&nbsp;'}</td>
+  </tr></table>
  </td>
 </tr>
-<tr>
- <td style="${LBL}text-align:center;font-size:11px;vertical-align:middle;">산출근거<br>세부내용</td>
+<tr style="height:${H.costdet};">
+ <td style="${LBL}text-align:center;font-size:${forExcel?'11pt':'11px'};vertical-align:middle;">산출근거<br>세부내용</td>
  <td colspan="10" style="${TD}vertical-align:top;white-space:pre-wrap;">${pw(p.costDetail)||'&nbsp;'}</td>
 </tr>
-<tr>
+<tr style="height:${H.costhdr};">
  <td colspan="2" style="${LBL}">산출근거</td>
  <td colspan="2" style="${LB}">재료비(A)</td>
  <td colspan="2" style="${LB}">노무비(B)</td>
  <td colspan="2" style="${LB}">투자비용(C)</td>
  <td colspan="3" style="${LB}">년계(A+B-C)</td>
 </tr>
-<tr>
+<tr style="height:${H.costval};">
  <td colspan="2" style="${TD}font-size:11px;color:#666;">원</td>
  <td colspan="2" style="${TD}text-align:right;">${eh(p.costMaterial||'')}</td>
  <td colspan="2" style="${TD}text-align:right;">${eh(p.costLabor||'')}</td>
@@ -2207,13 +2264,24 @@ function printPropView(){
   const rid=document.getElementById('pv-rid').value;
   const r=tableData.find(x=>x.id==rid);
   if(!r||!r.proposal) return;
-  const w=window.open('','_blank','width=900,height=1100');
+  const w=window.open('','_blank','width=1150,height=860');
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>원가절감 제안서</title>
-<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Malgun Gothic',sans-serif;padding:20mm 15mm;font-size:13px;}
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;padding:12mm 14mm;font-size:13px;background:#fff;}
+table{border-collapse:collapse;width:100%;}
+td{word-break:keep-all;}
+img{max-width:120px;height:auto;}
 input[type=checkbox]{pointer-events:none;}
-@media print{body{padding:10mm;}button{display:none;}}</style></head>
+@media print{
+  @page{size:A4 landscape;margin:8mm 12mm;}
+  body{padding:0;}
+  button{display:none!important;}
+  img{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style></head>
 <body>${propFormHtml(r,true)}
-<div style="text-align:center;margin-top:16px;"><button onclick="window.print()" style="padding:8px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:13px;">인쇄</button></div>
+<div style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:8px 24px;background:#1a3a5c;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:13px;">🖨️ 인쇄</button></div>
 </body></html>`);
   w.document.close();
 }
@@ -2221,16 +2289,44 @@ function downloadPropExcel(){
   const rid=document.getElementById('pv-rid').value;
   const r=tableData.find(x=>x.id==rid);
   if(!r||!r.proposal) return;
-  const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
-<style>body{font-family:'Malgun Gothic',sans-serif;}table{border-collapse:collapse;width:100%;}td,th{border:1px solid #888;padding:6px 9px;font-size:12px;}
-input[type=checkbox]{pointer-events:none;}</style></head>
-<body>${propFormHtml(r,true)}</body></html>`;
-  const blob=new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8'});
+  // 이미지 레지스트리 (Content-Location 방식)
+  const images=[];const imgMap=new Map();
+  function regImg(dataUri){
+    if(!dataUri||!dataUri.startsWith('data:')) return null;
+    if(imgMap.has(dataUri)) return imgMap.get(dataUri);
+    const idx=images.length;
+    const ext=(dataUri.split(';')[0].split('/')[1]||'png').split('+')[0];
+    const name='image'+idx+'.'+ext;
+    const mime=dataUri.split(';')[0].slice(5)||'image/png';
+    const b64=dataUri.split(',')[1]||'';
+    images.push({name,mime,b64});
+    imgMap.set(dataUri,name);
+    return name;
+  }
+  const css=`body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:11pt;}table{border-collapse:collapse;}td,th{border:1px solid #888;padding:4px 7px;font-size:11pt;font-family:'Malgun Gothic','맑은 고딕',sans-serif;vertical-align:middle;word-break:keep-all;}img{max-width:110px;height:90px;object-fit:cover;display:inline-block;}`;
+  const bodyHtml=propFormHtml(r,true,true,regImg);
+  const fullHtml=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${css}</style></head><body>${bodyHtml}</body></html>`;
+  const bnd='----=_Part'+Date.now();
+  // MHTML 조립 (HTML부분: 한글 UTF-8 그대로, 이미지: base64)
+  const enc=new TextEncoder();
+  const htmlBytes=enc.encode(`--${bnd}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${fullHtml}\r\n`);
+  let imgParts='';
+  for(const img of images){
+    imgParts+=`\r\n--${bnd}\r\nContent-Type: ${img.mime}\r\nContent-Transfer-Encoding: base64\r\nContent-Location: ${img.name}\r\n\r\n`;
+    imgParts+=img.b64.replace(/(.{76})/g,'$1\r\n')+'\r\n';
+  }
+  const header=`MIME-Version: 1.0\r\nContent-Type: multipart/related; boundary="${bnd}"; type="text/html"\r\n\r\n`;
+  const footer=`\r\n--${bnd}--\r\n`;
+  const headerBytes=enc.encode(header);
+  const imgBytes=enc.encode(imgParts);
+  const footerBytes=enc.encode(footer);
+  const total=new Uint8Array(headerBytes.length+htmlBytes.length+imgBytes.length+footerBytes.length);
+  let off=0;[headerBytes,htmlBytes,imgBytes,footerBytes].forEach(b=>{total.set(b,off);off+=b.length;});
+  const blob=new Blob([total],{type:'application/vnd.ms-excel'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   const fname=(r.proposer||'제안서')+'_'+(r.date||'')+'_원가절감제안서.xls';
-  a.download=fname;
-  a.click();
+  a.download=fname;a.click();
   URL.revokeObjectURL(a.href);
 }
 
