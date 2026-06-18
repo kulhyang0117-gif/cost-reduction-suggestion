@@ -2432,6 +2432,13 @@ function openPropForm(rid){
     // 오늘 날짜 자동입력
     const dtEl=document.getElementById('pf-date');
     if(dtEl&&!dtEl.value) dtEl.value=new Date().toISOString().slice(0,10);
+    // 소속·실시부서 기본값: 로그인 사용자 팀
+    if(currentUser&&currentUser.dept){
+      const deptEl=document.getElementById('pf-dept');
+      if(deptEl){deptEl.value=currentUser.dept;updPfProposer();}
+      const implHidden=document.getElementById('pf-implDept');
+      if(implHidden){implHidden.value=currentUser.dept;syncCheckDrop('implDept');}
+    }
   }
   document.getElementById('proposalFormModal').classList.add('show');
   setTimeout(initAutoH, 0);
