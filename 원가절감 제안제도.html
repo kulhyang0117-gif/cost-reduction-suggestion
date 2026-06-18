@@ -1093,7 +1093,7 @@ function loginSubmit(){
       if(!u){errEl.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';errEl.style.display='';return;}
       if(u.status==='pending'){errEl.textContent='승인 대기 중입니다. 관리자 승인 후 로그인 가능합니다.';errEl.style.display='';return;}
       if(u.status==='rejected'){errEl.textContent='가입이 거절되었습니다. 관리자에게 문의하세요.';errEl.style.display='';return;}
-      currentUser={email:u.email,name:u.name,dept:u.dept,role:u.role||'user'};
+      currentUser={email:u.email,name:u.name,dept:u.dept,role:u.role||'user',position:u.position||'팀원'};
       sessionStorage.setItem('ssat_session',JSON.stringify(currentUser));
       onLoginSuccess();
     });
@@ -2048,7 +2048,8 @@ function renderProposalList(){
   }
   const propYr=propYrSel?propYrSel.value:'';
   const isAdmin=currentUser&&currentUser.role==='admin';
-  const rows=tableData.filter(r=>r.proposal&&(isAdmin||!currentUser||(r.dept===currentUser.dept))&&(!propYr||(r.date||'').startsWith(propYr)));
+  const canSeeAll=isAdmin||(['팀장','실장','경영진'].includes(currentUser?.position));
+  const rows=tableData.filter(r=>r.proposal&&(canSeeAll||!currentUser||(r.dept===currentUser.dept))&&(!propYr||(r.date||'').startsWith(propYr)));
   if(!rows.length){tbody.innerHTML='<tr><td colspan="11" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
   tbody.innerHTML=rows.map((r,i)=>`<tr style="cursor:pointer;" onclick="viewProposal(${r.id})">
 <td style="text-align:center;font-weight:600;color:#1a3a5c;">${fmtAccNo(r)}</td>
