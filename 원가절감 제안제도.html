@@ -880,6 +880,7 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
      <thead>
       <tr style="background:#1a3a5c;color:#fff;">
        <th style="padding:8px 10px;text-align:center;">팀</th>
+       <th style="padding:8px 10px;text-align:center;">직책</th>
        <th style="padding:8px 10px;text-align:center;">이름</th>
        <th style="padding:8px 10px;text-align:center;">이메일</th>
        <th style="padding:8px 10px;text-align:center;">권한</th>
@@ -891,6 +892,7 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
      <tbody>
       <tr style="border-bottom:1px solid #eee;background:#f0f4f8;">
        <td style="padding:8px 10px;text-align:center;">조립팀</td>
+       <td style="padding:8px 10px;text-align:center;color:#888;">-</td>
        <td style="padding:8px 10px;text-align:center;font-weight:700;">양춘향</td>
        <td style="padding:8px 10px;text-align:center;">kulhyang0117@gmail.com</td>
        <td style="padding:8px 10px;text-align:center;"><span style="font-size:11px;font-weight:700;color:#e65100;">관리자</span></td>
@@ -1106,7 +1108,7 @@ function signupSubmit(){
   if(email===ADMIN_EMAIL){errEl.textContent='이미 사용 중인 이메일입니다.';errEl.style.display='';return;}
   const users=getUsers();
   if(users.find(x=>x.email===email)){errEl.textContent='이미 가입된 이메일입니다.';errEl.style.display='';return;}
-  users.push({dept,name,email,password:pw,role:'user',status:'pending',createdAt:new Date().toISOString()});
+  users.push({dept,name,email,password:pw,role:'user',position:'팀원',status:'pending',createdAt:new Date().toISOString()});
   saveUsers(users);
   sbSyncUsers(users);
   alert('가입 신청이 완료되었습니다.\n관리자 승인 후 로그인하실 수 있습니다.');
@@ -1159,13 +1161,18 @@ function renderUsersTab(){
   const pendingCount=users.filter(u=>u.status==='pending').length;
   const badgeEl=document.getElementById('badge-users');
   if(badgeEl){badgeEl.textContent=pendingCount;badgeEl.style.display=pendingCount>0?'':'none';}
-  if(!users.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:14px;color:#aaa;">가입 신청한 회원이 없습니다.</td></tr>';return;}
+  if(!users.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:14px;color:#aaa;">가입 신청한 회원이 없습니다.</td></tr>';return;}
   tbody.innerHTML=users.map((u,i)=>{
     const statusColor=u.status==='approved'?'#28a745':u.status==='rejected'?'#e74c3c':'#f39c12';
     const statusText=u.status==='approved'?'승인됨':u.status==='rejected'?'거절됨':'대기중';
     return`<tr style="border-bottom:1px solid #eee;${i%2?'background:#f9f9f9':''}">
 <td style="padding:8px 10px;text-align:center;">
  <select onchange="changeUserDept(${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">${Object.keys(DP).map(d=>`<option value="${d}"${u.dept===d?' selected':''}>${d}</option>`).join('')}</select>
+</td>
+<td style="padding:8px 10px;text-align:center;">
+ <select onchange="changeUserPosition(${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">
+  ${['경영진','실장','팀장','팀원'].map(p=>`<option value="${p}"${(u.position||'팀원')===p?' selected':''}>${p}</option>`).join('')}
+ </select>
 </td>
 <td style="padding:8px 10px;text-align:center;font-weight:700;">${u.name||''}</td>
 <td style="padding:8px 10px;text-align:center;">${u.email||''}</td>
@@ -1190,6 +1197,7 @@ function rejectUser(i){const u=getUsers();u[i].status='rejected';saveUsers(u);sb
 function deleteUser(i){if(!confirm('이 사용자를 삭제하시겠습니까?'))return;const u=getUsers();u.splice(i,1);saveUsers(u);sbSyncUsers(u);renderUsersTab();}
 function changeUserRole(i,role){const u=getUsers();u[i].role=role;saveUsers(u);sbSyncUsers(u);}
 function changeUserDept(i,dept){const u=getUsers();u[i].dept=dept;saveUsers(u);sbSyncUsers(u);}
+function changeUserPosition(i,position){const u=getUsers();u[i].position=position;saveUsers(u);sbSyncUsers(u);}
 async function sbSyncUsers(users){
   try{
     const res=await fetch(SB_URL+'/rest/v1/app_data',{
