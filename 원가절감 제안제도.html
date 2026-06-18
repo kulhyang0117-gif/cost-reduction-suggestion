@@ -688,12 +688,13 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
      <table style="font-size:12px;">
       <thead>
        <tr>
-        <th style="width:60px;">접수 NO<br><span style="font-weight:400;font-size:9px;color:#aaa;">예) 2026-001</span></th>
+        <th style="min-width:90px;">접수NO</th>
         <th style="min-width:100px;">제안일자</th>
         <th style="min-width:75px;">제안부서</th>
         <th style="min-width:70px;">제안자</th>
         <th style="min-width:220px;">제안 테마명</th>
-        <th style="min-width:85px;">제안번호</th>
+        <th style="min-width:85px;">효과분석</th>
+        <th style="min-width:75px;">진행상태</th>
         <th style="min-width:120px;">효과금액</th>
         <th style="width:65px;">상세</th>
         <th style="width:65px;">수정</th>
@@ -2033,14 +2034,15 @@ function renderProposalList(){
   const propYr=propYrSel?propYrSel.value:'';
   const isAdmin=currentUser&&currentUser.role==='admin';
   const rows=tableData.filter(r=>r.proposal&&(isAdmin||!currentUser||(r.dept===currentUser.dept))&&(!propYr||(r.date||'').startsWith(propYr)));
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="10" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="11" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
   tbody.innerHTML=rows.map((r,i)=>`<tr style="cursor:pointer;" onclick="viewProposal(${r.id})">
-<td style="text-align:center;color:#aaa;">${i+1}</td>
+<td style="text-align:center;font-weight:600;color:#1a3a5c;">${fmtAccNo(r)}</td>
 <td style="text-align:center;">${escH(r.date||'')}</td>
 <td style="text-align:center;">${escH(r.dept||'')}</td>
 <td style="text-align:center;">${escH(r.proposer||'')}</td>
 <td style="text-align:left;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escH(r.theme||'')}">${escH(r.theme||'')}</td>
-<td style="text-align:center;">${escH(r.proposal.no||'-')}</td>
+<td style="text-align:center;">${escH(r.effectType||'-')}</td>
+<td style="text-align:center;">${escH(r.status||'-')}</td>
 <td style="text-align:right;">${escH(r.effectAmount||'-')}</td>
 <td style="text-align:center;"><button onclick="event.stopPropagation();viewProposal(${r.id})" style="background:#1a3a5c;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">&#128196; 보기</button></td>
 <td style="text-align:center;"><button onclick="event.stopPropagation();openPropForm(${r.id})" style="background:#e65100;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">&#9998; 수정</button></td>
