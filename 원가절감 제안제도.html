@@ -308,7 +308,16 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
       </td>
       <td style="background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;white-space:nowrap;color:#222;width:50px;">성 명</td>
       <td colspan="2" style="border:1px solid #888;padding:3px 5px;width:110px;">
-       <select id="pf-proposer" style="width:100%;padding:3px;border:none;outline:none;font-size:12px;font-family:inherit;background:transparent;"><option value="">부서를 먼저 선택하세요</option></select>
+       <div style="position:relative;">
+        <input type="hidden" id="pf-proposer" value="">
+        <div id="pf-proposer-display" onclick="toggleCheckDrop('proposer')" style="cursor:pointer;border:1px solid #ddd;border-radius:3px;padding:2px 6px;font-size:11px;min-height:22px;background:#fff;display:flex;align-items:center;justify-content:space-between;user-select:none;">
+         <span id="pf-proposer-text" style="color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">선택하세요</span>
+         <span style="font-size:9px;margin-left:3px;color:#888;">▾</span>
+        </div>
+        <div id="pf-proposer-drop" style="display:none;position:absolute;z-index:200;background:#fff;border:1px solid #ccc;border-radius:3px;box-shadow:0 2px 8px rgba(0,0,0,.15);min-width:100%;top:100%;left:0;max-height:150px;overflow-y:auto;">
+         <div id="pf-proposer-checks" style="padding:2px 0;"></div>
+        </div>
+       </div>
       </td>
       <td style="background:#e8e8e8;font-weight:700;padding:5px 7px;border:1px solid #888;white-space:nowrap;color:#222;width:62px;">실시구분</td>
       <td style="border:1px solid #888;padding:4px 8px;">
@@ -342,7 +351,16 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
       </td>
       <td style="background:#e8e8e8;font-weight:700;padding:6px 8px;border:1px solid #888;white-space:nowrap;color:#222;text-align:center;">실시부서</td>
       <td style="border:1px solid #888;padding:3px 6px;">
-       <select id="pf-implDept" multiple size="4" onchange="toggleImplDept(this)" style="width:100%;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;padding:2px;"></select>
+       <div style="position:relative;">
+        <input type="hidden" id="pf-implDept" value="">
+        <div id="pf-implDept-display" onclick="toggleCheckDrop('implDept')" style="cursor:pointer;border:1px solid #ddd;border-radius:3px;padding:2px 6px;font-size:11px;min-height:22px;background:#fff;display:flex;align-items:center;justify-content:space-between;user-select:none;">
+         <span id="pf-implDept-text" style="color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">선택하세요</span>
+         <span style="font-size:9px;margin-left:3px;color:#888;">▾</span>
+        </div>
+        <div id="pf-implDept-drop" style="display:none;position:absolute;z-index:200;background:#fff;border:1px solid #ccc;border-radius:3px;box-shadow:0 2px 8px rgba(0,0,0,.15);min-width:100%;top:100%;left:0;max-height:150px;overflow-y:auto;">
+         <div id="pf-implDept-checks" style="padding:2px 0;"></div>
+        </div>
+       </div>
       </td>
      </tr>
      <tr>
@@ -682,6 +700,7 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
      <div style="font-size:11px;color:#888;">* 행 클릭 또는 보기 버튼으로 상세 확인</div>
      <div class="spacer"></div>
      <select id="prop-year" onchange="renderProposalList()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 년도</option></select>
+     <button id="btn-load-draft" onclick="loadDraft()" style="display:none;padding:5px 12px;background:#6c757d;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer;">💾 임시저장 불러오기</button>
      <button class="btn btn-success" onclick="openPropForm()">+ 신규 등록</button>
     </div>
     <div class="scroll-outer" style="max-height:calc(100vh - 200px);">
@@ -967,7 +986,7 @@ const DP = {
   '생산실': [],
   '생산관리팀': [],
   '사출팀': ['김민수','김태근'],
-  '후가공팀': ['김미희','박준성','윤아뚜','임문호','전선옥'],
+  '후가공팀': ['김미희','박준성','윤아뚜','임문호','전선옥','장성수'],
   '조립팀': ['양춘향','강영국'],
   '품질팀': ['황재훈'],
   '개발팀': ['김형권','조경환'],
@@ -1680,7 +1699,7 @@ function showTab(id,el){
   document.getElementById('topbar-title').textContent=TABS[id].title;
   document.getElementById('topbar-sub').textContent=TABS[id].sub;
   if(id==='summary') renderSummary();
-  if(id==='proposal') renderProposalList();
+  if(id==='proposal'){renderProposalList();checkDraftBtn();}
   if(id==='users') renderUsersTab();
   if(id==='register'&&document.body.classList.contains('mobile-mode')) renderTableMobile();
   if(document.body.classList.contains('mobile-mode')) window.scrollTo(0,0);
@@ -1792,13 +1811,51 @@ ${gaCells}<td style="${RS}font-weight:700;background:#0f2744;color:#4aabf0;">${g
   document.getElementById('sum-tbody').innerHTML=rows;
 }
 
-// Proposal Form
+// Proposal Form - Checkbox Multi-Select
+function toggleCheckDrop(field){
+  const drop=document.getElementById('pf-'+field+'-drop');if(!drop)return;
+  const isOpen=drop.style.display!=='none';
+  ['proposer','implDept'].forEach(function(f){const d=document.getElementById('pf-'+f+'-drop');if(d)d.style.display='none';});
+  if(!isOpen)drop.style.display='block';
+}
+function renderCheckDrop(field,options){
+  const div=document.getElementById('pf-'+field+'-checks');if(!div)return;
+  const hidden=document.getElementById('pf-'+field);
+  const sel=hidden&&hidden.value?hidden.value.split(',').map(function(s){return s.trim();}).filter(function(s){return s;}):[];
+  div.innerHTML=options.map(function(opt){return '<label style="display:flex;align-items:center;padding:3px 8px;font-size:11px;cursor:pointer;gap:5px;white-space:nowrap;"><input type="checkbox" value="'+opt+'" '+(sel.includes(opt)?'checked':'')+' onchange="toggleCheckItem(\''+field+'\',\''+opt+'\')"> '+opt+'</label>';}).join('');
+}
+function toggleCheckItem(field,val){
+  const hidden=document.getElementById('pf-'+field);if(!hidden)return;
+  const cur=hidden.value?hidden.value.split(',').map(function(s){return s.trim();}).filter(function(s){return s;}):[];
+  const idx=cur.indexOf(val);
+  if(idx>=0)cur.splice(idx,1);else cur.push(val);
+  hidden.value=cur.join(', ');
+  updateCheckDisplay(field);
+}
+function updateCheckDisplay(field){
+  const hidden=document.getElementById('pf-'+field);
+  const span=document.getElementById('pf-'+field+'-text');if(!span)return;
+  const vals=hidden&&hidden.value?hidden.value.split(',').map(function(s){return s.trim();}).filter(function(s){return s;}):[];
+  span.textContent=vals.length?vals.join(', '):'선택하세요';
+  span.style.color=vals.length?'#222':'#999';
+}
+function syncCheckDrop(field){
+  const div=document.getElementById('pf-'+field+'-checks');if(!div)return;
+  const hidden=document.getElementById('pf-'+field);
+  const vals=hidden&&hidden.value?hidden.value.split(',').map(function(s){return s.trim();}).filter(function(s){return s;}):[];
+  div.querySelectorAll('input[type="checkbox"]').forEach(function(cb){cb.checked=vals.includes(cb.value);});
+  updateCheckDisplay(field);
+}
 function updPfProposer(){
   const dept=document.getElementById('pf-dept').value;
   const ps=getProposersForDept(dept);
-  document.getElementById('pf-proposer').innerHTML=ps.length
-    ? ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('')
-    : '<option value="">제안자 없음</option>';
+  const hidden=document.getElementById('pf-proposer');if(hidden)hidden.value='';
+  renderCheckDrop('proposer',ps);
+  updateCheckDisplay('proposer');
+}
+function fillImplDeptChecks(){
+  renderCheckDrop('implDept',['전부서'].concat(Object.keys(DP)));
+  updateCheckDisplay('implDept');
 }
 let editPropId=null;
 let autoSaveTimer=null;
@@ -1940,14 +1997,14 @@ function fillETSel(selId,val){
   el.innerHTML=ET.map(t=>`<option value="${t}"${t===val?' selected':''}>${t}</option>`).join('');
 }
 function clearProposalForm(){
-  ['pf-date','pf-no','pf-theme','pf-idea','pf-problem','pf-after-impl','pf-after-improve','pf-costDetail','pf-costMaterial','pf-costLabor','pf-costInvest','pf-amount'].forEach(id=>{
+  ['pf-date','pf-no','pf-theme','pf-implDept','pf-idea','pf-problem','pf-after-impl','pf-after-improve','pf-costDetail','pf-costMaterial','pf-costLabor','pf-costInvest','pf-amount'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
-  {const s=document.getElementById('pf-implDept');if(s)[...s.options].forEach(o=>{o.selected=false;});}
   pfResetBlocks();
   pfRenderBlocks('before');pfRenderBlocks('after');
   const deptEl=document.getElementById('pf-dept');if(deptEl)deptEl.value='';
-  const propEl=document.getElementById('pf-proposer');if(propEl)propEl.innerHTML='<option value="">부서를 먼저 선택하세요</option>';
+  const pHidden=document.getElementById('pf-proposer');if(pHidden)pHidden.value='';
+  updateCheckDisplay('proposer');updateCheckDisplay('implDept');
   document.querySelectorAll('input[name="pf-isImpl"]').forEach(r=>{r.checked=r.value==='실시';});
   document.querySelectorAll('input[name="pf-type"]').forEach(r=>{r.checked=r.value==='유형';});
   document.querySelectorAll('.pf-cat').forEach(cb=>{cb.checked=false;});
@@ -1978,8 +2035,7 @@ function collectProposalFormData(){
   const isImpl=document.querySelector('input[name="pf-isImpl"]:checked')?.value||'미실시';
   const type=document.querySelector('input[name="pf-type"]:checked')?.value||'유형';
   const category=[...document.querySelectorAll('.pf-cat:checked')].map(cb=>cb.value);
-  const implDeptSel=document.getElementById('pf-implDept');
-  const implDept=[...implDeptSel.selectedOptions].map(o=>o.value).filter(v=>v).join(', ');
+  const implDept=document.getElementById('pf-implDept').value;
   const idea=document.getElementById('pf-idea').value;
   const beforeTabs=pfCollectBlocks('before');
   const beforeText=beforeTabs[0]?.text||'';
@@ -2267,10 +2323,49 @@ function viewProposal(rid){
   document.getElementById('proposalViewModal').classList.add('show');
 }
 function closePropView(){document.getElementById('proposalViewModal').classList.remove('show');}
+function checkDraftBtn(){
+  const btn=document.getElementById('btn-load-draft');if(!btn)return;
+  const raw=localStorage.getItem('ssat_prop_draft');
+  if(raw){try{const {ts}=JSON.parse(raw);btn.title='저장시간: '+new Date(ts).toLocaleString('ko-KR');btn.style.display='';}catch(e){btn.style.display='none';}}
+  else{btn.style.display='none';}
+}
+function loadDraft(){
+  try{
+    const raw=localStorage.getItem('ssat_prop_draft');
+    if(!raw){alert('임시저장된 내용이 없습니다.');return;}
+    const {editPropId:eid,data:d,ts}=JSON.parse(raw);
+    if(!confirm('임시저장 내용을 불러오겠습니까?\n저장시간: '+new Date(ts).toLocaleString('ko-KR')))return;
+    clearProposalForm();fillDeptSel('pf-dept');fillImplDeptChecks();fillETSel('pf-effectType',d.effectType||'');
+    editPropId=eid||null;
+    const sv=id=>v=>{const el=document.getElementById(id);if(el)el.value=v;};
+    sv('pf-date')(d.date||'');sv('pf-no')(d.no||'');sv('pf-theme')(d.theme||'');
+    sv('pf-idea')(d.idea||'');sv('pf-problem')(d.problem||'');sv('pf-after-impl')(d.afterImpl||'');
+    sv('pf-after-improve')(d.afterImprove||'');sv('pf-costDetail')(d.costDetail||'');
+    sv('pf-costMaterial')(d.costMaterial||'');sv('pf-costLabor')(d.costLabor||'');sv('pf-costInvest')(d.costInvest||'');
+    const deptEl=document.getElementById('pf-dept');
+    if(deptEl){deptEl.value=d.dept||'';updPfProposer();}
+    sv('pf-proposer')(d.proposer||'');syncCheckDrop('proposer');
+    sv('pf-implDept')(d.implDept||'');syncCheckDrop('implDept');
+    document.querySelectorAll('input[name="pf-isImpl"]').forEach(rb=>{rb.checked=rb.value===(d.isImpl||'미실시');});
+    document.querySelectorAll('input[name="pf-type"]').forEach(rb=>{rb.checked=rb.value===(d.type||'유형');});
+    document.querySelectorAll('.pf-cat').forEach(cb=>{cb.checked=(d.category||[]).includes(cb.value);});
+    const stEl=document.getElementById('pf-status');if(stEl)stEl.value=d.status||'Y';
+    if(d.beforeTabs&&d.beforeTabs.length){pfBeforeBlocks=d.beforeTabs.map(t=>({text:t.text||'',imgs:t.imgs||[]}));}
+    else{pfBeforeBlocks=[{text:d.beforeText||'',imgs:Array.isArray(d.beforeImgData)?d.beforeImgData:[]}];}
+    pfRenderBlocks('before');
+    if(d.afterTabs&&d.afterTabs.length){pfAfterBlocks=d.afterTabs.map(t=>({text:t.text||'',imgs:t.imgs||[]}));}
+    else{pfAfterBlocks=[{text:d.afterChange||'',imgs:Array.isArray(d.afterChangeImgData)?d.afterChangeImgData:[]}];}
+    pfRenderBlocks('after');
+    calcPropCost();
+    document.getElementById('pf-modal-title').textContent=editPropId?'✏️ 원가절감 제안서 수정':'📝 원가절감 제안서 (임시저장)';
+    document.getElementById('proposalFormModal').classList.add('show');
+    setTimeout(initAutoH,0);startAutoSave();
+  }catch(e){alert('임시저장 불러오기 실패: '+e.message);}
+}
 function openPropForm(rid){
   clearProposalForm();
   fillDeptSel('pf-dept');
-  fillImplDeptSel('pf-implDept');
+  fillImplDeptChecks();
   fillETSel('pf-effectType','');
   if(rid){
     const r=tableData.find(x=>x.id===rid);
@@ -2281,7 +2376,7 @@ function openPropForm(rid){
       sv('pf-date')(r.date||'');
       sv('pf-no')(p.no||'');
       sv('pf-theme')(r.theme||'');
-      {const s=document.getElementById('pf-implDept');if(s){const sv2=(p.implDept||'').split(',').map(x=>x.trim());[...s.options].forEach(o=>{o.selected=sv2.includes(o.value);});}}
+      sv('pf-implDept')(p.implDept||'');syncCheckDrop('implDept');
       sv('pf-idea')(p.idea||'');
       sv('pf-problem')(p.problem||'');
       sv('pf-after-impl')(p.afterImpl||'');
@@ -2293,8 +2388,7 @@ function openPropForm(rid){
       // dept & proposer
       const deptEl=document.getElementById('pf-dept');
       if(deptEl){deptEl.value=r.dept||'';updPfProposer();}
-      const propEl=document.getElementById('pf-proposer');
-      if(propEl)propEl.value=r.proposer||'';
+      sv('pf-proposer')(r.proposer||'');syncCheckDrop('proposer');
       // radio
       document.querySelectorAll('input[name="pf-isImpl"]').forEach(rb=>{rb.checked=rb.value===(p.isImpl||'미실시');});
       document.querySelectorAll('input[name="pf-type"]').forEach(rb=>{rb.checked=rb.value===(p.type||'유형');});
@@ -2498,6 +2592,15 @@ function renderTableMobile(){
   }).join('');
 }
 
+document.addEventListener('click',function(e){
+  ['proposer','implDept'].forEach(function(field){
+    const display=document.getElementById('pf-'+field+'-display');
+    const drop=document.getElementById('pf-'+field+'-drop');
+    if(drop&&display&&!display.contains(e.target)&&!drop.contains(e.target)){
+      drop.style.display='none';
+    }
+  });
+});
 window.onload=async function(){
   tableData=loadData();
   renderAll();
