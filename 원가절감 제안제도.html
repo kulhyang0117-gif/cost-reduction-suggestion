@@ -680,6 +680,7 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
      <h3>&#128196; 원가절감 제안서 목록</h3>
      <div style="font-size:11px;color:#888;">* 행 클릭 또는 보기 버튼으로 상세 확인</div>
      <div class="spacer"></div>
+     <select id="prop-year" onchange="renderProposalList()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 년도</option></select>
      <button class="btn btn-success" onclick="openPropForm()">+ 신규 등록</button>
     </div>
     <div class="scroll-outer" style="max-height:calc(100vh - 200px);">
@@ -1161,7 +1162,9 @@ function renderUsersTab(){
     const statusColor=u.status==='approved'?'#28a745':u.status==='rejected'?'#e74c3c':'#f39c12';
     const statusText=u.status==='approved'?'승인됨':u.status==='rejected'?'거절됨':'대기중';
     return`<tr style="border-bottom:1px solid #eee;${i%2?'background:#f9f9f9':''}">
-<td style="padding:8px 10px;text-align:center;">${u.dept||''}</td>
+<td style="padding:8px 10px;text-align:center;">
+ <select onchange="changeUserDept(${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">${Object.keys(DP).map(d=>`<option value="${d}"${u.dept===d?' selected':''}>${d}</option>`).join('')}</select>
+</td>
 <td style="padding:8px 10px;text-align:center;font-weight:700;">${u.name||''}</td>
 <td style="padding:8px 10px;text-align:center;">${u.email||''}</td>
 <td style="padding:8px 10px;text-align:center;">
@@ -1184,6 +1187,7 @@ function approveUser(i){const u=getUsers();u[i].status='approved';saveUsers(u);s
 function rejectUser(i){const u=getUsers();u[i].status='rejected';saveUsers(u);sbSyncUsers(u);renderUsersTab();}
 function deleteUser(i){if(!confirm('이 사용자를 삭제하시겠습니까?'))return;const u=getUsers();u.splice(i,1);saveUsers(u);sbSyncUsers(u);renderUsersTab();}
 function changeUserRole(i,role){const u=getUsers();u[i].role=role;saveUsers(u);sbSyncUsers(u);}
+function changeUserDept(i,dept){const u=getUsers();u[i].dept=dept;saveUsers(u);sbSyncUsers(u);}
 async function sbSyncUsers(users){
   try{
     const res=await fetch(SB_URL+'/rest/v1/app_data',{
@@ -1304,7 +1308,7 @@ function initYearFilter(){
   const cur=sel.value;
   const thisYear=String(new Date().getFullYear());
   const defaultYear=cur||thisYear;
-  const years=[...new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4))].sort();
+  const ySet=new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4));ySet.add(thisYear);const years=[...ySet].sort();
   sel.innerHTML='<option value="">전체 년도</option>'+years.map(y=>'<option value="'+y+'"'+(y===defaultYear?' selected':'')+'>'+y+'년</option>').join('');
 }
 function applyFilter(){renderTable();}
@@ -1484,7 +1488,7 @@ function renderResults(){
   if(sel){
     const cur=sel.value;
     const thisYear=String(new Date().getFullYear());
-    const years=[...new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4))].sort();
+    const ySet=new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4));ySet.add(thisYear);const years=[...ySet].sort();
     sel.innerHTML='<option value="">전체</option>'+years.map(y=>'<option value="'+y+'"'+(y===(cur||thisYear)?' selected':'')+'>'+y+'년</option>').join('');
   }
   const yr=sel?sel.value:'';
@@ -1646,7 +1650,7 @@ function initSumYear(){
   const cur=sel.value;
   const thisYear=String(new Date().getFullYear());
   const defaultYear=cur||thisYear;
-  const years=[...new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4))].sort();
+  const ySet=new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4));ySet.add(thisYear);const years=[...ySet].sort();
   sel.innerHTML='<option value="">전체</option>'+years.map(y=>'<option value="'+y+'"'+(y===defaultYear?' selected':'')+'>'+y+'년</option>').join('');
 }
 function renderSummary(){
@@ -1985,8 +1989,15 @@ function saveProposalToRegister(){
 function renderProposalList(){
   const tbody=document.getElementById('prop-tbody');
   if(!tbody) return;
+  const propYrSel=document.getElementById('prop-year');
+  if(propYrSel){
+    const cur=propYrSel.value;const thisYear=String(new Date().getFullYear());const defaultYear=cur||thisYear;
+    const ySet=new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4));ySet.add(thisYear);const years=[...ySet].sort();
+    propYrSel.innerHTML='<option value="">전체 년도</option>'+years.map(y=>'<option value="'+y+'"'+(y===defaultYear?' selected':'')+'>'+y+'년</option>').join('');
+  }
+  const propYr=propYrSel?propYrSel.value:'';
   const isAdmin=currentUser&&currentUser.role==='admin';
-  const rows=tableData.filter(r=>r.proposal&&(isAdmin||!currentUser||(r.dept===currentUser.dept)));
+  const rows=tableData.filter(r=>r.proposal&&(isAdmin||!currentUser||(r.dept===currentUser.dept))&&(!propYr||(r.date||'').startsWith(propYr)));
   if(!rows.length){tbody.innerHTML='<tr><td colspan="10" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
   tbody.innerHTML=rows.map((r,i)=>`<tr style="cursor:pointer;" onclick="viewProposal(${r.id})">
 <td style="text-align:center;color:#aaa;">${i+1}</td>
