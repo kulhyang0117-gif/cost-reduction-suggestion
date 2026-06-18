@@ -1246,8 +1246,8 @@ async function sbLoad(){
     const rows=await res.json();
     if(rows&&rows[0]&&rows[0].table_data&&rows[0].table_data.length>0){
       tableData=rows[0].table_data;
-      localStorage.setItem('ssat_v4',JSON.stringify(tableData));
-      if(rows[0].awards)localStorage.setItem('ssat_awards',JSON.stringify(rows[0].awards));
+      try{localStorage.setItem('ssat_v4',JSON.stringify(tableData));}catch(e){saveData();}
+      if(rows[0].awards)try{localStorage.setItem('ssat_awards',JSON.stringify(rows[0].awards));}catch(e){}
       setSbStatus('synced');
       // id=2 행에서 users 불러오기
       try{
@@ -1270,7 +1270,23 @@ function loadData(){
   return DEFAULT_DATA.map((r,i)=>({...r,id:Date.now()+i}));
 }
 function saveData(){
-  try{localStorage.setItem('ssat_v4',JSON.stringify(tableData));}catch(e){alert('저장 실패: '+e.message);}
+  try{
+    localStorage.setItem('ssat_v4',JSON.stringify(tableData));
+  }catch(e){
+    // 용량 초과 시 이미지 제외하고 저장 (클라우드에는 전체 저장)
+    try{
+      const slim=tableData.map(r=>{
+        if(!r.proposal)return r;
+        const p={...r.proposal,beforeImgData:[],afterChangeImgData:[]};
+        if(p.beforeTabs)p.beforeTabs=p.beforeTabs.map(t=>({...t,imgs:[]}));
+        if(p.afterTabs)p.afterTabs=p.afterTabs.map(t=>({...t,imgs:[]}));
+        return{...r,proposal:p};
+      });
+      localStorage.setItem('ssat_v4',JSON.stringify(slim));
+    }catch(e2){
+      try{localStorage.removeItem('ssat_v4');}catch(e3){}
+    }
+  }
   sbSync();
 }
 let tableData=[];
@@ -1855,11 +1871,23 @@ function addImgToContainer(container,src){
   wrapper.appendChild(img);wrapper.appendChild(btn);
   container.appendChild(wrapper);
 }
+function compressImage(src,cb){
+  const img=new Image();
+  img.onload=function(){
+    const MAX_W=800,MAX_H=600;
+    let w=img.width,h=img.height;
+    if(w>MAX_W||h>MAX_H){const r=Math.min(MAX_W/w,MAX_H/h);w=Math.round(w*r);h=Math.round(h*r);}
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    cb(canvas.toDataURL('image/jpeg',0.75));
+  };
+  img.src=src;
+}
 function addImgsFromFile(input,containerId){
   const container=document.getElementById(containerId);if(!container)return;
   Array.from(input.files).forEach(file=>{
     const reader=new FileReader();
-    reader.onload=e=>addImgToContainer(container,e.target.result);
+    reader.onload=e=>compressImage(e.target.result,src=>addImgToContainer(container,src));
     reader.readAsDataURL(file);
   });
   input.value='';
@@ -1871,7 +1899,7 @@ function addImgFromPaste(e,containerId){
     if(item.type.startsWith('image/')){
       e.preventDefault();
       const reader=new FileReader();
-      reader.onload=ev=>{const c=document.getElementById(containerId);if(c)addImgToContainer(c,ev.target.result);};
+      reader.onload=ev=>{const c=document.getElementById(containerId);if(c)compressImage(ev.target.result,src=>addImgToContainer(c,src));};
       reader.readAsDataURL(item.getAsFile());
       break;
     }
