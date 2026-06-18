@@ -484,7 +484,7 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
  <div class="sidebar-logo">
   <div class="logo-icon">&#128202;</div>
   <div class="logo-title">원가절감 대시보드</div>
-  <div class="logo-sub">신성오토텍(주) 2025년</div>
+  <div class="logo-sub">신성오토텍(주)</div>
  </div>
  <nav>
   <div class="nav-item active" onclick="showTab('guidelines',this)">
@@ -1719,7 +1719,13 @@ function renderSummary(){
   initSumYear();
   const yr=document.getElementById('sum-year')?.value||'';
   const MONTHS=['01','02','03','04','05','06','07','08','09','10','11','12'];
-  const data=tableData.filter(r=>!yr||(r.date||'').startsWith(yr));
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  const canSeeAll=isAdmin||(['팀장','실장','경영진'].includes(currentUser?.position));
+  const myName=currentUser?.name||'';
+  const data=tableData.filter(r=>
+    (canSeeAll||!currentUser||(r.dept===currentUser.dept)||(myName&&r.proposer&&r.proposer.split(',').map(s=>s.trim()).includes(myName)))&&
+    (!yr||(r.date||'').startsWith(yr))
+  );
   const titleEl=document.getElementById('sum-title');
   if(titleEl) titleEl.textContent='원가절감 종합현황 ('+(yr?yr+'년':'전체')+')';
   // Summary cards
