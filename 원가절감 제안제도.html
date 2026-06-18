@@ -342,7 +342,7 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
       </td>
       <td style="background:#e8e8e8;font-weight:700;padding:6px 8px;border:1px solid #888;white-space:nowrap;color:#222;text-align:center;">실시부서</td>
       <td style="border:1px solid #888;padding:3px 6px;">
-       <select id="pf-implDept" style="width:100%;padding:3px;border:none;outline:none;font-size:12px;font-family:inherit;background:transparent;"><option value="">선택하세요</option></select>
+       <select id="pf-implDept" multiple size="4" onchange="toggleImplDept(this)" style="width:100%;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;padding:2px;"></select>
       </td>
      </tr>
      <tr>
@@ -1576,6 +1576,16 @@ function getProposersForDept(dept){
 function fillDeptSel(selId){
   document.getElementById(selId).innerHTML='<option value="">선택하세요</option>'+Object.keys(DP).map(d=>'<option value="'+d+'">'+d+'</option>').join('');
 }
+function fillImplDeptSel(selId){
+  const el=document.getElementById(selId);if(!el)return;
+  el.innerHTML='<option value="전부서">전부서</option>'+Object.keys(DP).map(d=>'<option value="'+d+'">'+d+'</option>').join('');
+}
+function toggleImplDept(sel){
+  const opts=[...sel.options];
+  const allOpt=opts.find(o=>o.value==='전부서');
+  if(allOpt&&allOpt.selected){opts.forEach(o=>{if(o.value!=='전부서')o.selected=false;});}
+  else{if(allOpt)allOpt.selected=false;}
+}
 function fillETSel(selId,cur){
   document.getElementById(selId).innerHTML='<option value="">선택하세요</option>'+ET.map(t=>'<option value="'+t+'"'+(cur===t?' selected':'')+'>'+t+'</option>').join('');
 }
@@ -1930,9 +1940,10 @@ function fillETSel(selId,val){
   el.innerHTML=ET.map(t=>`<option value="${t}"${t===val?' selected':''}>${t}</option>`).join('');
 }
 function clearProposalForm(){
-  ['pf-date','pf-no','pf-theme','pf-implDept','pf-idea','pf-problem','pf-after-impl','pf-after-improve','pf-costDetail','pf-costMaterial','pf-costLabor','pf-costInvest','pf-amount'].forEach(id=>{
+  ['pf-date','pf-no','pf-theme','pf-idea','pf-problem','pf-after-impl','pf-after-improve','pf-costDetail','pf-costMaterial','pf-costLabor','pf-costInvest','pf-amount'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
+  {const s=document.getElementById('pf-implDept');if(s)[...s.options].forEach(o=>{o.selected=false;});}
   pfResetBlocks();
   pfRenderBlocks('before');pfRenderBlocks('after');
   const deptEl=document.getElementById('pf-dept');if(deptEl)deptEl.value='';
@@ -1967,7 +1978,8 @@ function collectProposalFormData(){
   const isImpl=document.querySelector('input[name="pf-isImpl"]:checked')?.value||'미실시';
   const type=document.querySelector('input[name="pf-type"]:checked')?.value||'유형';
   const category=[...document.querySelectorAll('.pf-cat:checked')].map(cb=>cb.value);
-  const implDept=document.getElementById('pf-implDept').value;
+  const implDeptSel=document.getElementById('pf-implDept');
+  const implDept=[...implDeptSel.selectedOptions].map(o=>o.value).filter(v=>v).join(', ');
   const idea=document.getElementById('pf-idea').value;
   const beforeTabs=pfCollectBlocks('before');
   const beforeText=beforeTabs[0]?.text||'';
@@ -2258,7 +2270,7 @@ function closePropView(){document.getElementById('proposalViewModal').classList.
 function openPropForm(rid){
   clearProposalForm();
   fillDeptSel('pf-dept');
-  fillDeptSel('pf-implDept');
+  fillImplDeptSel('pf-implDept');
   fillETSel('pf-effectType','');
   if(rid){
     const r=tableData.find(x=>x.id===rid);
@@ -2269,7 +2281,7 @@ function openPropForm(rid){
       sv('pf-date')(r.date||'');
       sv('pf-no')(p.no||'');
       sv('pf-theme')(r.theme||'');
-      sv('pf-implDept')(p.implDept||'');
+      {const s=document.getElementById('pf-implDept');if(s){const sv2=(p.implDept||'').split(',').map(x=>x.trim());[...s.options].forEach(o=>{o.selected=sv2.includes(o.value);});}}
       sv('pf-idea')(p.idea||'');
       sv('pf-problem')(p.problem||'');
       sv('pf-after-impl')(p.afterImpl||'');
