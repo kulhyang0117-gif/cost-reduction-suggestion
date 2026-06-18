@@ -202,6 +202,7 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
 .mob-card-val{color:#333;font-weight:600;}
 .mob-card-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
 .mob-reg-empty{text-align:center;padding:40px 20px;color:#aaa;font-size:14px;}
+#img-hover-preview{display:none;position:fixed;z-index:99998;pointer-events:none;border-radius:8px;box-shadow:0 6px 32px rgba(0,0,0,0.55);border:3px solid #fff;background:#000;max-width:420px;max-height:380px;object-fit:contain;}
 </style>
 </head>
 <body>
@@ -1842,6 +1843,8 @@ function addImgToContainer(container,src){
   btn.style.cssText='position:absolute;top:2px;right:2px;background:rgba(220,50,50,0.9);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;padding:0;line-height:20px;text-align:center;display:none;';
   wrapper.onmouseenter=()=>btn.style.display='block';
   wrapper.onmouseleave=()=>btn.style.display='none';
+  img.onmousemove=(e)=>showImgPreview(img.src,e);
+  img.onmouseleave=hideImgPreview;
   img.onclick=()=>openLightbox(img.src);
   btn.onclick=(e)=>{
     e.stopPropagation();
@@ -2038,7 +2041,7 @@ function propFormHtml(r,forPrint,forExcel,imgReg){
       return`<div style="margin-top:4px;">${valid.map(s=>{const nm=imgReg(s);return`<img src="${nm}" style="width:110px;height:90px;object-fit:cover;border-radius:3px;display:inline-block;margin:2px;">`;}).join('')}</div>`;
     }
     if(forExcel) return`<div style="color:#888;font-size:10pt;">[사진 ${valid.length}장]</div>`;
-    return`<div style="margin-top:4px;">${valid.map(s=>`<img src="${s}" ${forPrint?'':'onclick="openLightbox(\''+s+'\')" '}style="width:110px;height:90px;object-fit:cover;border-radius:3px;${forPrint?'':'cursor:zoom-in;'}display:inline-block;margin:2px;" ${forPrint?'':'title="클릭하여 확대"'}/>`).join('')}</div>`;
+    return`<div style="margin-top:4px;">${valid.map(s=>`<img src="${s}" ${forPrint?'':'onclick="openLightbox(\''+s+'\')" onmousemove="showImgPreview(this.src,event)" onmouseleave="hideImgPreview()" '}style="width:110px;height:90px;object-fit:cover;border-radius:3px;${forPrint?'':'cursor:zoom-in;'}display:inline-block;margin:2px;" ${forPrint?'':'title="클릭하여 확대"'}/>`).join('')}</div>`;
   }
   function renderImgPlaceholder(imgs){return '';}
   function renderTabs(tabs,fallbackText,fallbackImgs){
@@ -2541,6 +2544,15 @@ function submitPwChange(){
   closePwChangeModal();
   alert('비밀번호가 변경되었습니다.');
 }
+function showImgPreview(src,e){
+  const p=document.getElementById('img-hover-preview');
+  if(!p)return;p.src=src;p.style.display='block';
+  const x=e.clientX+16,y=e.clientY+16;
+  const pw=p.offsetWidth||360,ph=p.offsetHeight||320;
+  p.style.left=(x+pw>window.innerWidth?x-pw-32:x)+'px';
+  p.style.top=(y+ph>window.innerHeight?y-ph-32:y)+'px';
+}
+function hideImgPreview(){const p=document.getElementById('img-hover-preview');if(p){p.style.display='none';p.src='';}}
 function openLightbox(src){
   const lb=document.getElementById('img-lightbox');
   document.getElementById('img-lightbox-img').src=src;
@@ -2593,6 +2605,7 @@ function closeLightbox(){
  <div class="mob-nav-item" id="mob-nav-users" onclick="showTab('users',null)" style="display:none;"><span class="mob-icon">👥</span>회원관리</div>
 </div>
 
+<img id="img-hover-preview" src="" alt=""/>
 <div id="img-lightbox" onclick="closeLightbox()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out;">
   <img id="img-lightbox-img" src="" style="max-width:90vw;max-height:90vh;border-radius:4px;box-shadow:0 4px 40px rgba(0,0,0,0.6);object-fit:contain;" onclick="event.stopPropagation()"/>
   <button onclick="closeLightbox()" style="position:fixed;top:18px;right:28px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1;opacity:0.8;">✕</button>
