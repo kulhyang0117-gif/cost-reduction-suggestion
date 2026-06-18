@@ -1299,7 +1299,7 @@ function buildDeptSelect(cur,rid){
   return '<select class="tbl-select" onchange="updF('+rid+',\'dept\',this.value)">'+Object.keys(DP).map(d=>'<option value="'+d+'"'+(cur===d?' selected':'')+'>'+d+'</option>').join('')+'</select>';
 }
 function buildProposerSelect(dept,cur,rid){
-  const ps=DP[dept]||[];
+  const ps=getProposersForDept(dept);
   return '<select class="tbl-select" id="psel-'+rid+'" onchange="updF('+rid+',\'proposer\',this.value)">'+ps.map(p=>'<option value="'+p+'"'+(cur===p?' selected':'')+'>'+p+'</option>').join('')+'</select>';
 }
 function buildStatusSelect(cur,rid){
@@ -1446,7 +1446,7 @@ function updF(rid,field,val){
   if(field==='firstReview' && r.firstConfirmed) return;
   r[field]=val;
   if(field==='dept'){
-    const ps=DP[val]||[];
+    const ps=getProposersForDept(val);
     const psel=document.getElementById('psel-'+rid);
     if(psel){psel.innerHTML=ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('');r.proposer=ps[0]||'';}
   }
@@ -1557,6 +1557,13 @@ function renderResults(){
   if(tn&&!tn.value)tn.value=topDept;
 }
 
+// 팀별 제안자 목록: DP 고정 멤버 + 승인된 회원 통합
+function getProposersForDept(dept){
+  const base=DP[dept]||[];
+  const approved=getUsers().filter(u=>u.dept===dept&&u.status==='approved').map(u=>u.name);
+  return [...new Set([...base,...approved])];
+}
+
 // Modal
 function fillDeptSel(selId){
   document.getElementById(selId).innerHTML='<option value="">선택하세요</option>'+Object.keys(DP).map(d=>'<option value="'+d+'">'+d+'</option>').join('');
@@ -1566,7 +1573,7 @@ function fillETSel(selId,cur){
 }
 function updModalProposer(){
   const dept=document.getElementById('fd-dept').value;
-  const ps=DP[dept]||[];
+  const ps=getProposersForDept(dept);
   document.getElementById('fd-proposer').innerHTML=ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('');
 }
 function updModalScore(){
@@ -1770,7 +1777,7 @@ ${gaCells}<td style="${RS}font-weight:700;background:#0f2744;color:#4aabf0;">${g
 // Proposal Form
 function updPfProposer(){
   const dept=document.getElementById('pf-dept').value;
-  const ps=DP[dept]||[];
+  const ps=getProposersForDept(dept);
   document.getElementById('pf-proposer').innerHTML=ps.length
     ? ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('')
     : '<option value="">제안자 없음</option>';
