@@ -1843,6 +1843,15 @@ function syncCheckDrop(field){
   const div=document.getElementById('pf-'+field+'-checks');if(!div)return;
   const hidden=document.getElementById('pf-'+field);
   const vals=hidden&&hidden.value?hidden.value.split(',').map(function(s){return s.trim();}).filter(function(s){return s;}):[];
+  // 저장된 값이 현재 목록에 없으면 추가 (소속 변경되어도 유지)
+  vals.forEach(function(v){
+    if(!div.querySelector('input[value="'+v+'"]')){
+      const lbl=document.createElement('label');
+      lbl.style.cssText='display:flex;align-items:center;padding:3px 8px;font-size:11px;cursor:pointer;gap:5px;white-space:nowrap;';
+      lbl.innerHTML='<input type="checkbox" value="'+v+'" checked onchange="toggleCheckItem(\''+field+'\',\''+v+'\')"> '+v;
+      div.appendChild(lbl);
+    }
+  });
   div.querySelectorAll('input[type="checkbox"]').forEach(function(cb){cb.checked=vals.includes(cb.value);});
   updateCheckDisplay(field);
 }
@@ -2117,7 +2126,8 @@ function renderProposalList(){
   const propYr=propYrSel?propYrSel.value:'';
   const isAdmin=currentUser&&currentUser.role==='admin';
   const canSeeAll=isAdmin||(['팀장','실장','경영진'].includes(currentUser?.position));
-  const rows=tableData.filter(r=>r.proposal&&(canSeeAll||!currentUser||(r.dept===currentUser.dept))&&(!propYr||(r.date||'').startsWith(propYr)));
+  const myName=currentUser?.name||'';
+  const rows=tableData.filter(r=>r.proposal&&(canSeeAll||!currentUser||(r.dept===currentUser.dept)||(myName&&r.proposer&&r.proposer.split(',').map(function(s){return s.trim();}).includes(myName)))&&(!propYr||(r.date||'').startsWith(propYr)));
   if(!rows.length){tbody.innerHTML='<tr><td colspan="11" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
   tbody.innerHTML=rows.map((r,i)=>`<tr style="cursor:pointer;" onclick="viewProposal(${r.id})">
 <td style="text-align:center;font-weight:600;color:#1a3a5c;">${fmtAccNo(r)}</td>
