@@ -502,26 +502,16 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
     </div>
     <div>
      <label style="font-size:11px;font-weight:600;color:#1a3a5c;display:block;margin-bottom:4px;">지속성 (최대 20점)</label>
-     <div style="font-size:10px;color:#666;margin-bottom:3px;">유지기간 (15점)</div>
-     <select id="pf-continuity-dur" onchange="updContinuityScore()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:6px;">
-      <option value="">-- 유지기간 선택 --</option>
-      <option value="15">5년 이상 (15점)</option>
-      <option value="12">3년 이상 (12점)</option>
-      <option value="9">1년 이상 (9점)</option>
-      <option value="6">6개월 이상 (6점)</option>
-      <option value="3">6개월 미만 (3점)</option>
+     <select id="pf-continuity-cat" onchange="updRangeDrop('continuity')" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
+      <option value="">-- 수준 선택 --</option>
+      <option value="h1">장기적으로 유지 (5년 이상) (16~20점)</option>
+      <option value="h2">중기적으로 유지 (1년 이상) (11~15점)</option>
+      <option value="h3">단기적으로 유지 (1년 미만) (6~10점)</option>
+      <option value="h4">일시적으로 유지 (6개월 미만) (1~5점)</option>
      </select>
-     <div style="font-size:10px;color:#666;margin-bottom:3px;">관리 필요성 (5점)</div>
-     <select id="pf-continuity-mgmt" onchange="updContinuityScore()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
-      <option value="">-- 관리수준 선택 --</option>
-      <option value="5">관리 불필요 (5점)</option>
-      <option value="4">월 1회 점검 (4점)</option>
-      <option value="3">주 1회 점검 (3점)</option>
-      <option value="2">매일 관리 (2점)</option>
-      <option value="1">전담 관리 필요 (1점)</option>
+     <select id="pf-continuity" disabled style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#f8fafc;min-width:120px;">
+      <option value="">-- 점수 선택 --</option>
      </select>
-     <input type="hidden" id="pf-continuity" value="0">
-     <div id="pf-continuity-total" style="font-size:11px;color:#1a3a5c;font-weight:600;">지속성 합계: 0점</div>
     </div>
    </div>
   </div>
@@ -740,15 +730,13 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
        </tr>
        <tr>
         <td class="cat">지속성</td>
-        <td style="text-align:left;font-size:12px;line-height:1.7;">
-         <b>유지기간 (15점)</b><br>
-         5년 이상 → 15점 / 3년 이상 → 12점 / 1년 이상 → 9점<br>
-         6개월 이상 → 6점 / 6개월 미만 → 3점<br>
-         <b>관리 필요성 (5점)</b><br>
-         관리 불필요 → 5점 / 월 1회 점검 → 4점 / 주 1회 점검 → 3점<br>
-         매일 관리 → 2점 / 전담 관리 필요 → 1점
+        <td style="text-align:left;font-size:12px;line-height:1.9;">
+         장기적으로 유지 (5년 이상) → 20점<br>
+         중기적으로 유지 (1년 이상) → 15점<br>
+         단기적으로 유지 (1년 미만) → 10점<br>
+         일시적으로 유지 (6개월 미만) → 5점
         </td>
-        <td style="text-align:center;font-size:12px;line-height:1.7;">15<br>12/9<br>6/3<br>5<br>4/3<br>2/1</td>
+        <td style="text-align:center;font-size:12px;line-height:1.9;">20<br>15<br>10<br>5</td>
         <td>20</td>
        </tr>
        <tr>
@@ -2445,7 +2433,8 @@ function updModalProposer(){
 }
 function updRangeDrop(type){
   const catMap={
-    realizability:{high:[21,30],mid:[11,20],low:[1,10]}
+    realizability:{high:[21,30],mid:[11,20],low:[1,10]},
+    continuity:{h1:[16,20],h2:[11,15],h3:[6,10],h4:[1,5]}
   };
   const cat=document.getElementById('pf-'+type+'-cat').value;
   const scoreEl=document.getElementById('pf-'+type);
@@ -2463,7 +2452,8 @@ function restoreRangeDrop(type,score){
   score=parseInt(score)||0;
   if(!score)return;
   const catMap={
-    realizability:{high:[21,30],mid:[11,20],low:[1,10]}
+    realizability:{high:[21,30],mid:[11,20],low:[1,10]},
+    continuity:{h1:[16,20],h2:[11,15],h3:[6,10],h4:[1,5]}
   };
   const map=catMap[type];
   let catVal='';
@@ -2474,22 +2464,6 @@ function restoreRangeDrop(type,score){
   updRangeDrop(type);
   const scoreEl=document.getElementById('pf-'+type);
   if(scoreEl)scoreEl.value=score;
-}
-function updContinuityScore(){
-  const dur=parseInt(document.getElementById('pf-continuity-dur')?.value)||0;
-  const mgmt=parseInt(document.getElementById('pf-continuity-mgmt')?.value)||0;
-  const total=dur+mgmt;
-  const hidden=document.getElementById('pf-continuity');
-  if(hidden)hidden.value=total;
-  const totalEl=document.getElementById('pf-continuity-total');
-  if(totalEl)totalEl.textContent='지속성 합계: '+total+'점';
-}
-function restoreContinuityDrop(dur,mgmt){
-  const durEl=document.getElementById('pf-continuity-dur');
-  const mgmtEl=document.getElementById('pf-continuity-mgmt');
-  if(durEl)durEl.value=dur||'';
-  if(mgmtEl)mgmtEl.value=mgmt||'';
-  updContinuityScore();
 }
 function calcAutoScore(amountStr,realizability,continuity){
   const num=parseInt(String(amountStr||'').replace(/[^0-9]/g,''))||0;
@@ -2934,10 +2908,8 @@ function clearProposalForm(){
   const ct=document.getElementById('pf-costTotal');if(ct)ct.textContent='-';
   fillETSel('pf-effectType','');
   const stEl=document.getElementById('pf-status');if(stEl)stEl.value='Y';
-  ['pf-realizability-cat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['pf-realizability'].forEach(id=>{const el=document.getElementById(id);if(el){el.innerHTML='<option value="">-- 점수 선택 --</option>';el.disabled=true;}});
-  ['pf-continuity-dur','pf-continuity-mgmt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  updContinuityScore();
+  ['pf-realizability-cat','pf-continuity-cat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['pf-realizability','pf-continuity'].forEach(id=>{const el=document.getElementById(id);if(el){el.innerHTML='<option value="">-- 점수 선택 --</option>';el.disabled=true;}});
   editPropId=null;
   localStorage.removeItem('ssat_prop_draft');
 }
@@ -2980,10 +2952,8 @@ function collectProposalFormData(){
   const effectType=document.getElementById('pf-effectType')?.value||'';
   const status=document.getElementById('pf-status')?.value||'Y';
   const realizability=parseInt(document.getElementById('pf-realizability')?.value)||0;
-  const continuityDur=parseInt(document.getElementById('pf-continuity-dur')?.value)||0;
-  const continuityMgmt=parseInt(document.getElementById('pf-continuity-mgmt')?.value)||0;
-  const continuity=continuityDur+continuityMgmt;
-  return{date,dept,proposer,theme,no,isImpl,type,category,implDept,idea,beforeText,beforeImgData,beforeTabs,problem,afterImpl,afterChange,afterChangeImgData,afterTabs,afterImprove,costDetail,costMaterial,costLabor,costInvest,effectType,status,realizability,continuity,continuity_dur:continuityDur,continuity_mgmt:continuityMgmt};
+  const continuity=parseInt(document.getElementById('pf-continuity')?.value)||0;
+  return{date,dept,proposer,theme,no,isImpl,type,category,implDept,idea,beforeText,beforeImgData,beforeTabs,problem,afterImpl,afterChange,afterChangeImgData,afterTabs,afterImprove,costDetail,costMaterial,costLabor,costInvest,effectType,status,realizability,continuity};
 }
 function autoSaveDraft(){
   try{
@@ -3011,7 +2981,7 @@ function saveProposalToRegister(){
   const d=collectProposalFormData();
   calcPropCost();
   const amount=document.getElementById('pf-amount').value||'-';
-  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:d.realizability,continuity:d.continuity,continuity_dur:d.continuity_dur,continuity_mgmt:d.continuity_mgmt};
+  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:d.realizability,continuity:d.continuity};
   const autoScores=calcAutoScore(amount,d.realizability,d.continuity);
   if(editPropId!==null){
     const idx=tableData.findIndex(r=>r.id===editPropId);
@@ -3276,7 +3246,7 @@ function loadDraft(){
     sv('pf-idea')(d.idea||'');sv('pf-problem')(d.problem||'');sv('pf-after-impl')(d.afterImpl||'');
     sv('pf-after-improve')(d.afterImprove||'');sv('pf-costDetail')(d.costDetail||'');
     sv('pf-costMaterial')(d.costMaterial||'');sv('pf-costLabor')(d.costLabor||'');sv('pf-costInvest')(d.costInvest||'');
-    restoreRangeDrop('realizability',d.realizability||0);restoreContinuityDrop(d.continuity_dur||0,d.continuity_mgmt||0);
+    restoreRangeDrop('realizability',d.realizability||0);restoreRangeDrop('continuity',d.continuity||0);
     const deptEl=document.getElementById('pf-dept');
     if(deptEl){deptEl.value=d.dept||'';updPfProposer();}
     sv('pf-proposer')(d.proposer||'');syncCheckDrop('proposer');
@@ -3321,7 +3291,7 @@ function openPropForm(rid){
       sv('pf-costLabor')(p.costLabor||'');
       sv('pf-costInvest')(p.costInvest||'');
       restoreRangeDrop('realizability',p.realizability||0);
-      restoreContinuityDrop(p.continuity_dur||0,p.continuity_mgmt||0);
+      restoreRangeDrop('continuity',p.continuity||0);
       // dept & proposer
       const deptEl=document.getElementById('pf-dept');
       if(deptEl){deptEl.value=r.dept||'';updPfProposer();}
