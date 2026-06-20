@@ -140,12 +140,29 @@ td.theme-cell:hover{background:inherit!important;color:inherit;}
 .doc-header-meta td:nth-child(odd){background:#e0e0e0;font-weight:600;}
 .doc-header-title{flex:1;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;padding:0 30px;}
 .section-title{font-size:14px;font-weight:700;margin:20px 0 12px;color:#1a3a5c;}
-.section-title::before{content:"\u25a0 ";}
+.section-title::before{content:"";}
 .guide-table{border-collapse:collapse;width:100%;max-width:720px;}
 .guide-table th,.guide-table td{border:1px solid #555;padding:8px 14px;font-size:13px;text-align:center;}
 .guide-table th{background:#1a3a5c;color:#fff;}
-.guide-table .cat{background:#e8ecf0;font-weight:600;}
+.guide-table .cat{background:#e8ecf0;font-weight:600;white-space:nowrap;}
 .guide-table .remark-cell{font-size:11.5px;color:#555;}
+.guide-page-nav{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.guide-page-btn{padding:6px 16px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;cursor:pointer;color:#1a3a5c;font-weight:600;transition:all .15s;}
+.guide-page-btn.active{background:#1a3a5c;color:#fff;border-color:#1a3a5c;}
+.guide-page-btn:hover:not(.active){background:#f0f5fa;}
+.guide-page{display:none;}
+.guide-page.active{display:block;}
+.flow-table{border-collapse:collapse;width:100%;max-width:780px;}
+.flow-table th,.flow-table td{border:1px solid #555;padding:7px 10px;font-size:12px;vertical-align:top;}
+.flow-table th{background:#1a3a5c;color:#fff;text-align:center;}
+.flow-table td:first-child{text-align:center;font-weight:700;background:#e8ecf0;width:36px;vertical-align:middle;}
+.flow-table td:nth-child(2){text-align:left;}
+.flow-table td:nth-child(3),.flow-table td:nth-child(4){text-align:center;color:#1a3a5c;font-weight:600;white-space:nowrap;}
+.effect-table td:nth-child(2){text-align:left;}
+.effect-table{border-collapse:collapse;width:100%;max-width:780px;}
+.effect-table th,.effect-table td{border:1px solid #555;padding:8px 12px;font-size:12px;vertical-align:top;}
+.effect-table th{background:#1a3a5c;color:#fff;text-align:center;}
+.effect-table td:first-child{background:#e8ecf0;font-weight:600;text-align:center;white-space:nowrap;width:80px;vertical-align:middle;}
 .results-wrap{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:28px;max-width:600px;}
 .results-table{border-collapse:collapse;width:100%;}
 .results-table th,.results-table td{border:1px solid #dee2e6;padding:10px 18px;font-size:13.5px;}
@@ -240,15 +257,17 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
     <div class="form-group"><label>2차 심사결과 - 채택(등급)</label><div id="fd-secondGradeDisplay" style="padding:8px 10px;font-weight:700;font-size:13px;color:#1a3a5c;">-</div></div>
     <div class="form-group"><label>비고</label><input type="text" id="fd-remark" placeholder="비고 입력"/></div>
    </div>
+   <input type="hidden" id="m-edit-id" value=""/>
    <div class="score-section">
-    <h4>&#128203; 1차 심사결과 점수 (수기 입력)</h4>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+     <h4 style="margin:0;">&#128203; 1차 심사결과 점수</h4>
+     <button type="button" class="btn" style="padding:4px 12px;font-size:11px;background:#2d5a8c;color:#fff;" onclick="autoCalcScoreFromProposal()" title="제안서 효과금액·실현성·지속성 기준으로 자동 산출">&#9889; 자동 집계</button>
+     <span style="font-size:10px;color:#888;">제안서 저장 시에도 자동 산출됩니다</span>
+    </div>
     <div class="score-row">
-     <div class="score-item"><label>유형효과점수<br>(최대 40)</label><input type="number" id="fd-typeScore" min="0" max="40" value="0" oninput="updModalScore()"/></div>
-     <div class="score-item"><label>무형효과점수<br>(최대 10)</label><input type="number" id="fd-intangibleScore" min="0" max="10" value="0" oninput="updModalScore()"/></div>
-     <div class="score-item"><label>창의성<br>(최대 15)</label><input type="number" id="fd-creativityScore" min="0" max="15" value="0" oninput="updModalScore()"/></div>
-     <div class="score-item"><label>실현성<br>(최대 20)</label><input type="number" id="fd-realizabilityScore" min="0" max="20" value="0" oninput="updModalScore()"/></div>
-     <div class="score-item"><label>노력도<br>(최대 10)</label><input type="number" id="fd-effortScore" min="0" max="10" value="0" oninput="updModalScore()"/></div>
-     <div class="score-item"><label>지속성<br>(최대 5)</label><input type="number" id="fd-continuityScore" min="0" max="5" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>유형효과점수<br>(최대 50)</label><input type="number" id="fd-typeScore" min="0" max="50" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>실현성<br>(최대 30)</label><input type="number" id="fd-realizabilityScore" min="0" max="30" value="0" oninput="updModalScore()"/></div>
+     <div class="score-item"><label>지속성<br>(최대 20)</label><input type="number" id="fd-continuityScore" min="0" max="20" value="0" oninput="updModalScore()"/></div>
      <div class="score-summary">
       <div class="score-total-box"><div class="st-label">채택점수</div><div class="st-value" id="m-tot-score">0</div></div>
       <div class="score-total-box" style="background:#1b5e20;"><div class="st-label">등급</div><div class="st-value" id="m-grade">-</div></div>
@@ -466,6 +485,36 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
     </tbody>
    </table>
   </div>
+  <div style="background:#f0f5fa;border-radius:8px;padding:14px 18px;margin:10px 0 0;">
+   <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">&#128203; 1차 심사 평가 기준 선택 <span style="font-size:11px;font-weight:400;color:#777;">(저장 시 점수 자동 산출)</span></div>
+   <div style="display:flex;gap:20px;flex-wrap:wrap;">
+    <div>
+     <label style="font-size:11px;font-weight:600;color:#1a3a5c;display:block;margin-bottom:4px;">실현성 (최대 30점)</label>
+     <select id="pf-realizability-cat" onchange="updRangeDrop('realizability')" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
+      <option value="">-- 수준 선택 --</option>
+      <option value="high">실시가 아주 용이하며 보완 필요성 없음 (21~30점)</option>
+      <option value="mid">실시가 용이하나 보완이 필요함 (11~20점)</option>
+      <option value="low">어느 정도 수정 보완을 요함 (1~10점)</option>
+     </select>
+     <select id="pf-realizability" disabled style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#f8fafc;min-width:120px;">
+      <option value="">-- 점수 선택 --</option>
+     </select>
+    </div>
+    <div>
+     <label style="font-size:11px;font-weight:600;color:#1a3a5c;display:block;margin-bottom:4px;">지속성 (최대 20점)</label>
+     <select id="pf-continuity-cat" onchange="updRangeDrop('continuity')" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
+      <option value="">-- 수준 선택 --</option>
+      <option value="h1">장기적으로 유지 (5년 이상) (16~20점)</option>
+      <option value="h2">중기적으로 유지 (1년 이상) (11~15점)</option>
+      <option value="h3">단기적으로 유지 (1년 미만) (6~10점)</option>
+      <option value="h4">일시적으로 유지 (6개월 미만) (1~5점)</option>
+     </select>
+     <select id="pf-continuity" disabled style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#f8fafc;min-width:120px;">
+      <option value="">-- 점수 선택 --</option>
+     </select>
+    </div>
+   </div>
+  </div>
   <div class="modal-footer" style="justify-content:space-between;align-items:center;">
    <span id="pf-draft-status" style="font-size:11px;color:#aaa;">자동저장: 1분마다</span>
    <div style="display:flex;gap:10px;">
@@ -507,6 +556,12 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
    <span class="nav-icon">&#128101;</span>회원관리
    <span class="nav-badge" id="badge-users" style="display:none;">0</span>
   </div>
+  <div class="nav-item" onclick="showTab('guide',this)">
+   <span class="nav-icon">&#128218;</span>이용가이드
+  </div>
+  <div class="nav-item" id="nav-history" onclick="showTab('history',this)" style="display:none;">
+   <span class="nav-icon">&#128196;</span>업데이트 이력
+  </div>
  </nav>
  <div class="user-info-bar" id="user-info-bar"></div>
  <div style="padding:4px 18px 4px;font-size:10px;" id="sb-status"></div>
@@ -540,76 +595,247 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
 
   <!-- TAB 1: 관리지침서 -->
   <div class="tab-panel active" id="tab-guidelines">
-   <div class="guidelines-wrap">
-    <div class="doc-header">
-     <div class="doc-header-meta">
-      <table>
-       <tr><td>No</td><td>경영지원</td><td>구분</td><td>제안제도</td><td>Page</td></tr>
-       <tr><td></td><td>200208</td><td>공정명</td><td>전공정</td><td>5/5</td></tr>
-      </table>
-     </div>
-     <div class="doc-header-title">제안제도 관리 지침서</div>
+   <div class="guidelines-wrap" style="overflow:auto;max-height:calc(100vh - 140px);">
+    <!-- 페이지 네비게이션 -->
+    <div class="guide-page-nav">
+     <button class="guide-page-btn active" onclick="showGuidePage(1,this)">1</button>
+     <button class="guide-page-btn" onclick="showGuidePage(2,this)">2</button>
+     <button class="guide-page-btn" onclick="showGuidePage(3,this)">3</button>
+     <button class="guide-page-btn" onclick="showGuidePage(4,this)">4</button>
     </div>
-    <div class="section-title">제안 효과 분석 결과 등급별 시상 기준</div>
-    <table class="guide-table">
-     <thead><tr><th>구분</th><th>제안상 명</th><th>평가등급</th><th>시상금액</th><th>비고</th></tr></thead>
-     <tbody>
-      <tr>
-       <td class="cat" rowspan="12">개인상</td>
-       <td rowspan="7">제안상</td>
-       <td>1</td><td>별도</td><td rowspan="2"></td>
-      </tr>
-      <tr><td>2</td><td>별도</td></tr>
-      <tr><td>3</td><td>100,000</td><td rowspan="5" class="remark-cell">원/분기</td></tr>
-      <tr><td>4</td><td>50,000</td></tr>
-      <tr><td>5</td><td>30,000</td></tr>
-      <tr><td>6</td><td>10,000</td></tr>
-      <tr><td>불채택</td><td>문화상품권</td></tr>
-      <tr>
-       <td>최우수 제안상 (1명)</td>
-       <td>실시제안 : 10건 이상<br>(실시제안 효과평가)</td>
-       <td>300,000</td>
-       <td rowspan="3" class="remark-cell">년</td>
-      </tr>
-      <tr>
-       <td>우수 제안상 (2명)</td>
-       <td>실시제안 : 5건 이상<br>(실시제안 효과평가)</td>
-       <td>200,000</td>
-      </tr>
-      <tr>
-       <td>장려상 (3명)</td>
-       <td>실시제안 : 3건 이상<br>(실시제안 효과평가)</td>
-       <td>100,000</td>
-      </tr>
-      <tr><td colspan="4" style="height:4px;background:#f0f0f0;"></td></tr>
-      <tr><td colspan="4" style="height:0;padding:0;border:0;"></td></tr>
-      <tr>
-       <td class="cat">단체상</td>
-       <td>제안 우수 부서상</td>
-       <td>부서원 총 제안건수/실시제안 건수 가장 높은 부서</td>
-       <td>500,000</td>
-       <td></td>
-      </tr>
-     </tbody>
-    </table>
-    <div style="margin-top:28px;background:#f0f5fa;border-radius:8px;padding:16px;max-width:720px;">
-     <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">&#128204; 1차 심사 채점 기준 (총 100점)</div>
-     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <span style="background:#1a3a5c;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">유형효과점수 40점</span>
-      <span style="background:#2d5a8c;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">무형효과점수 10점</span>
-      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">창의성 15점</span>
-      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">실현성 20점</span>
-      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">노력도 10점</span>
-      <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">지속성 5점</span>
+
+    <!-- PAGE 1: 1/5 목적 및 관리방법 -->
+    <div class="guide-page active" id="gpage-1">
+     <div class="doc-header">
+      <div class="doc-header-meta">
+       <table>
+        <tr><td>No</td><td>경영지원</td><td>구분</td><td>제안제도</td><td>Page</td></tr>
+        <tr><td></td><td>200208</td><td>공정명</td><td>전공정</td><td>1/5</td></tr>
+       </table>
+      </div>
+      <div class="doc-header-title">제안제도 관리 지침서</div>
      </div>
-     <div style="font-size:12px;color:#555;">
-      <b>점수별 등급:</b>&nbsp;&nbsp;
-      <span style="background:#1565c0;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">2등급 60점 이상</span>
-      <span style="background:#1b5e20;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">3등급 50~59점</span>
-      <span style="background:#e65100;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">4등급 40~49점</span>
-      <span style="background:#37474f;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">5등급 30~39점</span>
-      <span style="background:#78909c;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">6등급 20~29점</span>
-      <span style="background:#b0bec5;color:#37474f;padding:2px 9px;border-radius:3px;font-size:11px;">불채택 19점 이하</span>
+     <div style="background:#f0f5fa;border-radius:8px;padding:14px 18px;margin-bottom:18px;max-width:780px;">
+      <div style="font-size:13px;color:#1a3a5c;margin-bottom:7px;"><b>1) 정의</b> : 전 구성원이 생산현장의 문제점 및 불편사항을 스스로 제안하고, 조직적으로 개선하는 활동.</div>
+      <div style="font-size:13px;color:#1a3a5c;"><b>2) 목적</b> : 전 구성원의 자율적인 전원참여 활동으로 일에 대한 불편사항을 없애고, 의욕을 촉진 하고자 함</div>
+     </div>
+     <div class="section-title">관 리 방 법 및 기 준</div>
+     <table class="flow-table">
+      <thead>
+       <tr><th style="width:36px;">No</th><th>상세 내용</th><th style="width:150px;">관리방법</th><th style="width:100px;">관리기준</th></tr>
+      </thead>
+      <tbody>
+       <tr><td>①</td><td>각 팀장은 팀원의 제안내용을 자체 검토하여 5일이내 품질팀에 제안서를 제출한다</td><td>단순제안 배제</td><td>제안서</td></tr>
+       <tr><td>②</td><td>품질팀은 제출된 제안서를 관리대장에 등록하고 1회/월 심사 상정한다</td><td>팀별/개인별 제안건수 관리</td><td>관리대장</td></tr>
+       <tr><td>③</td><td>공장장은 (팀장)과 제안서를 개선효과산출기준에 준하여 1회/월 (1차)심사한다.</td><td>제안 내용 타당성 검토<br>(채택, 불채택)</td><td>산출기준</td></tr>
+       <tr><td>④</td><td>채택된 제안은 해당팀에서 "즉 실천" 개선 실시하고, 협조 사항이 필요한 경우 관련 팀에 의뢰하여 개선실시하도록 한다</td><td>개선실시</td><td>결과보고서</td></tr>
+       <tr><td>⑤</td><td>품질팀은 우수 제안은 개선효과 분석하여 (2차)심의를 요청한다 (임원/경영진의 심사)</td><td>정량화 (유형, 무형)</td><td>효과분석결과</td></tr>
+       <tr><td>⑥</td><td>경영진은 (임원)과 산출된 효과 분석결과를 검토하여 1회/월 등급기준에 의하여 등급결정하고 포상기준에 준하여 포상한다</td><td>개인/팀 시상금 결정</td><td>등급기준/<br>포상기준</td></tr>
+       <tr><td>⑦</td><td>우수 제안에 대해서는 1회/분기 공유회 실시하여 수평전개하여 지속적 관리실시한다</td><td>월/분기/년간</td><td>공유회</td></tr>
+      </tbody>
+     </table>
+    </div>
+
+    <!-- PAGE 2: 3/5 효과 산출 기준 -->
+    <div class="guide-page" id="gpage-2">
+     <div class="doc-header">
+      <div class="doc-header-meta">
+       <table>
+        <tr><td>No</td><td>경영지원</td><td>구분</td><td>제안제도</td><td>Page</td></tr>
+        <tr><td></td><td>200208</td><td>공정명</td><td>전공정</td><td>3/5</td></tr>
+       </table>
+      </div>
+      <div class="doc-header-title">제안제도 관리 지침서</div>
+     </div>
+     <div class="section-title">제안 항목별 효과 산출 기준</div>
+     <table class="effect-table">
+      <thead>
+       <tr><th style="width:80px;">항목</th><th>산출기준</th></tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>품질향상</td>
+        <td>
+         1. 불량감소효과 : 년간 생산량 × [(개선전 불량률(%) – 개선후 불량률(%)) ÷ 100] × 생산단가<br>
+         2. 재료비 효과 : 년간 생산량 × [(개선전 폐품율(%) – 개선후 폐품율(%)) ÷ 100] × 자재단가<br>
+         3. 인건비 절감효과 : 년간 생산량 × [(개선전 불량율(%) – 개선후 불량률(%)) ÷ 불량품 재작업시간] × 시간당 인건비
+        </td>
+       </tr>
+       <tr>
+        <td>생산성향상</td>
+        <td>
+         1. 작업공수효율향상 : 년간 생산량 × [(개선전 작업공수 – 개선후 작업공수) ÷ 100] × 표준시간 × 시간당 인건비<br>
+         2. 인원절감 효과 : 월 절감인원 × 1인당 월간 평균 인건비 × 지속 개월(12이하)<br>
+         3. 표준시간 절감 : 년간 생산량 × [개선전 표준시간 – 개선후 표준시간] × 시간당 인건비(설비임률)
+        </td>
+       </tr>
+       <tr>
+        <td>원가절감</td>
+        <td>년간 생산량 × [개선전 재료비 – 개선후 재료비]</td>
+       </tr>
+       <tr>
+        <td>소모품절감</td>
+        <td>[(개선전 월간 소모품 사용량 – 개선후 월간 소모품 사용량)] × 소모품 단가 × 지속 개월(12이하)</td>
+       </tr>
+       <tr>
+        <td>에너지절감</td>
+        <td>[개선전 월간 단위당 사용량 – 개선후 월간 단위당 사용량] × 단위당 단가 × 지속 개월(12이하)</td>
+       </tr>
+       <tr>
+        <td>기타</td>
+        <td>기타 산출 가능한 효과금액은 해당부서에 의뢰하여 개선 전·후를 비교하여 년간 금액 산출</td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+
+    <!-- PAGE 3: 4/5 효과 분석 기준 -->
+    <div class="guide-page" id="gpage-3">
+     <div class="doc-header">
+      <div class="doc-header-meta">
+       <table>
+        <tr><td>No</td><td>경영지원</td><td>구분</td><td>제안제도</td><td>Page</td></tr>
+        <tr><td></td><td>200208</td><td>공정명</td><td>전공정</td><td>4/5</td></tr>
+       </table>
+      </div>
+      <div class="doc-header-title">제안제도 관리 지침서</div>
+     </div>
+     <div class="section-title">제안 효과 분석 기준</div>
+     <table class="guide-table" style="max-width:780px;">
+      <thead>
+       <tr><th style="width:70px;white-space:nowrap;">항목</th><th>평가 등급기준</th><th style="width:120px;">기준점수</th><th style="width:60px;">가중치</th></tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td class="cat">유형효과</td>
+        <td style="text-align:left;font-size:12px;line-height:1.9;">
+         효과금액 2천 만원/년 이상 → 50점<br>
+         효과금액 1천 만원/년 이상 → 40점<br>
+         효과금액 5백 만원/년 이상 → 30점<br>
+         효과금액 1백 만원/년 이상 → 20점<br>
+         효과금액 1백 만원/년 미만 → 10점
+        </td>
+        <td style="text-align:center;font-size:12px;line-height:1.9;">50<br>40<br>30<br>20<br>10</td>
+        <td>50</td>
+       </tr>
+       <tr>
+        <td class="cat">실현성</td>
+        <td style="text-align:left;font-size:12px;line-height:1.9;">
+         실시가 아주 용이하며 보완 필요성 없음 → 30점<br>
+         실시가 용이하나 보완이 필요함 → 20점<br>
+         어느 정도 수정 보완을 요함 → 10점
+        </td>
+        <td style="text-align:center;font-size:12px;line-height:1.9;">30<br>20<br>10</td>
+        <td>30</td>
+       </tr>
+       <tr>
+        <td class="cat">지속성</td>
+        <td style="text-align:left;font-size:12px;line-height:1.9;">
+         장기적으로 유지 (5년 이상) → 20점<br>
+         중기적으로 유지 (1년 이상) → 15점<br>
+         단기적으로 유지 (1년 미만) → 10점<br>
+         일시적으로 유지 (6개월 미만) → 5점
+        </td>
+        <td style="text-align:center;font-size:12px;line-height:1.9;">20<br>15<br>10<br>5</td>
+        <td>20</td>
+       </tr>
+       <tr>
+        <td class="cat" style="font-weight:700;">TOTAL</td>
+        <td></td>
+        <td style="font-weight:700;">100</td>
+        <td style="font-weight:700;">100</td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="section-title" style="margin-top:24px;">제안 평가 점수 기준</div>
+     <table class="guide-table" style="max-width:780px;">
+      <thead>
+       <tr><th style="width:60px;">등급</th><th style="width:110px;">평가점수</th><th>평가내용</th></tr>
+      </thead>
+      <tbody>
+       <tr><td>1</td><td>80점 이상</td><td style="text-align:left;">제안 효과의 기대가 아주 크고, 실행이 가능한 제안</td></tr>
+       <tr><td>2</td><td>60점~79점</td><td style="text-align:left;">제안 효과의 기대가 크고, 실행 가능한 제안</td></tr>
+       <tr><td>3</td><td>50점~59점</td><td style="text-align:left;">제안 효과가 보통이나, 실행이 가능한 제안</td></tr>
+       <tr><td>4</td><td>40점~49점</td><td style="text-align:left;">제안 실행에 따른 효과가 경미한 제안</td></tr>
+       <tr><td>5</td><td>30점~39점</td><td style="text-align:left;">실행에 따른 효과가 무형적이고 경미한 제안</td></tr>
+       <tr><td>6</td><td>30점 미만</td><td style="text-align:left;">실행에 대한 효과가 거의 없는 제안</td></tr>
+       <tr><td>불채택</td><td></td><td style="text-align:left;">제안 심사가 불 필요한 제안</td></tr>
+      </tbody>
+     </table>
+     <div style="margin-top:12px;font-size:12px;color:#555;max-width:780px;">
+      ※ 공동 제안의 경우 공동 참여자에게 상금은 1/n 임&nbsp;&nbsp;|&nbsp;&nbsp;제안 불 채택 내역은 제안서 양식 참조
+     </div>
+    </div>
+
+    <!-- PAGE 4: 5/5 시상 기준 (기존 내용) -->
+    <div class="guide-page" id="gpage-4">
+     <div class="doc-header">
+      <div class="doc-header-meta">
+       <table>
+        <tr><td>No</td><td>경영지원</td><td>구분</td><td>제안제도</td><td>Page</td></tr>
+        <tr><td></td><td>200208</td><td>공정명</td><td>전공정</td><td>5/5</td></tr>
+       </table>
+      </div>
+      <div class="doc-header-title">제안제도 관리 지침서</div>
+     </div>
+     <div class="section-title">제안 효과 분석 결과 등급별 시상 기준</div>
+     <table class="guide-table">
+      <thead><tr><th>구분</th><th>제안상 명</th><th>평가등급</th><th>시상금액</th><th>비고</th></tr></thead>
+      <tbody>
+       <tr>
+        <td class="cat" rowspan="12">개인상</td>
+        <td rowspan="7">제안상</td>
+        <td>1</td><td>별도</td><td rowspan="2"></td>
+       </tr>
+       <tr><td>2</td><td>별도</td></tr>
+       <tr><td>3</td><td>100,000</td><td rowspan="5" class="remark-cell">원/분기</td></tr>
+       <tr><td>4</td><td>50,000</td></tr>
+       <tr><td>5</td><td>30,000</td></tr>
+       <tr><td>6</td><td>10,000</td></tr>
+       <tr><td>불채택</td><td>문화상품권</td></tr>
+       <tr>
+        <td>최우수 제안상 (1명)</td>
+        <td>실시제안 : 10건 이상<br>(실시제안 효과평가)</td>
+        <td>300,000</td>
+        <td rowspan="3" class="remark-cell">년</td>
+       </tr>
+       <tr>
+        <td>우수 제안상 (2명)</td>
+        <td>실시제안 : 5건 이상<br>(실시제안 효과평가)</td>
+        <td>200,000</td>
+       </tr>
+       <tr>
+        <td>장려상 (3명)</td>
+        <td>실시제안 : 3건 이상<br>(실시제안 효과평가)</td>
+        <td>100,000</td>
+       </tr>
+       <tr><td colspan="4" style="height:4px;background:#f0f0f0;"></td></tr>
+       <tr><td colspan="4" style="height:0;padding:0;border:0;"></td></tr>
+       <tr>
+        <td class="cat">단체상</td>
+        <td>제안 우수 부서상</td>
+        <td>부서원 총 제안건수/실시제안 건수 가장 높은 부서</td>
+        <td>500,000</td>
+        <td></td>
+       </tr>
+      </tbody>
+     </table>
+     <div style="margin-top:28px;background:#f0f5fa;border-radius:8px;padding:16px;max-width:720px;">
+      <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">&#128204; 1차 심사 채점 기준 (총 100점)</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+       <span style="background:#1a3a5c;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">유형효과점수 50점</span>
+       <span style="background:#2d5a8c;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">실현성 30점</span>
+       <span style="background:#37474f;color:#fff;padding:5px 12px;border-radius:5px;font-size:12px;">지속성 20점</span>
+      </div>
+      <div style="font-size:12px;color:#555;">
+       <b>점수별 등급:</b>&nbsp;&nbsp;
+       <span style="background:#1565c0;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">2등급 60점 이상</span>
+       <span style="background:#1b5e20;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">3등급 50~59점</span>
+       <span style="background:#e65100;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">4등급 40~49점</span>
+       <span style="background:#37474f;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">5등급 30~39점</span>
+       <span style="background:#78909c;color:#fff;padding:2px 9px;border-radius:3px;font-size:11px;margin-right:4px;">6등급 20~29점</span>
+       <span style="background:#b0bec5;color:#37474f;padding:2px 9px;border-radius:3px;font-size:11px;">불채택 19점 이하</span>
+      </div>
      </div>
     </div>
    </div>
@@ -765,23 +991,21 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
         <th rowspan="2" style="min-width:70px;">진행상태<br>(R/Y/G)</th>
         <th rowspan="2" style="min-width:75px;">효과분석</th>
         <th rowspan="2" style="min-width:100px;">효과금액</th>
-        <th colspan="8" style="background:#163060;min-width:400px;">1차 심사결과</th>
-        <th rowspan="2" style="background:#2c3e6a;min-width:55px;">1차<br>검토</th>
-        <th rowspan="2" style="background:#2c3e6a;min-width:55px;">1차<br>확정</th>
+        <th colspan="6" style="background:#163060;min-width:290px;">1차 심사결과</th>
+        <th rowspan="2" style="background:#2c3e6a;min-width:55px;cursor:pointer;" onclick="bulkCheck('firstReview')" title="전체 체크/해제">1차<br>검토<br><input type="checkbox" id="hdr-firstReview" style="width:13px;height:13px;accent-color:#fff;pointer-events:none;" /></th>
+        <th rowspan="2" style="background:#2c3e6a;min-width:55px;cursor:pointer;" onclick="bulkCheck('firstConfirmed')" title="전체 체크/해제">1차<br>확정<br><input type="checkbox" id="hdr-firstConfirmed" style="width:13px;height:13px;accent-color:#fff;pointer-events:none;" /></th>
         <th colspan="2" style="background:#1a5c3a;min-width:130px;">2차 심사결과</th>
-        <th rowspan="2" style="background:#1a5c3a;min-width:55px;">2차<br>확정</th>
+        <th rowspan="2" style="background:#1a5c3a;min-width:55px;cursor:pointer;" onclick="bulkCheck('secondConfirmed')" title="전체 체크/해제">2차<br>확정<br><input type="checkbox" id="hdr-secondConfirmed" style="width:13px;height:13px;accent-color:#4aabf0;pointer-events:none;" /></th>
         <th rowspan="2" style="min-width:90px;">비고</th>
         <th rowspan="2" style="width:30px;"></th>
        </tr>
        <tr>
         <th class="sub-header" style="min-width:50px;">채택<br>(점수)</th>
         <th class="sub-header" style="min-width:58px;">채택<br>(등급)</th>
-        <th class="sub-header" style="min-width:50px;">유형효과<br>점수(40)</th>
-        <th class="sub-header" style="min-width:50px;">무형효과<br>점수(10)</th>
-        <th class="sub-header" style="min-width:46px;">창의성<br>(15)</th>
-        <th class="sub-header" style="min-width:46px;">실현성<br>(20)</th>
-        <th class="sub-header" style="min-width:46px;">노력도<br>(10)</th>
-        <th class="sub-header" style="min-width:46px;">지속성<br>(5)</th>
+        <th class="sub-header" style="min-width:50px;">유형효과<br>(50)</th>
+        <th class="sub-header" style="min-width:46px;">실현성<br>(30)</th>
+        <th class="sub-header" style="min-width:46px;">지속성<br>(20)</th>
+        <th class="sub-header" style="min-width:46px;">자동<br>집계</th>
         <th class="sub-header" style="min-width:60px;background:#2d8c6a;">채택<br>(점수)</th>
         <th class="sub-header" style="min-width:70px;background:#2d8c6a;">채택<br>(등급)</th>
        </tr>
@@ -925,6 +1149,555 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
    </div>
   </div>
  </div>
+
+  <!-- TAB: 이용가이드 -->
+  <div class="tab-panel" id="tab-guide">
+   <div style="max-width:860px;">
+
+    <!-- 헤더 -->
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2d5a8c);border-radius:12px;padding:28px 32px;margin-bottom:20px;color:#fff;">
+     <div style="font-size:22px;font-weight:700;margin-bottom:6px;">📖 원가절감 제안제도 이용가이드</div>
+     <div style="font-size:13px;color:#b0cce0;">신성오토텍(주) · 원가절감 제안제도 시스템 사용 안내</div>
+    </div>
+
+    <!-- 전체 흐름 -->
+    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:22px 26px;margin-bottom:16px;">
+     <div style="font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e8ecf0;">🔄 전체 업무 흐름</div>
+     <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;">
+      <div style="background:#1a3a5c;color:#fff;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;min-width:90px;">📄<br>제안서 작성</div>
+      <div style="color:#4aabf0;font-size:20px;font-weight:700;padding:0 8px;">→</div>
+      <div style="background:#2d5a8c;color:#fff;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;min-width:90px;">📝<br>접수대장 등록</div>
+      <div style="color:#4aabf0;font-size:20px;font-weight:700;padding:0 8px;">→</div>
+      <div style="background:#37474f;color:#fff;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;min-width:90px;">🔍<br>1차 심사</div>
+      <div style="color:#4aabf0;font-size:20px;font-weight:700;padding:0 8px;">→</div>
+      <div style="background:#37474f;color:#fff;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;min-width:90px;">✅<br>1차 확정</div>
+      <div style="color:#4aabf0;font-size:20px;font-weight:700;padding:0 8px;">→</div>
+      <div style="background:#1a5c3a;color:#fff;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;min-width:90px;">🏆<br>2차 심사·확정</div>
+     </div>
+    </div>
+
+    <!-- 메뉴 설명 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+
+     <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 22px;border-top:4px solid #1a3a5c;">
+      <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">📋 제안제도 관리지침서</div>
+      <ul style="font-size:12px;color:#444;line-height:2;padding-left:16px;margin:0;">
+       <li>1페이지 : 제안제도 정의·목적 및 관리 흐름(①~⑦)</li>
+       <li>2페이지 : 항목별 효과 산출 공식</li>
+       <li>3페이지 : 효과 분석 기준 및 등급 평가표</li>
+       <li>4페이지 : 등급별 시상 기준</li>
+      </ul>
+     </div>
+
+     <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 22px;border-top:4px solid #28a745;">
+      <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">📊 종합현황</div>
+      <ul style="font-size:12px;color:#444;line-height:2;padding-left:16px;margin:0;">
+       <li>부서·제안자별 월별 제안건수 집계</li>
+       <li>G(완료)·Y(진행중)·R(미진행) 진행상태 표시</li>
+       <li>효과금액 합계 자동 계산</li>
+       <li>연도 필터로 년도별 조회 가능</li>
+      </ul>
+     </div>
+
+     <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 22px;border-top:4px solid #2d5a8c;">
+      <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">📄 원가절감 제안서</div>
+      <ul style="font-size:12px;color:#444;line-height:2;padding-left:16px;margin:0;">
+       <li>제안서 작성 후 저장 시 접수대장 자동 등록</li>
+       <li>효과금액 입력 → 유형효과 점수 자동 비율 계산</li>
+       <li>실현성 수준 선택 → 세부 점수 선택 (최대 30점)</li>
+       <li>지속성 수준 선택 → 세부 점수 선택 (최대 20점)</li>
+       <li>저장 시 1차 심사점수 자동 반영</li>
+      </ul>
+     </div>
+
+     <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 22px;border-top:4px solid #163060;">
+      <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">📝 접수대장 <span style="font-size:10px;color:#888;font-weight:400;">(품질팀·관리자)</span></div>
+      <ul style="font-size:12px;color:#444;line-height:2;padding-left:16px;margin:0;">
+       <li>⚡ 자동 집계 버튼 : 제안서 기준 점수 재산출</li>
+       <li>유형효과·실현성·지속성 점수 수동 수정 가능</li>
+       <li>1차 검토 체크 → 1차 확정 체크 순으로 진행</li>
+       <li>1차 확정 후 2차 심사점수 입력 가능</li>
+       <li>진행상태 : G 완료 / Y 진행중 / R 미진행</li>
+      </ul>
+     </div>
+
+     <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 22px;border-top:4px solid #1a5c3a;">
+      <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">🏆 검토결과</div>
+      <ul style="font-size:12px;color:#444;line-height:2;padding-left:16px;margin:0;">
+       <li>2차 심사 확정된 제안의 등급·시상금 현황</li>
+       <li>인원별 수상 내역 및 합산 시상금 확인</li>
+      </ul>
+     </div>
+
+     <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 22px;border-top:4px solid #6f42c1;">
+      <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">🔢 1차 심사 배점 기준</div>
+      <div style="font-size:12px;color:#444;line-height:2;">
+       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <span style="background:#1a3a5c;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;">유형효과 50점</span>
+        <span style="background:#2d5a8c;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;">실현성 30점</span>
+        <span style="background:#37474f;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;">지속성 20점</span>
+       </div>
+       <div>유형효과 : 효과금액 비율로 자동 계산</div>
+       <div>2천만원↑ 50점 / 1천만원↑ 30~40점 / 1백만원↑ 10~20점</div>
+      </div>
+     </div>
+
+    </div>
+
+    <!-- 등급 기준 -->
+    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 26px;">
+     <div style="font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e8ecf0;">🎖 채택 등급 기준</div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="text-align:center;padding:10px 14px;border-radius:7px;background:#7b1fa2;color:#fff;min-width:80px;"><div style="font-size:15px;font-weight:700;">1등급</div><div style="font-size:11px;margin-top:3px;">80점 이상</div></div>
+      <div style="text-align:center;padding:10px 14px;border-radius:7px;background:#1565c0;color:#fff;min-width:80px;"><div style="font-size:15px;font-weight:700;">2등급</div><div style="font-size:11px;margin-top:3px;">60~79점</div></div>
+      <div style="text-align:center;padding:10px 14px;border-radius:7px;background:#1b5e20;color:#fff;min-width:80px;"><div style="font-size:15px;font-weight:700;">3등급</div><div style="font-size:11px;margin-top:3px;">50~59점</div></div>
+      <div style="text-align:center;padding:10px 14px;border-radius:7px;background:#e65100;color:#fff;min-width:80px;"><div style="font-size:15px;font-weight:700;">4등급</div><div style="font-size:11px;margin-top:3px;">40~49점</div></div>
+      <div style="text-align:center;padding:10px 14px;border-radius:7px;background:#37474f;color:#fff;min-width:80px;"><div style="font-size:15px;font-weight:700;">5등급</div><div style="font-size:11px;margin-top:3px;">30~39점</div></div>
+      <div style="text-align:center;padding:10px 14px;border-radius:7px;background:#78909c;color:#fff;min-width:80px;"><div style="font-size:15px;font-weight:700;">6등급</div><div style="font-size:11px;margin-top:3px;">20~29점</div></div>
+      <div style="text-align:center;padding:10px 14px;border-radius:7px;background:#b0bec5;color:#37474f;min-width:80px;"><div style="font-size:15px;font-weight:700;">불채택</div><div style="font-size:11px;margin-top:3px;">19점 이하</div></div>
+     </div>
+    </div>
+
+   </div>
+  </div>
+
+  <!-- TAB: 이력관리 -->
+  <div class="tab-panel" id="tab-history">
+   <div style="max-width:860px;height:calc(100vh - 100px);overflow-y:auto;padding-right:4px;">
+
+    <!-- 헤더 -->
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2d5a8c);border-radius:12px;padding:28px 32px;margin-bottom:20px;color:#fff;">
+     <div style="font-size:22px;font-weight:700;margin-bottom:6px;">&#128196; 업데이트 이력</div>
+     <div style="font-size:13px;color:#b0cce0;">원가절감 제안제도 시스템 · 개발 커밋 이력</div>
+    </div>
+
+    <!-- 이력 목록 -->
+    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:22px 26px;">
+     <div style="font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e8ecf0;">&#128203; 커밋 이력</div>
+
+     <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #1a3a5c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;">
+        <span style="background:#1a3a5c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">d750ea5</span>
+        <span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span>
+       </div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">직책별 종합현황 열람 권한 적용, 사이드바 연도 텍스트 제거</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: apply position-based visibility to 종합현황, remove 2025년 from sidebar</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">56b138c</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">신규 제안 시 현재 사용자 성명 자동입력, 김천국 조립팀 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: auto-fill 성명 with current user's name, add 김천국 to 조립팀</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">d61edf0</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">신규 제안 시 소속/실시부서 현재 사용자 팀 자동입력</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: auto-fill 소속/실시부서 with current user's team on new proposal</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #37474f;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#37474f;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">c4bec29</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">회원 부서 변경 후 제안 데이터 유지 처리</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: preserve proposal data after member dept change</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">fc29b4f</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">성명/실시부서 체크박스 복수선택 추가, 장성수 후가공팀 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: add checkbox multi-select for 성명/실시부서, add 장성수 to 후가공팀</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">821f046</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">실시부서 복수선택 및 전부서 옵션 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 실시부서 복수선택 및 전부서 옵션 추가</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">17881a7</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">직책별 원가절감 제안서 열람 권한 적용</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 직책별 원가절감 제안서 열람 권한 적용</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">1733780</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">회원관리 직책 컬럼 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 회원관리에 직책 컬럼 추가</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">ffacbaf</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">승인 회원을 제안자 드롭다운에 자동 포함</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 승인된 회원을 제안자 드롭다운에 자동 포함</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">e822996</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">조립팀 강영국 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 조립팀 강영국 추가</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">c880f89</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">제안서 목록 진행상태 뱃지 표시</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 원가절감 제안서 목록 진행상태 뱃지 표시</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">2e74620</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">제안서 목록 컬럼 개편</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 원가절감 제안서 목록 컬럼 개편</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">9751397</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">이미지 자동 압축으로 localStorage 용량 초과 오류 해결</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: 이미지 자동 압축으로 localStorage 용량 초과 오류 해결</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">24295d3</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">보기 모달 텍스트 정렬 유지 및 비용 항목 자동 서식</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: 보기 모달 텍스트 좌측정렬 유지 및 재료비/노무비/투자비용 자동 서식</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">21b2b83</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">사진 hover 시 확대 미리보기 표시</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 사진 hover 시 확대 미리보기 표시</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">020b6cc</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">각 탭 연도 필터 기본값을 올해로 설정</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 각 탭 연도 필터 기본값을 올해로 설정</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">88500be</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">사출팀 김태근 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 사출팀 김태근 추가</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">69b7bc3</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-18</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">원가절감 제안제도 최종본</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 원가절감 제안제도 최종본</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">5d530b9</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">사이드바 접기/펼치기 토글 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: add sidebar collapse/expand toggle</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">8d22ea7</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">PC/모바일 뷰 전환 토글 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: add PC/Mobile view toggle with mobile-optimized layout</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">4040d01</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">저장된 수상내역 먼저 로드 후 자동제안 처리</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: load saved awards before renderResults to prevent overwriting auto-suggestions</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">cbdef84</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">접수대장에서 새 제안 등록 버튼 제거</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: remove 새 제안 등록 button from 접수대장</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">67e1aa8</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">모든 관리자(admin)에게 검토결과 탭 및 삭제 권한 허용</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: allow all admins (role=admin) to access 검토결과 tab and delete</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">1f810e3</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">검토결과 탭 수상 로직 전면 개편</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: overhaul 검토결과 tab with new awards logic</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">89bf390</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">UI 권한 및 레이아웃 다수 업데이트</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: multiple UI permission and layout updates</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">ba870b6</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">시작 시 클라우드 데이터 먼저 로드 (신규 제안 덮어쓰기 방지)</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: load cloud data first on startup to prevent overwriting new proposals</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">f506a9b</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">하위 단계 사용자가 상위 단계 확정 수정 불가 처리</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: prevent lower-stage users from modifying higher-stage confirmations</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">96a1684</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">체크박스 변경 후 테이블 재렌더링 (비활성 상태 갱신)</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: re-render table after checkbox change to update dependent disabled states</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">6648634</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">회원관리 탭 시스템 관리자 전용 제한</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: restrict 회원관리 tab to system admin email only</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">f2c0453</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">품질팀 1차검토 체크박스 점수 조건 없이 활성화</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: enable 1차검토 checkbox for 품질팀 without score condition</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">ef94628</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">품질팀/공장장/부사장/대표이사 접수대장 탭 접근 허용</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: allow 품질팀/공장장/부사장/대표이사 to access 접수대장 tab</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">773144a</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">일반 사용자 접수대장 본인 부서 제안만 표시</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: filter proposal list by dept for regular users</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">1a8d4ba</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">접수대장 행 클릭 시 보기 모달 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: add row click view modal for 접수대장</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">4d2fca4</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">접수NO 컬럼 헤더에 예시 텍스트 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: add example text to 접수NO column header</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">d8d5dc7</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">직책별 점수 입력 필드 제한</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: restrict score input fields by role and stage</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">573fddf</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">체크박스 권한 제어 추가 및 NO → 접수 NO 이름 변경</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: add checkbox permission control and rename NO to 접수 NO</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">6738541</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">1차 확정 앞에 1차 검토 체크박스 컬럼 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 1차 확정 앞에 1차 검토 체크박스 컬럼 추가</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">08dede2</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">1·2차 심사결과 사이 확정 체크박스 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 1차·2차 심사결과 사이 및 2차 심사결과 옆에 확정 체크박스 추가</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">73d20a5</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">로그인 시 Supabase 최신 사용자 상태 조회 (승인 여부 정확히 반영)</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: 로그인 시 Supabase에서 최신 사용자 상태를 먼저 조회하여 승인 여부 정확히 반영</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">5b9debd</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">회원관리 탭 가입 대기 수 뱃지 표시</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 회원관리 탭에 가입 대기 수 뱃지 표시</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">a2a0423</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">2차 심사결과 컬럼 녹색 계열로 색상 구분</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 2차 심사결과 컬럼을 녹색 계열로 1차와 색상 구분</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">0393f95</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">접수대장 2차 심사결과 수기입력 + 채택 등급 자동계산</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 접수대장 2차 심사결과를 채택(점수) 수기입력 + 채택(등급) 자동계산으로 변경</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">2427d2e</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">users를 id=2 별도 행에 저장하여 400 오류 해결</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: users를 id=2 별도 행에 저장하여 400 오류 완전 해결</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">ef2a7cb</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">users 데이터를 awards JSONB 내 _users 키로 저장 (400 오류 해결)</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: users 데이터를 awards JSONB 컬럼 내 _users 키로 저장하여 400 오류 해결</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">b7bc264</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">회원 동기화 오류 표시 및 클라우드 새로고침 버튼 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: 회원 동기화 오류 표시 추가 및 클라우드 새로고침 버튼 추가</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">0605bc6</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">올리기 버튼에서 사용자 데이터도 함께 Supabase 동기화</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: 올리기 버튼에서 사용자 데이터도 함께 Supabase에 동기화</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">87247dd</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">접수대장·검토결과 탭 관리자 전용 제한</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 접수대장·검토결과 탭을 관리자 전용으로 제한</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">539acc6</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">sbSync에서 users 필드 제거 (배포앱 회원 덮어쓰기 방지)</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: sbSync에서 users 필드 제거하여 배포앱 회원 목록 덮어쓰기 방지</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #c0392b;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#c0392b;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">e41bdd4</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">vercel.json 루트 라우팅 설정 추가</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">fix: add vercel.json to route root to 원가절감 제안제도.html</div>
+       </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:#f0f4f8;border-left:4px solid #2d5a8c;">
+       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;"><span style="background:#2d5a8c;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;font-family:monospace;">84758c1</span><span style="font-size:10px;color:#888;white-space:nowrap;">2026-06-16</span></div>
+       <div>
+        <div style="font-size:13px;font-weight:600;color:#1a3a5c;">비밀번호 변경 기능 추가, 팀 선택에 대표이사/부사장/공장장 추가, 파일명 변경</div>
+        <div style="font-size:11px;color:#6b7a8d;margin-top:2px;">feat: 비밀번호 변경 기능 추가, 팀 선택에 대표이사/부사장/공장장 추가, index.html → 원가절감 제안제도.html 이름 변경</div>
+       </div>
+      </div>
+
+     </div>
+
+     <!-- 범례 -->
+     <div style="margin-top:20px;padding-top:14px;border-top:1px solid #e8ecf0;display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;">
+       <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#2d5a8c;"></span> feat (기능 추가)
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;">
+       <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#c0392b;"></span> fix (버그 수정)
+      </div>
+      <div style="font-size:11px;color:#999;margin-left:auto;">총 50건 커밋</div>
+     </div>
+
+    </div>
+
+   </div>
+  </div>
+
 </div>
 
 <!-- Auth Overlay -->
@@ -1004,7 +1777,7 @@ function calcGrade(s){
   if(s>=20) return '6등급';
   return '불채택';
 }
-function calcScore(r){return(parseInt(r.typeScore)||0)+(parseInt(r.intangibleScore)||0)+(parseInt(r.creativityScore)||0)+(parseInt(r.realizabilityScore)||0)+(parseInt(r.effortScore)||0)+(parseInt(r.continuityScore)||0);}
+function calcScore(r){return(parseInt(r.typeScore)||0)+(parseInt(r.realizabilityScore)||0)+(parseInt(r.continuityScore)||0);}
 function gradeHtml(g){
   if(!g||g==='-') return '<span style="color:#aaa">-</span>';
   const m={'1등급':'grade-1','2등급':'grade-2','3등급':'grade-3','4등급':'grade-4','5등급':'grade-5','6등급':'grade-6','불채택':'grade-reject','재검토':'grade-review'};
@@ -1140,6 +1913,7 @@ function onLoginSuccess(){
   const isSysAdmin=currentUser.email===ADMIN_EMAIL;
   const canAccessRegister=isAdmin||['품질팀','공장장','부사장','대표이사'].includes(currentUser.dept);
   document.getElementById('nav-users').style.display=isSysAdmin?'':'none';
+  document.getElementById('nav-history').style.display=isSysAdmin?'':'none';
   document.getElementById('nav-register').style.display=canAccessRegister?'':'none';
   document.getElementById('nav-results').style.display=isAdmin?'':'none';
   // 모바일 nav 탭도 동기화
@@ -1163,6 +1937,7 @@ function doLogout(){
   document.getElementById('auth-error').style.display='none';
   showLoginForm();
   document.getElementById('nav-users').style.display='none';
+  document.getElementById('nav-history').style.display='none';
   document.getElementById('nav-register').style.display='none';
   document.getElementById('nav-results').style.display='none';
   document.getElementById('user-info-bar').innerHTML='';
@@ -1415,12 +2190,10 @@ function renderTable(){
 <td style="text-align:right;white-space:nowrap;">${escH(r.effectAmount||'-')}</td>
 <td class="sc-total" id="st-${rid}">${score}</td>
 <td id="gc-${rid}">${gradeHtml(grade)}</td>
-<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="40" value="${r.typeScore||0}" ${scoreDis} onchange="updS(${rid},'typeScore',this.value)" style="${scoreStyle}"/></td>
-<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="10" value="${r.intangibleScore||0}" ${scoreDis} onchange="updS(${rid},'intangibleScore',this.value)" style="${scoreStyle}"/></td>
-<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="15" value="${r.creativityScore||0}" ${scoreDis} onchange="updS(${rid},'creativityScore',this.value)" style="${scoreStyle}"/></td>
-<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="20" value="${r.realizabilityScore||0}" ${scoreDis} onchange="updS(${rid},'realizabilityScore',this.value)" style="${scoreStyle}"/></td>
-<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="10" value="${r.effortScore||0}" ${scoreDis} onchange="updS(${rid},'effortScore',this.value)" style="${scoreStyle}"/></td>
-<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="5" value="${r.continuityScore||0}" ${scoreDis} onchange="updS(${rid},'continuityScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="50" value="${r.typeScore||0}" ${scoreDis} onchange="updS(${rid},'typeScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="30" value="${r.realizabilityScore||0}" ${scoreDis} onchange="updS(${rid},'realizabilityScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()"><input type="number" class="sc-input" min="0" max="20" value="${r.continuityScore||0}" ${scoreDis} onchange="updS(${rid},'continuityScore',this.value)" style="${scoreStyle}"/></td>
+<td onclick="event.stopPropagation()" style="text-align:center;">${!scoreDis?`<button onclick="event.stopPropagation();autoCalcInline(${rid})" style="font-size:10px;padding:2px 5px;background:#2d5a8c;color:#fff;border:none;border-radius:3px;cursor:pointer;" title="제안서 기준 자동 산출">⚡</button>`:'<span style="color:#ccc;font-size:10px;">-</span>'}</td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} ${frDis} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;${frDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${frDis?'권한 없음':'1차 검토'}"/></td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstConfirmed?'checked':''} ${fcDis} onchange="updF(${rid},'firstConfirmed',this.checked)" style="width:16px;height:16px;${fcDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${fcDis?(canFC?'1차 검토 완료 후 가능':'권한 없음'):'1차 심사 확정'}"/></td>
 <td onclick="event.stopPropagation()" style="background:#f0faf5;">${r.firstConfirmed?`<input type="number" class="sc-input" min="0" value="${r.secondScore||0}" ${score2Dis} onchange="updSecond(${rid},this.value)" style="${score2Style}" title="${score2Title}"/>`:`<span style="font-size:10px;color:#999;white-space:nowrap;line-height:1.4;">1차 확정시<br>등록 가능</span>`}</td>
@@ -1480,6 +2253,40 @@ function updF(rid,field,val){
   saveData();
   updCards();
   if(['firstReview','firstConfirmed','secondConfirmed'].includes(field)) renderTable();
+}
+function autoCalcInline(rid){
+  const r=tableData.find(x=>x.id==rid);
+  if(!r)return;
+  const scores=calcAutoScore(r.effectAmount,r.proposal?.realizability,r.proposal?.continuity);
+  r.typeScore=scores.typeScore;
+  r.realizabilityScore=scores.realizabilityScore;
+  r.continuityScore=scores.continuityScore;
+  r.grade=calcGrade(calcScore(r));
+  saveData();
+  renderTable();
+  renderResults();
+}
+function bulkCheck(field){
+  const hdr=document.getElementById('hdr-'+field);
+  const newVal=hdr?!hdr.checked:false;
+  const filtered=getFilteredData();
+  const canFR=currentUser&&currentUser.dept==='품질팀';
+  const canFC=currentUser&&currentUser.dept==='공장장';
+  const canSC=currentUser&&(currentUser.dept==='부사장'||currentUser.dept==='대표이사');
+  let allowed=false;
+  if(field==='firstReview'&&canFR)allowed=true;
+  if(field==='firstConfirmed'&&canFC)allowed=true;
+  if(field==='secondConfirmed'&&canSC)allowed=true;
+  if(!allowed){alert('해당 항목을 일괄 처리할 권한이 없습니다.');return;}
+  filtered.forEach(r=>{
+    if(field==='firstReview'){if(!r.firstConfirmed)r.firstReview=newVal;}
+    else if(field==='firstConfirmed'){if(r.firstReview)r.firstConfirmed=newVal;}
+    else if(field==='secondConfirmed'){if(r.firstConfirmed)r.secondConfirmed=newVal;}
+  });
+  if(hdr)hdr.checked=newVal;
+  saveData();
+  renderTable();
+  renderResults();
 }
 function updS(rid,field,val){
   const r=tableData.find(x=>x.id==rid);
@@ -1548,14 +2355,14 @@ function renderResults(){
   data.forEach(r=>{
     const nm=r.proposer||'';if(!nm)return;
     cmap[nm]=(cmap[nm]||0)+1;
-    // 채택건수: 2차 secondScore > 0 이고 등급이 불채택이 아닌 경우
+    // 2차 확정 채택 여부: secondConfirmed이고 불채택 아닌 경우
     const sg=r.secondGrade||(r.secondScore>0?calcGrade(r.secondScore):'-');
-    if((r.secondScore||0)>0 && sg!=='불채택'){adoptMap[nm]=(adoptMap[nm]||0)+1;}
-    // 2차 채택점수 합계
-    sc2map[nm]=(sc2map[nm]||0)+(r.secondScore||0);
-    // 시상금액: 1차 등급 기반
-    const g=r.grade||calcGrade(calcScore(r));
-    amap[nm]=(amap[nm]||0)+(GA[g]||0);
+    const isAdopted=r.secondConfirmed && sg!=='불채택' && sg!=='-' && (r.secondScore||0)>0;
+    if(isAdopted){adoptMap[nm]=(adoptMap[nm]||0)+1;}
+    // 2차 채택점수 합계 (불채택 제외)
+    if(isAdopted) sc2map[nm]=(sc2map[nm]||0)+(r.secondScore||0);
+    // 시상금액: 2차 확정 채택 등급 기반 (불채택 제외)
+    if(isAdopted) amap[nm]=(amap[nm]||0)+(GA[sg]||0);
   });
   const allNames=new Set([...Object.keys(cmap)]);
   const entries=[...allNames].map(n=>({n,c:cmap[n]||0,adopt:adoptMap[n]||0,sc2:sc2map[n]||0,a:amap[n]||0}));
@@ -1613,14 +2420,74 @@ function updModalProposer(){
   const ps=getProposersForDept(dept);
   document.getElementById('fd-proposer').innerHTML=ps.map(p=>'<option value="'+p+'">'+p+'</option>').join('');
 }
+function updRangeDrop(type){
+  const catMap={
+    realizability:{high:[21,30],mid:[11,20],low:[1,10]},
+    continuity:{h1:[16,20],h2:[11,15],h3:[6,10],h4:[1,5]}
+  };
+  const cat=document.getElementById('pf-'+type+'-cat').value;
+  const scoreEl=document.getElementById('pf-'+type);
+  scoreEl.innerHTML='<option value="">-- 점수 선택 --</option>';
+  if(!cat){scoreEl.disabled=true;return;}
+  const[min,max]=catMap[type][cat];
+  for(let i=max;i>=min;i--){
+    const opt=document.createElement('option');
+    opt.value=i;opt.textContent=i+'점';
+    scoreEl.appendChild(opt);
+  }
+  scoreEl.disabled=false;
+}
+function restoreRangeDrop(type,score){
+  score=parseInt(score)||0;
+  if(!score)return;
+  const catMap={
+    realizability:{high:[21,30],mid:[11,20],low:[1,10]},
+    continuity:{h1:[16,20],h2:[11,15],h3:[6,10],h4:[1,5]}
+  };
+  const map=catMap[type];
+  let catVal='';
+  for(const[k,[mn,mx]]of Object.entries(map)){if(score>=mn&&score<=mx){catVal=k;break;}}
+  if(!catVal)return;
+  const catEl=document.getElementById('pf-'+type+'-cat');
+  if(catEl)catEl.value=catVal;
+  updRangeDrop(type);
+  const scoreEl=document.getElementById('pf-'+type);
+  if(scoreEl)scoreEl.value=score;
+}
+function calcAutoScore(amountStr,realizability,continuity){
+  const num=parseInt(String(amountStr||'').replace(/[^0-9]/g,''))||0;
+  let typeScore;
+  if(num>=20000000)typeScore=50;
+  else if(num>=10000000)typeScore=Math.round(30+(num-10000000)/10000000*10); // 30~40점
+  else if(num>=5000000)typeScore=Math.round(20+(num-5000000)/5000000*10);   // 20~30점
+  else if(num>=1000000)typeScore=Math.round(10+(num-1000000)/4000000*10);   // 10~20점
+  else typeScore=Math.round(num/1000000*10);                                // 0~10점
+  return{typeScore,realizabilityScore:parseInt(realizability)||0,continuityScore:parseInt(continuity)||0};
+}
+function autoCalcScoreFromProposal(){
+  const rid=document.getElementById('m-edit-id')?.value;
+  const r=rid?tableData.find(x=>x.id==rid):null;
+  const amount=r?r.effectAmount:document.getElementById('fd-effectAmount')?.value||'-';
+  const proposal=r?.proposal||null;
+  const realizability=proposal?.realizability||0;
+  const continuity=proposal?.continuity||0;
+  const scores=calcAutoScore(amount,realizability,continuity);
+  document.getElementById('fd-typeScore').value=scores.typeScore;
+  document.getElementById('fd-realizabilityScore').value=scores.realizabilityScore;
+  document.getElementById('fd-continuityScore').value=scores.continuityScore;
+  updModalScore();
+  const info=`유형효과: ${scores.typeScore}점 / 실현성: ${scores.realizabilityScore}점 / 지속성: ${scores.continuityScore}점\n합계: ${scores.typeScore+scores.realizabilityScore+scores.continuityScore}점`;
+  alert('자동 집계 완료\n'+info);
+}
 function updModalScore(){
-  const ids=['fd-typeScore','fd-intangibleScore','fd-creativityScore','fd-realizabilityScore','fd-effortScore','fd-continuityScore'];
+  const ids=['fd-typeScore','fd-realizabilityScore','fd-continuityScore'];
   const tot=ids.reduce((s,id)=>s+(parseInt(document.getElementById(id).value)||0),0);
   document.getElementById('m-tot-score').textContent=tot;
   document.getElementById('m-grade').textContent=calcGrade(tot);
 }
 function openModal(rid){
   editId=rid||null;
+  document.getElementById('m-edit-id').value=editId||'';
   document.getElementById('m-title').textContent=editId?'✏️ 제안 수정':'📝 새 제안 등록';
   fillDeptSel('fd-dept');
   fillETSel('fd-effectType','');
@@ -1641,10 +2508,7 @@ function openModal(rid){
       document.getElementById('fd-secondGradeDisplay').textContent=r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-');
       document.getElementById('fd-remark').value=r.remark||'';
       document.getElementById('fd-typeScore').value=r.typeScore||0;
-      document.getElementById('fd-intangibleScore').value=r.intangibleScore||0;
-      document.getElementById('fd-creativityScore').value=r.creativityScore||0;
       document.getElementById('fd-realizabilityScore').value=r.realizabilityScore||0;
-      document.getElementById('fd-effortScore').value=r.effortScore||0;
       document.getElementById('fd-continuityScore').value=r.continuityScore||0;
       updModalScore();
     }
@@ -1656,7 +2520,7 @@ function openModal(rid){
     document.getElementById('fd-theme').value='';
     document.getElementById('fd-effectAmount').value='';
     document.getElementById('fd-remark').value='';
-    ['fd-typeScore','fd-intangibleScore','fd-creativityScore','fd-realizabilityScore','fd-effortScore','fd-continuityScore'].forEach(id=>document.getElementById(id).value=0);
+    ['fd-typeScore','fd-realizabilityScore','fd-continuityScore'].forEach(id=>document.getElementById(id).value=0);
     updModalScore();
   }
   document.getElementById('addModal').classList.add('show');
@@ -1668,7 +2532,7 @@ function saveRow(){
   const proposer=document.getElementById('fd-proposer').value;
   const theme=document.getElementById('fd-theme').value.trim();
   if(!date||!dept||!proposer||!theme){alert('제안일자, 부서, 제안자, 테마명은 필수입니다.');return;}
-  const sc={typeScore:parseInt(document.getElementById('fd-typeScore').value)||0,intangibleScore:parseInt(document.getElementById('fd-intangibleScore').value)||0,creativityScore:parseInt(document.getElementById('fd-creativityScore').value)||0,realizabilityScore:parseInt(document.getElementById('fd-realizabilityScore').value)||0,effortScore:parseInt(document.getElementById('fd-effortScore').value)||0,continuityScore:parseInt(document.getElementById('fd-continuityScore').value)||0};
+  const sc={typeScore:parseInt(document.getElementById('fd-typeScore').value)||0,realizabilityScore:parseInt(document.getElementById('fd-realizabilityScore').value)||0,continuityScore:parseInt(document.getElementById('fd-continuityScore').value)||0};
   const score=Object.values(sc).reduce((a,b)=>a+b,0);
   const grade=calcGrade(score);
   const base={date,dept,proposer,theme,status:document.getElementById('fd-status').value,effectType:document.getElementById('fd-effectType').value,effectAmount:document.getElementById('fd-effectAmount').value,secondScore:parseInt(document.getElementById('fd-secondScore').value)||0,secondGrade:document.getElementById('fd-secondGradeDisplay').textContent||'-',remark:document.getElementById('fd-remark').value,grade,...sc};
@@ -1687,7 +2551,14 @@ function saveRow(){
 }
 
 // Tabs
-const TABS={guidelines:{title:'제안제도 관리지침서',sub:'시상 기준 및 등급별 안내'},summary:{title:'종합현황',sub:'제안부서·제안자별 제안건수 및 효과금액 집계'},proposal:{title:'원가절감 제안서',sub:'원가절감 제안서 작성 및 출력'},register:{title:'접수대장',sub:'제안 관리대장 - 전체 현황'},results:{title:'검토결과',sub:'인원별 시상금액 현황'},users:{title:'회원관리',sub:'사용자 계정 및 권한 관리 (관리자 전용)'}};
+function showGuidePage(n,btn){
+  document.querySelectorAll('.guide-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.guide-page-btn').forEach(b=>b.classList.remove('active'));
+  var page=document.getElementById('gpage-'+n);
+  if(page)page.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+const TABS={guidelines:{title:'제안제도 관리지침서',sub:'시상 기준 및 등급별 안내'},summary:{title:'종합현황',sub:'제안부서·제안자별 제안건수 및 효과금액 집계'},proposal:{title:'원가절감 제안서',sub:'원가절감 제안서 작성 및 출력'},register:{title:'접수대장',sub:'제안 관리대장 - 전체 현황'},results:{title:'검토결과',sub:'인원별 시상금액 현황'},users:{title:'회원관리',sub:'사용자 계정 및 권한 관리 (관리자 전용)'},guide:{title:'이용가이드',sub:'시스템 사용 방법 안내'}};
 function showTab(id,el){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -2026,6 +2897,8 @@ function clearProposalForm(){
   const ct=document.getElementById('pf-costTotal');if(ct)ct.textContent='-';
   fillETSel('pf-effectType','');
   const stEl=document.getElementById('pf-status');if(stEl)stEl.value='Y';
+  ['pf-realizability-cat','pf-continuity-cat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['pf-realizability','pf-continuity'].forEach(id=>{const el=document.getElementById(id);if(el){el.innerHTML='<option value="">-- 점수 선택 --</option>';el.disabled=true;}});
   editPropId=null;
   localStorage.removeItem('ssat_prop_draft');
 }
@@ -2067,7 +2940,9 @@ function collectProposalFormData(){
   const costInvest=document.getElementById('pf-costInvest').value;
   const effectType=document.getElementById('pf-effectType')?.value||'';
   const status=document.getElementById('pf-status')?.value||'Y';
-  return{date,dept,proposer,theme,no,isImpl,type,category,implDept,idea,beforeText,beforeImgData,beforeTabs,problem,afterImpl,afterChange,afterChangeImgData,afterTabs,afterImprove,costDetail,costMaterial,costLabor,costInvest,effectType,status};
+  const realizability=parseInt(document.getElementById('pf-realizability')?.value)||0;
+  const continuity=parseInt(document.getElementById('pf-continuity')?.value)||0;
+  return{date,dept,proposer,theme,no,isImpl,type,category,implDept,idea,beforeText,beforeImgData,beforeTabs,problem,afterImpl,afterChange,afterChangeImgData,afterTabs,afterImprove,costDetail,costMaterial,costLabor,costInvest,effectType,status,realizability,continuity};
 }
 function autoSaveDraft(){
   try{
@@ -2095,16 +2970,18 @@ function saveProposalToRegister(){
   const d=collectProposalFormData();
   calcPropCost();
   const amount=document.getElementById('pf-amount').value||'-';
-  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest};
+  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:d.realizability,continuity:d.continuity};
+  const autoScores=calcAutoScore(amount,d.realizability,d.continuity);
   if(editPropId!==null){
     const idx=tableData.findIndex(r=>r.id===editPropId);
     if(idx>=0){
-      tableData[idx]={...tableData[idx],date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,proposal};
+      const existing=tableData[idx];
+      tableData[idx]={...existing,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,proposal,typeScore:autoScores.typeScore,realizabilityScore:autoScores.realizabilityScore,continuityScore:autoScores.continuityScore};
     }
   } else {
     const maxNo=tableData.reduce((m,r)=>Math.max(m,r.no||0),0);
     const id=Date.now();
-    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondScore:0,secondGrade:'-',firstReview:false,firstConfirmed:false,secondConfirmed:false,remark:'',typeScore:0,intangibleScore:0,creativityScore:0,realizabilityScore:0,effortScore:0,continuityScore:0,files:[],proposal};
+    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondScore:0,secondGrade:'-',firstReview:false,firstConfirmed:false,secondConfirmed:false,remark:'',typeScore:autoScores.typeScore,realizabilityScore:autoScores.realizabilityScore,continuityScore:autoScores.continuityScore,files:[],proposal};
     tableData.push(row);
   }
   saveData();
@@ -2252,7 +3129,7 @@ ${colgroup}
  <td style="${LB}">효과분석</td>
  <td colspan="2" style="${TD}">${eh(r.effectType||'-')}</td>
  <td style="${LB}">진행상태</td>
- <td colspan="5" style="${TD}">${eh(r.status||'-')}</td>
+ <td colspan="5" style="${TD}">${r.status==='G'?'<span class="badge badge-G">G 완료</span>':r.status==='Y'?'<span class="badge badge-Y">Y 진행중</span>':r.status==='R'?'<span class="badge badge-R">R 미진행</span>':eh(r.status||'-')}</td>
  <td style="${LB}">실시부서</td>
  <td style="${TD}">${eh(p.implDept||'-')}</td>
 </tr>
@@ -2358,6 +3235,7 @@ function loadDraft(){
     sv('pf-idea')(d.idea||'');sv('pf-problem')(d.problem||'');sv('pf-after-impl')(d.afterImpl||'');
     sv('pf-after-improve')(d.afterImprove||'');sv('pf-costDetail')(d.costDetail||'');
     sv('pf-costMaterial')(d.costMaterial||'');sv('pf-costLabor')(d.costLabor||'');sv('pf-costInvest')(d.costInvest||'');
+    restoreRangeDrop('realizability',d.realizability||0);restoreRangeDrop('continuity',d.continuity||0);
     const deptEl=document.getElementById('pf-dept');
     if(deptEl){deptEl.value=d.dept||'';updPfProposer();}
     sv('pf-proposer')(d.proposer||'');syncCheckDrop('proposer');
@@ -2401,6 +3279,8 @@ function openPropForm(rid){
       sv('pf-costMaterial')(p.costMaterial||'');
       sv('pf-costLabor')(p.costLabor||'');
       sv('pf-costInvest')(p.costInvest||'');
+      restoreRangeDrop('realizability',p.realizability||0);
+      restoreRangeDrop('continuity',p.continuity||0);
       // dept & proposer
       const deptEl=document.getElementById('pf-dept');
       if(deptEl){deptEl.value=r.dept||'';updPfProposer();}
@@ -2686,7 +3566,6 @@ function viewRegRow(rid){
   const score=calcScore(r);
   const grade=r.grade||calcGrade(score);
   const stLabel=r.status==='G'?'G 완료':r.status==='Y'?'Y 진행중':'R 미진행';
-  const stColor=r.status==='G'?'#28a745':r.status==='Y'?'#e6a817':'#e74c3c';
   function row2(l1,v1,l2,v2){
     return `<tr><td style="background:#f0f4f8;font-weight:600;padding:7px 10px;border:1px solid #dde;white-space:nowrap;width:90px;">${l1}</td><td style="padding:7px 10px;border:1px solid #dde;">${v1}</td><td style="background:#f0f4f8;font-weight:600;padding:7px 10px;border:1px solid #dde;white-space:nowrap;width:90px;">${l2}</td><td style="padding:7px 10px;border:1px solid #dde;">${v2}</td></tr>`;
   }
@@ -2696,12 +3575,11 @@ function viewRegRow(rid){
 ${secH('기본 정보','#1a3a5c')}
 ${row2('접수 NO',`<b>${escH(fmtAccNo(r))}</b>`,'제안일자',escH(r.date||'-'))}
 ${row2('제안부서',escH(r.dept||'-'),'제안자',escH(r.proposer||'-'))}
-${row2('진행상태',`<span style="color:${stColor};font-weight:700;">${stLabel}</span>`,'효과구분',escH(r.effectType||'-'))}
+${row2('진행상태',`<span class="badge badge-${r.status||'R'}">${stLabel}</span>`,'효과구분',escH(r.effectType||'-'))}
 ${row2('효과금액',escH(r.effectAmount||'-'),'제안주제','<span style="white-space:pre-wrap;">'+escH(r.theme||'-')+'</span>')}
 ${secH('1차 심사결과','#2c3e6a')}
-${row2('유형점수(40)',r.typeScore||0,'무형점수(10)',r.intangibleScore||0)}
-${row2('창의성(15)',r.creativityScore||0,'실현성(20)',r.realizabilityScore||0)}
-${row2('노력도(10)',r.effortScore||0,'계속성(5)',r.continuityScore||0)}
+${row2('유형효과(50)',r.typeScore||0,'실현성(30)',r.realizabilityScore||0)}
+${row2('지속성(20)',r.continuityScore||0,'','')}
 ${row2('1차 합계',`<b>${score}점</b>`,'1차 등급',gradeHtml(grade))}
 ${row2('1차 검토',chk(r.firstReview),'1차 확정',chk(r.firstConfirmed))}
 ${secH('2차 심사결과','#1a5c3a')}
@@ -2796,6 +3674,7 @@ function closeLightbox(){
  <div class="mob-nav-item" id="mob-nav-register" onclick="showTab('register',null)" style="display:none;"><span class="mob-icon">📝</span>접수대장</div>
  <div class="mob-nav-item" id="mob-nav-results" onclick="showTab('results',null)" style="display:none;"><span class="mob-icon">🏆</span>검토결과</div>
  <div class="mob-nav-item" id="mob-nav-users" onclick="showTab('users',null)" style="display:none;"><span class="mob-icon">👥</span>회원관리</div>
+ <div class="mob-nav-item" id="mob-nav-guide" onclick="showTab('guide',null)"><span class="mob-icon">📖</span>가이드</div>
 </div>
 
 <img id="img-hover-preview" src="" alt=""/>
