@@ -1803,8 +1803,12 @@ let db=null;
 function openDB(){
   return new Promise((res,rej)=>{
     if(db){res(db);return;}
-    const req=indexedDB.open('ssat_db_v2',1);
-    req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('files'))d.createObjectStore('files',{keyPath:'key'});};
+    const req=indexedDB.open('ssat_db_v2',2);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('files'))d.createObjectStore('files',{keyPath:'key'});
+      if(!d.objectStoreNames.contains('prop_imgs'))d.createObjectStore('prop_imgs',{keyPath:'key'});
+    };
     req.onsuccess=e=>{db=e.target.result;res(db);};
     req.onerror=e=>rej(e);
   });
@@ -1812,6 +1816,48 @@ function openDB(){
 function dbSaveFile(key,val){return openDB().then(d=>{return new Promise((res,rej)=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').put({key,...val});tx.oncomplete=res;tx.onerror=rej;});});}
 function dbGetFiles(rowId){return openDB().then(d=>{return new Promise(res=>{const all=[];const tx=d.transaction('files','readonly');tx.objectStore('files').openCursor().onsuccess=e=>{const c=e.target.result;if(c){if(c.value.rowId==rowId)all.push(c.value);c.continue();}else res(all);};});});}
 function dbDelFile(key){return openDB().then(d=>{return new Promise(res=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').delete(key);tx.oncomplete=res;});});}
+// 제안서 이미지 전용 IDB 함수 (base64를 tableData에서 분리하여 저장)
+function dbSavePropImg(key,data){return openDB().then(d=>{return new Promise((res,rej)=>{const tx=d.transaction('prop_imgs','readwrite');tx.objectStore('prop_imgs').put({key,data});tx.oncomplete=res;tx.onerror=rej;});});}
+function dbGetPropImg(key){return openDB().then(d=>{return new Promise(res=>{const tx=d.transaction('prop_imgs','readonly');const req=tx.objectStore('prop_imgs').get(key);req.onsuccess=e=>res(e.target.result?.data||null);req.onerror=()=>res(null);});});}
+function dbDelPropImgs(proposalId){return openDB().then(d=>{return new Promise(res=>{const prefix='pi_'+proposalId+'_';const tx=d.transaction('prop_imgs','readwrite');const store=tx.objectStore('prop_imgs');store.openCursor().onsuccess=e=>{const c=e.target.result;if(c){if(String(c.key).startsWith(prefix))c.delete();c.continue();}};tx.oncomplete=res;});});}
+async function saveTabImgsToIDB(proposalId,tabs,which){
+  return Promise.all((tabs||[]).map(async(tab,ti)=>{
+    const newImgs=await Promise.all((tab.imgs||[]).map(async(img,ii)=>{
+      if(img&&img.startsWith('data:')){
+        const key='pi_'+proposalId+'_'+which+'_'+ti+'_'+ii;
+        await dbSavePropImg(key,img);
+        return'idb:'+key;
+      }
+      return img;
+    }));
+    return{...tab,imgs:newImgs};
+  }));
+}
+async function resolveProposalImages(r){
+  if(!r||!r.proposal)return r;
+  const p=r.proposal;
+  const resolveImgs=async imgs=>Promise.all((imgs||[]).map(async img=>{
+    if(img&&img.startsWith('idb:')){const d=await dbGetPropImg(img.slice(4));return d||'';}
+    return img;
+  }));
+  const bt=await Promise.all((p.beforeTabs||[]).map(async t=>({...t,imgs:await resolveImgs(t.imgs)})));
+  const at=await Promise.all((p.afterTabs||[]).map(async t=>({...t,imgs:await resolveImgs(t.imgs)})));
+  return{...r,proposal:{...p,beforeTabs:bt,afterTabs:at,beforeImgData:[],afterChangeImgData:[]}};
+}
+async function migratePropImgsToIDB(){
+  let changed=false;
+  for(const r of tableData){
+    if(!r.proposal)continue;
+    const p=r.proposal;
+    const hasEmbedded=tabs=>(tabs||[]).some(t=>(t.imgs||[]).some(img=>img&&img.startsWith('data:')));
+    if(!hasEmbedded(p.beforeTabs)&&!hasEmbedded(p.afterTabs))continue;
+    p.beforeTabs=await saveTabImgsToIDB(r.id,p.beforeTabs,'before');
+    p.afterTabs=await saveTabImgsToIDB(r.id,p.afterTabs,'after');
+    p.beforeImgData=[];p.afterChangeImgData=[];
+    changed=true;
+  }
+  if(changed)saveData();
+}
 
 async function renderFilesCell(rowId){
   const cell=document.getElementById('fc-'+rowId);
@@ -3025,7 +3071,7 @@ function startAutoSave(){
 function stopAutoSave(){
   if(autoSaveTimer){clearInterval(autoSaveTimer);autoSaveTimer=null;}
 }
-function saveProposalToRegister(){
+async function saveProposalToRegister(){
   const date=document.getElementById('pf-date').value;
   const dept=document.getElementById('pf-dept').value;
   const proposer=document.getElementById('pf-proposer').value;
@@ -3037,7 +3083,12 @@ function saveProposalToRegister(){
   const existingRecord=editPropId!==null?tableData.find(r=>r.id===editPropId):null;
   const existingRealizability=existingRecord?.proposal?.realizability||0;
   const existingContinuity=existingRecord?.proposal?.continuity||0;
-  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:existingRealizability,continuity:existingContinuity};
+  // 이미지를 IndexedDB로 분리 저장 (base64를 tableData에서 제거)
+  const proposalId=editPropId!==null?editPropId:Date.now();
+  if(editPropId!==null) await dbDelPropImgs(editPropId);
+  const savedBeforeTabs=await saveTabImgsToIDB(proposalId,d.beforeTabs,'before');
+  const savedAfterTabs=await saveTabImgsToIDB(proposalId,d.afterTabs,'after');
+  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:[],beforeTabs:savedBeforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:[],afterTabs:savedAfterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:existingRealizability,continuity:existingContinuity};
   const autoScores=calcAutoScore(amount,existingRealizability,existingContinuity);
   if(editPropId!==null){
     const idx=tableData.findIndex(r=>r.id===editPropId);
@@ -3047,8 +3098,7 @@ function saveProposalToRegister(){
     }
   } else {
     const maxNo=tableData.reduce((m,r)=>Math.max(m,r.no||0),0);
-    const id=Date.now();
-    const row={id,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondScore:0,secondGrade:'-',firstReview:false,firstConfirmed:false,secondConfirmed:false,remark:'',typeScore:autoScores.typeScore,realizabilityScore:autoScores.realizabilityScore,continuityScore:autoScores.continuityScore,files:[],proposal};
+    const row={id:proposalId,no:maxNo+1,date,dept,proposer,theme,status:d.status,effectType:d.effectType,effectAmount:amount,secondScore:0,secondGrade:'-',firstReview:false,firstConfirmed:false,secondConfirmed:false,remark:'',typeScore:autoScores.typeScore,realizabilityScore:autoScores.realizabilityScore,continuityScore:autoScores.continuityScore,files:[],proposal};
     tableData.push(row);
   }
   saveData();
@@ -3275,10 +3325,11 @@ ${colgroup}
 </table>
 <div style="text-align:right;margin-top:10px;font-size:11px;color:#666;">신성오토텍㈜</div>`;
 }
-function viewProposal(rid){
+async function viewProposal(rid){
   const r=tableData.find(x=>x.id==rid);
   if(!r||!r.proposal) return;
-  document.getElementById('pv-body').innerHTML=propFormHtml(r,false);
+  const rResolved=await resolveProposalImages(r);
+  document.getElementById('pv-body').innerHTML=propFormHtml(rResolved,false);
   document.getElementById('pv-rid').value=rid;
   // 평가 기준 섹션: 관리자만 표시, 품질팀 팀장만 편집 가능
   const isAdmin=currentUser&&currentUser.role==='admin';
@@ -3347,7 +3398,7 @@ function loadDraft(){
     setTimeout(initAutoH,0);startAutoSave();
   }catch(e){alert('임시저장 불러오기 실패: '+e.message);}
 }
-function openPropForm(rid){
+async function openPropForm(rid){
   clearProposalForm();
   fillDeptSel('pf-dept');
   fillImplDeptChecks();
@@ -3383,16 +3434,19 @@ function openPropForm(rid){
       fillETSel('pf-effectType',r.effectType||'');
       const stEl=document.getElementById('pf-status');if(stEl)stEl.value=r.status||'Y';
       // blocks (기존/변경)
-      if(p.beforeTabs&&p.beforeTabs.length){
-        pfBeforeBlocks=p.beforeTabs.map(t=>({text:t.text||'',imgs:t.imgs||[]}));
+      // IDB에서 이미지 키를 실제 base64로 복원
+      const rResolved=await resolveProposalImages(r);
+      const pR=rResolved.proposal||{};
+      if(pR.beforeTabs&&pR.beforeTabs.length){
+        pfBeforeBlocks=pR.beforeTabs.map(t=>({text:t.text||'',imgs:(t.imgs||[]).filter(s=>s&&s.startsWith('data:'))}));
       } else {
-        pfBeforeBlocks=[{text:p.beforeText||'',imgs:Array.isArray(p.beforeImgData)?p.beforeImgData:(p.beforeImgData?[p.beforeImgData]:[]).filter(s=>s&&s.startsWith('data:'))}];
+        pfBeforeBlocks=[{text:pR.beforeText||'',imgs:[]}];
       }
       pfRenderBlocks('before');
-      if(p.afterTabs&&p.afterTabs.length){
-        pfAfterBlocks=p.afterTabs.map(t=>({text:t.text||'',imgs:t.imgs||[]}));
+      if(pR.afterTabs&&pR.afterTabs.length){
+        pfAfterBlocks=pR.afterTabs.map(t=>({text:t.text||'',imgs:(t.imgs||[]).filter(s=>s&&s.startsWith('data:'))}));
       } else {
-        pfAfterBlocks=[{text:p.afterChange||'',imgs:Array.isArray(p.afterChangeImgData)?p.afterChangeImgData:(p.afterChangeImgData?[p.afterChangeImgData]:[]).filter(s=>s&&s.startsWith('data:'))}];
+        pfAfterBlocks=[{text:pR.afterChange||'',imgs:[]}];
       }
       pfRenderBlocks('after');
       calcPropCost();
@@ -3427,10 +3481,12 @@ function closePropForm(){
   stopAutoSave();
   document.getElementById('proposalFormModal').classList.remove('show');
 }
-function printPropView(){
+async function printPropView(){
   const rid=document.getElementById('pv-rid').value;
   const r=tableData.find(x=>x.id==rid);
   if(!r||!r.proposal) return;
+  const rResolved=await resolveProposalImages(r);
+  // rResolved를 이하 propFormHtml 호출에 사용
   const w=window.open('','_blank','width=1150,height=860');
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>원가절감 제안서</title>
 <style>
@@ -3447,15 +3503,16 @@ input[type=checkbox]{pointer-events:none;}
   img{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
 </style></head>
-<body>${propFormHtml(r,true)}
+<body>${propFormHtml(rResolved,true)}
 <div style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:8px 24px;background:#1a3a5c;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:13px;">🖨️ 인쇄</button></div>
 </body></html>`);
   w.document.close();
 }
-function downloadPropExcel(){
+async function downloadPropExcel(){
   const rid=document.getElementById('pv-rid').value;
-  const r=tableData.find(x=>x.id==rid);
-  if(!r||!r.proposal) return;
+  const rRaw=tableData.find(x=>x.id==rid);
+  if(!rRaw||!rRaw.proposal) return;
+  const r=await resolveProposalImages(rRaw);
   // 이미지 레지스트리 (Content-Location 방식)
   const images=[];const imgMap=new Map();
   function regImg(dataUri){
@@ -3628,6 +3685,8 @@ window.onload=async function(){
     // 클라우드가 비어있을 때만 로컬 데이터 업로드
     sbSync();
   }
+  // 기존 제안서 내 embedded base64 이미지를 IndexedDB로 마이그레이션
+  await migratePropImgsToIDB();
 };
 
 let _pwChangeTargetIdx=undefined;
