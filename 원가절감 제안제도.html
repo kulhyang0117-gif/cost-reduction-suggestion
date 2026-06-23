@@ -3218,7 +3218,7 @@ function propFormHtml(r,forPrint,forExcel,imgReg){
   // render tabs content for 기존/변경
   function renderTabImgs(imgs){
     const a=Array.isArray(imgs)?imgs:(imgs?[imgs]:[]);
-    const valid=a.filter(s=>s&&s.startsWith('data:'));
+    const valid=a.filter(s=>s&&(s.startsWith('data:')||s.startsWith('https://')));
     if(!valid.length) return '';
     if(forExcel&&imgReg){
       return`<div style="margin-top:4px;">${valid.map(s=>{const nm=imgReg(s);return`<img src="${nm}" style="width:110px;height:90px;object-fit:cover;border-radius:3px;display:inline-block;margin:2px;">`;}).join('')}</div>`;
