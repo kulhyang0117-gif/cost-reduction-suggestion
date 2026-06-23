@@ -1858,6 +1858,60 @@ async function migratePropImgsToIDB(){
   }
   if(changed)saveData();
 }
+// Supabase Storage 이미지 업로드 (cross-origin 공유용)
+async function uploadImgToSB(proposalId,which,ti,ii,base64){
+  try{
+    const path='proposals/'+proposalId+'/'+which+'_'+ti+'_'+ii+'.jpg';
+    const fetchRes=await fetch(base64);
+    const blob=await fetchRes.blob();
+    const bucket='Cost%20Reduction%20Suggestion%20System';
+    const uploadRes=await fetch(SB_URL+'/storage/v1/object/'+bucket+'/'+path,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':blob.type||'image/jpeg','x-upsert':'true'},
+      body:blob
+    });
+    if(!uploadRes.ok)return null;
+    return SB_URL+'/storage/v1/object/public/'+bucket+'/'+path;
+  }catch(e){return null;}
+}
+// 새 이미지 저장: Supabase Storage 우선, 실패시 IDB 폴백
+async function saveTabImgs(proposalId,tabs,which){
+  return Promise.all((tabs||[]).map(async(tab,ti)=>({
+    ...tab,
+    imgs:await Promise.all((tab.imgs||[]).map(async(img,ii)=>{
+      if(!img||!img.startsWith('data:'))return img;
+      const url=await uploadImgToSB(proposalId,which,ti,ii,img);
+      if(url)return url;
+      const key='pi_'+proposalId+'_'+which+'_'+ti+'_'+ii;
+      await dbSavePropImg(key,img);
+      return'idb:'+key;
+    }))
+  })));
+}
+// 기존 IDB 이미지를 Supabase Storage로 마이그레이션
+async function migrateIDBImgsToSB(){
+  let changed=false;
+  for(const r of tableData){
+    if(!r.proposal)continue;
+    const p=r.proposal;
+    const hasIdb=tabs=>(tabs||[]).some(t=>(t.imgs||[]).some(img=>img&&img.startsWith('idb:')));
+    if(!hasIdb(p.beforeTabs)&&!hasIdb(p.afterTabs))continue;
+    const migTabs=async(tabs,which)=>Promise.all((tabs||[]).map(async(tab,ti)=>({
+      ...tab,
+      imgs:await Promise.all((tab.imgs||[]).map(async(img,ii)=>{
+        if(!img||!img.startsWith('idb:'))return img;
+        const data=await dbGetPropImg(img.slice(4));
+        if(!data)return img;
+        const url=await uploadImgToSB(r.id,which,ti,ii,data);
+        if(url){changed=true;return url;}
+        return img;
+      }))
+    })));
+    p.beforeTabs=await migTabs(p.beforeTabs,'before');
+    p.afterTabs=await migTabs(p.afterTabs,'after');
+  }
+  if(changed){saveData();await sbSync();}
+}
 
 async function renderFilesCell(rowId){
   const cell=document.getElementById('fc-'+rowId);
@@ -3086,8 +3140,8 @@ async function saveProposalToRegister(){
   // 이미지를 IndexedDB로 분리 저장 (base64를 tableData에서 제거)
   const proposalId=editPropId!==null?editPropId:Date.now();
   if(editPropId!==null) await dbDelPropImgs(editPropId);
-  const savedBeforeTabs=await saveTabImgsToIDB(proposalId,d.beforeTabs,'before');
-  const savedAfterTabs=await saveTabImgsToIDB(proposalId,d.afterTabs,'after');
+  const savedBeforeTabs=await saveTabImgs(proposalId,d.beforeTabs,'before');
+  const savedAfterTabs=await saveTabImgs(proposalId,d.afterTabs,'after');
   const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:[],beforeTabs:savedBeforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:[],afterTabs:savedAfterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:existingRealizability,continuity:existingContinuity};
   const autoScores=calcAutoScore(amount,existingRealizability,existingContinuity);
   if(editPropId!==null){
@@ -3687,6 +3741,8 @@ window.onload=async function(){
   }
   // 기존 제안서 내 embedded base64 이미지를 IndexedDB로 마이그레이션
   await migratePropImgsToIDB();
+  // IndexedDB 이미지를 Supabase Storage로 마이그레이션 (cross-origin 공유)
+  await migrateIDBImgsToSB();
 };
 
 let _pwChangeTargetIdx=undefined;
