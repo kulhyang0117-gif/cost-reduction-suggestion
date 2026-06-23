@@ -3042,7 +3042,7 @@ function addImgFromPaste(e,containerId){
 }
 function getImgsFromContainer(containerId){
   const c=document.getElementById(containerId);if(!c)return[];
-  return Array.from(c.querySelectorAll('img')).map(i=>i.src).filter(s=>s.startsWith('data:'));
+  return Array.from(c.querySelectorAll('img')).map(i=>i.src).filter(s=>s.startsWith('data:')||s.startsWith('https://'));
 }
 function fillETSel(selId,val){
   const el=document.getElementById(selId);if(!el)return;
@@ -3492,13 +3492,13 @@ async function openPropForm(rid){
       const rResolved=await resolveProposalImages(r);
       const pR=rResolved.proposal||{};
       if(pR.beforeTabs&&pR.beforeTabs.length){
-        pfBeforeBlocks=pR.beforeTabs.map(t=>({text:t.text||'',imgs:(t.imgs||[]).filter(s=>s&&s.startsWith('data:'))}));
+        pfBeforeBlocks=pR.beforeTabs.map(t=>({text:t.text||'',imgs:(t.imgs||[]).filter(s=>s&&(s.startsWith('data:')||s.startsWith('https://')))}));
       } else {
         pfBeforeBlocks=[{text:pR.beforeText||'',imgs:[]}];
       }
       pfRenderBlocks('before');
       if(pR.afterTabs&&pR.afterTabs.length){
-        pfAfterBlocks=pR.afterTabs.map(t=>({text:t.text||'',imgs:(t.imgs||[]).filter(s=>s&&s.startsWith('data:'))}));
+        pfAfterBlocks=pR.afterTabs.map(t=>({text:t.text||'',imgs:(t.imgs||[]).filter(s=>s&&(s.startsWith('data:')||s.startsWith('https://')))}));
       } else {
         pfAfterBlocks=[{text:pR.afterChange||'',imgs:[]}];
       }
