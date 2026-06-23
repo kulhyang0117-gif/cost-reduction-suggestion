@@ -290,6 +290,39 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
    <button class="modal-close" onclick="closePropView()">&#10005;</button>
   </div>
   <div class="modal-body" id="pv-body"></div>
+  <div id="pv-eval-section" style="display:none;background:#f0f5fa;border-top:1px solid #e0e6ed;padding:14px 22px;">
+   <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">&#128203; 1차 심사 평가 기준 선택 <span style="font-size:11px;font-weight:400;color:#777;">(저장 시 점수 자동 산출)</span></div>
+   <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;">
+    <div>
+     <label style="font-size:11px;font-weight:600;color:#1a3a5c;display:block;margin-bottom:4px;">실현성 (최대 30점)</label>
+     <select id="pv-realizability-cat" onchange="pvUpdRangeDrop('realizability')" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
+      <option value="">-- 수준 선택 --</option>
+      <option value="high">실시가 아주 용이하며 보완 필요성 없음 (21~30점)</option>
+      <option value="mid">실시가 용이하나 보완이 필요함 (11~20점)</option>
+      <option value="low">어느 정도 수정 보완을 요함 (1~10점)</option>
+     </select>
+     <select id="pv-realizability" disabled style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#f8fafc;min-width:120px;">
+      <option value="">-- 점수 선택 --</option>
+     </select>
+    </div>
+    <div>
+     <label style="font-size:11px;font-weight:600;color:#1a3a5c;display:block;margin-bottom:4px;">지속성 (최대 20점)</label>
+     <select id="pv-continuity-cat" onchange="pvUpdRangeDrop('continuity')" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
+      <option value="">-- 수준 선택 --</option>
+      <option value="h1">장기적으로 유지 (5년 이상) (16~20점)</option>
+      <option value="h2">중기적으로 유지 (1년 이상) (11~15점)</option>
+      <option value="h3">단기적으로 유지 (1년 미만) (6~10점)</option>
+      <option value="h4">일시적으로 유지 (6개월 미만) (1~5점)</option>
+     </select>
+     <select id="pv-continuity" disabled style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#f8fafc;min-width:120px;">
+      <option value="">-- 점수 선택 --</option>
+     </select>
+    </div>
+    <div>
+     <button id="pv-eval-save-btn" style="display:none;padding:6px 14px;background:#1a3a5c;color:#fff;border:none;border-radius:5px;font-size:11px;font-family:inherit;cursor:pointer;" onclick="saveEvalCriteria()">&#128190; 평가 기준 저장</button>
+    </div>
+   </div>
+  </div>
   <div class="modal-footer">
    <button class="btn" style="background:#e0e6ed;color:#333;" onclick="closePropView()">닫기</button>
    <button class="btn" style="background:#e65100;color:#fff;" onclick="closePropView();openPropForm(parseInt(document.getElementById('pv-rid').value))">&#9998; 수정</button>
@@ -484,36 +517,6 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
      </tr>
     </tbody>
    </table>
-  </div>
-  <div style="background:#f0f5fa;border-radius:8px;padding:14px 18px;margin:10px 0 0;">
-   <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:10px;">&#128203; 1차 심사 평가 기준 선택 <span style="font-size:11px;font-weight:400;color:#777;">(저장 시 점수 자동 산출)</span></div>
-   <div style="display:flex;gap:20px;flex-wrap:wrap;">
-    <div>
-     <label style="font-size:11px;font-weight:600;color:#1a3a5c;display:block;margin-bottom:4px;">실현성 (최대 30점)</label>
-     <select id="pf-realizability-cat" onchange="updRangeDrop('realizability')" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
-      <option value="">-- 수준 선택 --</option>
-      <option value="high">실시가 아주 용이하며 보완 필요성 없음 (21~30점)</option>
-      <option value="mid">실시가 용이하나 보완이 필요함 (11~20점)</option>
-      <option value="low">어느 정도 수정 보완을 요함 (1~10점)</option>
-     </select>
-     <select id="pf-realizability" disabled style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#f8fafc;min-width:120px;">
-      <option value="">-- 점수 선택 --</option>
-     </select>
-    </div>
-    <div>
-     <label style="font-size:11px;font-weight:600;color:#1a3a5c;display:block;margin-bottom:4px;">지속성 (최대 20점)</label>
-     <select id="pf-continuity-cat" onchange="updRangeDrop('continuity')" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#fff;min-width:240px;margin-bottom:5px;">
-      <option value="">-- 수준 선택 --</option>
-      <option value="h1">장기적으로 유지 (5년 이상) (16~20점)</option>
-      <option value="h2">중기적으로 유지 (1년 이상) (11~15점)</option>
-      <option value="h3">단기적으로 유지 (1년 미만) (6~10점)</option>
-      <option value="h4">일시적으로 유지 (6개월 미만) (1~5점)</option>
-     </select>
-     <select id="pf-continuity" disabled style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:11px;font-family:inherit;background:#f8fafc;min-width:120px;">
-      <option value="">-- 점수 선택 --</option>
-     </select>
-    </div>
-   </div>
   </div>
   <div class="modal-footer" style="justify-content:space-between;align-items:center;">
    <span id="pf-draft-status" style="font-size:11px;color:#aaa;">자동저장: 1분마다</span>
@@ -2465,6 +2468,58 @@ function restoreRangeDrop(type,score){
   const scoreEl=document.getElementById('pf-'+type);
   if(scoreEl)scoreEl.value=score;
 }
+function pvUpdRangeDrop(type){
+  const catMap={
+    realizability:{high:[21,30],mid:[11,20],low:[1,10]},
+    continuity:{h1:[16,20],h2:[11,15],h3:[6,10],h4:[1,5]}
+  };
+  const cat=document.getElementById('pv-'+type+'-cat').value;
+  const scoreEl=document.getElementById('pv-'+type);
+  scoreEl.innerHTML='<option value="">-- 점수 선택 --</option>';
+  if(!cat){scoreEl.disabled=true;return;}
+  const[min,max]=catMap[type][cat];
+  for(let i=max;i>=min;i--){
+    const opt=document.createElement('option');
+    opt.value=i;opt.textContent=i+'점';
+    scoreEl.appendChild(opt);
+  }
+  scoreEl.disabled=false;
+}
+function pvRestoreRangeDrop(type,score){
+  score=parseInt(score)||0;
+  if(!score)return;
+  const catMap={
+    realizability:{high:[21,30],mid:[11,20],low:[1,10]},
+    continuity:{h1:[16,20],h2:[11,15],h3:[6,10],h4:[1,5]}
+  };
+  const map=catMap[type];
+  let catVal='';
+  for(const[k,[mn,mx]]of Object.entries(map)){if(score>=mn&&score<=mx){catVal=k;break;}}
+  if(!catVal)return;
+  const catEl=document.getElementById('pv-'+type+'-cat');
+  if(catEl)catEl.value=catVal;
+  pvUpdRangeDrop(type);
+  const scoreEl=document.getElementById('pv-'+type);
+  if(scoreEl)scoreEl.value=score;
+}
+function saveEvalCriteria(){
+  const rid=parseInt(document.getElementById('pv-rid').value);
+  const r=tableData.find(x=>x.id===rid);
+  if(!r)return;
+  const realizability=parseInt(document.getElementById('pv-realizability').value)||0;
+  const continuity=parseInt(document.getElementById('pv-continuity').value)||0;
+  if(!r.proposal)r.proposal={};
+  r.proposal.realizability=realizability;
+  r.proposal.continuity=continuity;
+  const scores=calcAutoScore(r.effectAmount,realizability,continuity);
+  r.realizabilityScore=scores.realizabilityScore;
+  r.continuityScore=scores.continuityScore;
+  r.grade=calcGrade(calcScore(r));
+  saveData();
+  renderTable();
+  renderResults();
+  alert('평가 기준이 저장되었습니다.\n실현성: '+realizability+'점 / 지속성: '+continuity+'점');
+}
 function calcAutoScore(amountStr,realizability,continuity){
   const num=parseInt(String(amountStr||'').replace(/[^0-9]/g,''))||0;
   let typeScore;
@@ -2951,9 +3006,7 @@ function collectProposalFormData(){
   const costInvest=document.getElementById('pf-costInvest').value;
   const effectType=document.getElementById('pf-effectType')?.value||'';
   const status=document.getElementById('pf-status')?.value||'Y';
-  const realizability=parseInt(document.getElementById('pf-realizability')?.value)||0;
-  const continuity=parseInt(document.getElementById('pf-continuity')?.value)||0;
-  return{date,dept,proposer,theme,no,isImpl,type,category,implDept,idea,beforeText,beforeImgData,beforeTabs,problem,afterImpl,afterChange,afterChangeImgData,afterTabs,afterImprove,costDetail,costMaterial,costLabor,costInvest,effectType,status,realizability,continuity};
+  return{date,dept,proposer,theme,no,isImpl,type,category,implDept,idea,beforeText,beforeImgData,beforeTabs,problem,afterImpl,afterChange,afterChangeImgData,afterTabs,afterImprove,costDetail,costMaterial,costLabor,costInvest,effectType,status};
 }
 function autoSaveDraft(){
   try{
@@ -2981,8 +3034,11 @@ function saveProposalToRegister(){
   const d=collectProposalFormData();
   calcPropCost();
   const amount=document.getElementById('pf-amount').value||'-';
-  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:d.realizability,continuity:d.continuity};
-  const autoScores=calcAutoScore(amount,d.realizability,d.continuity);
+  const existingRecord=editPropId!==null?tableData.find(r=>r.id===editPropId):null;
+  const existingRealizability=existingRecord?.proposal?.realizability||0;
+  const existingContinuity=existingRecord?.proposal?.continuity||0;
+  const proposal={no:d.no,isImpl:d.isImpl,type:d.type,category:d.category,implDept:d.implDept,idea:d.idea,beforeText:d.beforeText,beforeImgData:d.beforeImgData,beforeTabs:d.beforeTabs,problem:d.problem,afterImpl:d.afterImpl,afterChange:d.afterChange,afterChangeImgData:d.afterChangeImgData,afterTabs:d.afterTabs,afterImprove:d.afterImprove,costDetail:d.costDetail,costMaterial:d.costMaterial,costLabor:d.costLabor,costInvest:d.costInvest,realizability:existingRealizability,continuity:existingContinuity};
+  const autoScores=calcAutoScore(amount,existingRealizability,existingContinuity);
   if(editPropId!==null){
     const idx=tableData.findIndex(r=>r.id===editPropId);
     if(idx>=0){
@@ -3224,6 +3280,31 @@ function viewProposal(rid){
   if(!r||!r.proposal) return;
   document.getElementById('pv-body').innerHTML=propFormHtml(r,false);
   document.getElementById('pv-rid').value=rid;
+  // 평가 기준 섹션: 관리자만 표시, 품질팀 팀장만 편집 가능
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  const evalSection=document.getElementById('pv-eval-section');
+  evalSection.style.display=isAdmin?'':'none';
+  if(isAdmin){
+    const canEdit=currentUser.dept==='품질팀'&&currentUser.position==='팀장';
+    // 드롭다운 초기화
+    document.getElementById('pv-realizability-cat').value='';
+    document.getElementById('pv-continuity-cat').value='';
+    document.getElementById('pv-realizability').innerHTML='<option value="">-- 점수 선택 --</option>';
+    document.getElementById('pv-realizability').disabled=true;
+    document.getElementById('pv-continuity').innerHTML='<option value="">-- 점수 선택 --</option>';
+    document.getElementById('pv-continuity').disabled=true;
+    // 기존 값 복원
+    pvRestoreRangeDrop('realizability',r.proposal?.realizability||0);
+    pvRestoreRangeDrop('continuity',r.proposal?.continuity||0);
+    // 편집 권한에 따라 활성화/비활성화
+    document.getElementById('pv-realizability-cat').disabled=!canEdit;
+    document.getElementById('pv-continuity-cat').disabled=!canEdit;
+    if(!canEdit){
+      document.getElementById('pv-realizability').disabled=true;
+      document.getElementById('pv-continuity').disabled=true;
+    }
+    document.getElementById('pv-eval-save-btn').style.display=canEdit?'':'none';
+  }
   document.getElementById('proposalViewModal').classList.add('show');
 }
 function closePropView(){document.getElementById('proposalViewModal').classList.remove('show');}
@@ -3246,7 +3327,6 @@ function loadDraft(){
     sv('pf-idea')(d.idea||'');sv('pf-problem')(d.problem||'');sv('pf-after-impl')(d.afterImpl||'');
     sv('pf-after-improve')(d.afterImprove||'');sv('pf-costDetail')(d.costDetail||'');
     sv('pf-costMaterial')(d.costMaterial||'');sv('pf-costLabor')(d.costLabor||'');sv('pf-costInvest')(d.costInvest||'');
-    restoreRangeDrop('realizability',d.realizability||0);restoreRangeDrop('continuity',d.continuity||0);
     const deptEl=document.getElementById('pf-dept');
     if(deptEl){deptEl.value=d.dept||'';updPfProposer();}
     sv('pf-proposer')(d.proposer||'');syncCheckDrop('proposer');
@@ -3290,8 +3370,6 @@ function openPropForm(rid){
       sv('pf-costMaterial')(p.costMaterial||'');
       sv('pf-costLabor')(p.costLabor||'');
       sv('pf-costInvest')(p.costInvest||'');
-      restoreRangeDrop('realizability',p.realizability||0);
-      restoreRangeDrop('continuity',p.continuity||0);
       // dept & proposer
       const deptEl=document.getElementById('pf-dept');
       if(deptEl){deptEl.value=r.dept||'';updPfProposer();}
