@@ -1783,7 +1783,7 @@ const GA = {'3등급':100000,'4등급':50000,'5등급':30000,'6등급':10000,'�
 
 function calcGrade(s){
   s=parseInt(s)||0;
-  if(s<=0) return '-';
+  if(s<=0) return '불채택';
   if(s>=60) return '2등급';
   if(s>=50) return '3등급';
   if(s>=40) return '4등급';
@@ -2311,7 +2311,7 @@ function renderTable(){
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstReview?'checked':''} ${frDis} onchange="updF(${rid},'firstReview',this.checked)" style="width:16px;height:16px;${frDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${frDis?'권한 없음':'1차 검토'}"/></td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e8edf5;"><input type="checkbox" ${r.firstConfirmed?'checked':''} ${fcDis} onchange="updF(${rid},'firstConfirmed',this.checked)" style="width:16px;height:16px;${fcDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a3a5c;" title="${fcDis?(canFC?'1차 검토 완료 후 가능':'권한 없음'):'1차 심사 확정'}"/></td>
 <td onclick="event.stopPropagation()" style="background:#f0faf5;">${r.firstConfirmed?`<input type="number" class="sc-input" min="0" value="${r.secondScore||0}" ${score2Dis} onchange="updSecond(${rid},this.value)" style="${score2Style}" title="${score2Title}"/>`:`<span style="font-size:10px;color:#999;white-space:nowrap;line-height:1.4;">1차 확정시<br>등록 가능</span>`}</td>
-<td id="sc2g-${rid}" style="background:#f0faf5;">${gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-'))}</td>
+<td id="sc2g-${rid}" style="background:#f0faf5;">${gradeHtml(r.secondGrade&&r.secondGrade!=='-'?r.secondGrade:calcGrade(r.secondScore||0))}</td>
 <td onclick="event.stopPropagation()" style="text-align:center;background:#e0f2ea;"><input type="checkbox" ${r.secondConfirmed?'checked':''} ${scDis} onchange="updF(${rid},'secondConfirmed',this.checked)" style="width:16px;height:16px;${scDis?'cursor:not-allowed;opacity:0.4;':'cursor:pointer;'}accent-color:#1a5c3a;" title="${scDis?(canSC?'1차 확정 후 가능':'권한 없음'):'2차 심사 확정'}"/></td>
 <td onclick="event.stopPropagation()"><input class="tbl-input" value="${escH(r.remark||'')}" onchange="updF(${rid},'remark',this.value)"/></td>
 <td onclick="event.stopPropagation()"><button class="row-del" onclick="delRow(${rid})" title="삭제">&#128465;</button></td>
@@ -2419,14 +2419,14 @@ function updSecond(rid,val){
   if(!r.firstConfirmed){alert('1차 확정시 등록 가능합니다.');return;}
   if(!(currentUser&&(currentUser.dept==='부사장'||currentUser.dept==='대표이사'))) return;
   r.secondScore=parseInt(val)||0;
-  r.secondGrade=r.secondScore>0?calcGrade(r.secondScore):'-';
+  r.secondGrade=calcGrade(r.secondScore||0);
   const el=document.getElementById('sc2g-'+rid);
   if(el)el.innerHTML=gradeHtml(r.secondGrade);
   saveData();
 }
 function updModalSecond(){
   const sc=parseInt(document.getElementById('fd-secondScore').value)||0;
-  const grade=sc>0?calcGrade(sc):'-';
+  const grade=calcGrade(sc||0);
   document.getElementById('fd-secondGradeDisplay').textContent=grade;
 }
 function delRow(rid){
@@ -2470,7 +2470,7 @@ function renderResults(){
     const nm=r.proposer||'';if(!nm)return;
     cmap[nm]=(cmap[nm]||0)+1;
     // 2차 확정 채택 여부: secondConfirmed이고 불채택 아닌 경우
-    const sg=r.secondGrade||(r.secondScore>0?calcGrade(r.secondScore):'-');
+    const sg=r.secondGrade&&r.secondGrade!=='-'?r.secondGrade:calcGrade(r.secondScore||0);
     const isAdopted=r.secondConfirmed && sg!=='불채택' && sg!=='-' && (r.secondScore||0)>0;
     if(isAdopted){adoptMap[nm]=(adoptMap[nm]||0)+1;}
     // 2차 채택점수 합계 (불채택 제외)
@@ -2671,7 +2671,7 @@ function openModal(rid){
       fillETSel('fd-effectType',r.effectType||'');
       document.getElementById('fd-effectAmount').value=r.effectAmount||'';
       document.getElementById('fd-secondScore').value=r.secondScore||0;
-      document.getElementById('fd-secondGradeDisplay').textContent=r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-');
+      document.getElementById('fd-secondGradeDisplay').textContent=r.secondGrade&&r.secondGrade!=='-'?r.secondGrade:calcGrade(r.secondScore||0);
       document.getElementById('fd-remark').value=r.remark||'';
       document.getElementById('fd-typeScore').value=r.typeScore||0;
       document.getElementById('fd-realizabilityScore').value=r.realizabilityScore||0;
@@ -3672,7 +3672,7 @@ function renderTableMobile(){
     const score=calcScore(r);
     const grade=r.grade||calcGrade(score);
     const chk=v=>v?'<span style="color:#28a745;font-weight:700;">✔</span>':'<span style="color:#ddd;">-</span>';
-    const sg=r.secondGrade||(r.secondScore>0?calcGrade(r.secondScore):'-');
+    const sg=r.secondGrade&&r.secondGrade!=='-'?r.secondGrade:calcGrade(r.secondScore||0);
     return `<div class="mob-card" onclick="viewRegRow(${r.id})">
   <div class="mob-card-head">
     <span class="mob-card-no">${escH(fmtAccNo(r))}</span>
@@ -3787,7 +3787,7 @@ ${row2('지속성(20)',r.continuityScore||0,'','')}
 ${row2('1차 합계',`<b>${score}점</b>`,'1차 등급',gradeHtml(grade))}
 ${row2('1차 검토',chk(r.firstReview),'1차 확정',chk(r.firstConfirmed))}
 ${secH('2차 심사결과','#1a5c3a')}
-${row2('채택점수',r.secondScore||0,'채택등급',gradeHtml(r.secondGrade||(r.secondScore?calcGrade(r.secondScore):'-')))}
+${row2('채택점수',r.secondScore||0,'채택등급',gradeHtml(r.secondGrade&&r.secondGrade!=='-'?r.secondGrade:calcGrade(r.secondScore||0)))}
 ${row2('2차 확정',chk(r.secondConfirmed),'비고',escH(r.remark||'-'))}
 </table>`;
   document.getElementById('reg-view-body').innerHTML=html;
