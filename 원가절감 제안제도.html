@@ -929,6 +929,8 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
      <div style="font-size:11px;color:#888;">* 행 클릭 또는 보기 버튼으로 상세 확인</div>
      <div class="spacer"></div>
      <select id="prop-year" onchange="renderProposalList()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 년도</option></select>
+     <select id="prop-dept" onchange="renderProposalList()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 부서</option></select>
+     <select id="prop-status" onchange="renderProposalList()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 상태</option><option value="G">G (완료)</option><option value="Y">Y (진행중)</option><option value="R">R (미진행)</option></select>
      <button id="btn-load-draft" onclick="loadDraft()" style="display:none;padding:5px 12px;background:#6c757d;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer;">💾 임시저장 불러오기</button>
      <button class="btn btn-success" onclick="openPropForm()">+ 신규 등록</button>
     </div>
@@ -979,6 +981,8 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
       <option value="07">7월</option><option value="08">8월</option><option value="09">9월</option>
       <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
      </select>
+     <select id="filter-dept" onchange="applyFilter()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 부서</option></select>
+     <select id="filter-status" onchange="applyFilter()" style="padding:5px 8px;border:1px solid #c8d0da;border-radius:5px;font-size:12px;font-family:inherit;background:#fff;"><option value="">전체 상태</option><option value="G">G (완료)</option><option value="Y">Y (진행중)</option><option value="R">R (미진행)</option></select>
     </div>
     <div class="scroll-outer">
      <table>
@@ -2228,11 +2232,14 @@ function buildETSelect(cur,rid,field){
 function getFilteredData(){
   const yr=document.getElementById('filter-year')?.value||'';
   const mo=document.getElementById('filter-month')?.value||'';
+  const dept=document.getElementById('filter-dept')?.value||'';
+  const status=document.getElementById('filter-status')?.value||'';
   return tableData.filter(r=>{
-    if(!yr&&!mo) return true;
     const parts=(r.date||'').split('-');
     if(yr&&parts[0]!==yr) return false;
     if(mo&&parts[1]!==mo) return false;
+    if(dept&&r.dept!==dept) return false;
+    if(status&&r.status!==status) return false;
     return true;
   });
 }
@@ -2244,6 +2251,12 @@ function initYearFilter(){
   const defaultYear=cur||thisYear;
   const ySet=new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4));ySet.add(thisYear);const years=[...ySet].sort();
   sel.innerHTML='<option value="">전체 년도</option>'+years.map(y=>'<option value="'+y+'"'+(y===defaultYear?' selected':'')+'>'+y+'년</option>').join('');
+  const deptSel=document.getElementById('filter-dept');
+  if(deptSel){
+    const curD=deptSel.value;
+    const depts=[...new Set(tableData.filter(r=>r.dept).map(r=>r.dept))].sort();
+    deptSel.innerHTML='<option value="">전체 부서</option>'+depts.map(d=>'<option value="'+d+'"'+(d===curD?' selected':'')+'>'+d+'</option>').join('');
+  }
 }
 function applyFilter(){renderTable();}
 
@@ -3177,11 +3190,19 @@ function renderProposalList(){
     const ySet=new Set(tableData.map(r=>(r.date||'').split('-')[0]).filter(y=>y&&y.length===4));ySet.add(thisYear);const years=[...ySet].sort();
     propYrSel.innerHTML='<option value="">전체 년도</option>'+years.map(y=>'<option value="'+y+'"'+(y===defaultYear?' selected':'')+'>'+y+'년</option>').join('');
   }
+  const propDeptSel=document.getElementById('prop-dept');
+  if(propDeptSel){
+    const cur=propDeptSel.value;
+    const depts=[...new Set(tableData.filter(r=>r.proposal&&r.dept).map(r=>r.dept))].sort();
+    propDeptSel.innerHTML='<option value="">전체 부서</option>'+depts.map(d=>'<option value="'+d+'"'+(d===cur?' selected':'')+'>'+d+'</option>').join('');
+  }
   const propYr=propYrSel?propYrSel.value:'';
+  const propDept=propDeptSel?propDeptSel.value:'';
+  const propStatus=document.getElementById('prop-status')?.value||'';
   const isAdmin=currentUser&&currentUser.role==='admin';
   const canSeeAll=isAdmin||(['팀장','실장','경영진'].includes(currentUser?.position));
   const myName=currentUser?.name||'';
-  const rows=tableData.filter(r=>r.proposal&&(canSeeAll||!currentUser||(r.dept===currentUser.dept)||(myName&&r.proposer&&r.proposer.split(',').map(function(s){return s.trim();}).includes(myName)))&&(!propYr||(r.date||'').startsWith(propYr)));
+  const rows=tableData.filter(r=>r.proposal&&(canSeeAll||!currentUser||(r.dept===currentUser.dept)||(myName&&r.proposer&&r.proposer.split(',').map(function(s){return s.trim();}).includes(myName)))&&(!propYr||(r.date||'').startsWith(propYr))&&(!propDept||r.dept===propDept)&&(!propStatus||r.status===propStatus));
   if(!rows.length){tbody.innerHTML='<tr><td colspan="11" class="no-data">등록된 제안서가 없습니다.</td></tr>';return;}
   tbody.innerHTML=rows.map((r,i)=>`<tr style="cursor:pointer;" onclick="viewProposal(${r.id})">
 <td style="text-align:center;font-weight:600;color:#1a3a5c;">${fmtAccNo(r)}</td>
@@ -3708,8 +3729,20 @@ document.addEventListener('click',function(e){
     }
   });
 });
+function migrateDept2025(){
+  const rename={'사출':'사출팀','품질':'품질팀','구매':'구매팀','개발':'개발팀','영업':'영업팀','조립':'조립팀','후가공':'후가공팀','경영지원':'경영지원팀'};
+  let changed=false;
+  tableData.forEach(r=>{
+    if(rename[r.dept]){
+      r.dept=rename[r.dept];
+      changed=true;
+    }
+  });
+  if(changed) saveData();
+}
 window.onload=async function(){
   tableData=loadData();
+  migrateDept2025();
   renderAll();
   // 저장된 로그인 정보 불러오기
   showLoginForm();
