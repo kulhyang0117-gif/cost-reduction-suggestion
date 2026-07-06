@@ -3742,7 +3742,6 @@ function migrateDept2025(){
 }
 window.onload=async function(){
   tableData=loadData();
-  migrateDept2025();
   renderAll();
   // 저장된 로그인 정보 불러오기
   showLoginForm();
@@ -3767,6 +3766,8 @@ window.onload=async function(){
   if(savedMode==='mobile') setViewMode('mobile');
   // 클라우드 우선: 로컬 데이터로 덮어쓰지 않고 클라우드에서 먼저 불러옴
   const loaded=await sbLoad();
+  // 부서명 정규화는 클라우드 로드 완료 후 실행 (race condition 방지)
+  migrateDept2025();
   if(loaded){renderAll();}
   else if(tableData.length>0){
     // 클라우드가 비어있을 때만 로컬 데이터 업로드
