@@ -571,6 +571,9 @@ body.mobile-mode{overflow:auto;height:auto;min-height:100vh;flex-direction:colum
  <div class="sb-bottom-text" style="padding:0 18px 4px;">
    <button onclick="openPwChangeModal(null)" style="width:100%;font-size:10px;padding:4px;background:#4a5568;color:#fff;border:none;border-radius:4px;cursor:pointer;">비밀번호 변경</button>
  </div>
+ <div class="sb-bottom-text" style="padding:0 18px 4px;">
+   <button onclick="backupData()" style="width:100%;font-size:10px;padding:4px;background:#1b5e20;color:#fff;border:none;border-radius:4px;cursor:pointer;" title="전체 데이터 JSON 백업 다운로드">&#128190; 데이터 백업</button>
+ </div>
  <div class="sb-btn-row" style="padding:4px 18px 10px;display:flex;gap:6px;">
    <button onclick="sbSync().then(()=>sbSyncUsers(getUsers())).then(()=>alert('클라우드 업로드 완료!'))" style="flex:1;font-size:10px;padding:4px;background:#2d5a8c;color:#fff;border:none;border-radius:4px;cursor:pointer;" title="☁ 올리기">☁ 올리기</button>
    <button onclick="doLogout()" style="flex:1;font-size:10px;padding:4px;background:#c0392b;color:#fff;border:none;border-radius:4px;cursor:pointer;" title="로그아웃">로그아웃</button>
@@ -3654,6 +3657,16 @@ async function downloadPropExcel(){
   URL.revokeObjectURL(a.href);
 }
 
+function backupData(){
+  const now=new Date();
+  const ts=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
+  const blob=new Blob([JSON.stringify(tableData,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='원가절감_제안데이터_백업_'+ts+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 function saveAwards(){
   const v=id=>document.getElementById(id)?.value||'';
   const d={bestPerson:v('award-best-person'),bestTheme:v('award-best-theme'),bestAmount:v('award-best-amount'),goodPerson:v('award-good-person'),goodTheme:v('award-good-theme'),goodAmount:v('award-good-amount'),encourPerson:v('award-encour-person'),encourTheme:v('award-encour-theme'),encourAmount:v('award-encour-amount'),teamName:v('award-team-name'),teamTheme:v('award-team-theme'),teamAmount:v('award-team-amount')};
