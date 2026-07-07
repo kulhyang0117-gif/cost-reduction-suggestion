@@ -3583,11 +3583,36 @@ input[type=checkbox]{pointer-events:none;}
 </body></html>`);
   w.document.close();
 }
+async function fetchHttpsImgAsData(url){
+  try{
+    const res=await fetch(url);
+    if(!res.ok)return url;
+    const blob=await res.blob();
+    return new Promise(resolve=>{
+      const reader=new FileReader();
+      reader.onload=e=>resolve(e.target.result);
+      reader.onerror=()=>resolve(url);
+      reader.readAsDataURL(blob);
+    });
+  }catch(e){return url;}
+}
+async function resolveHttpsImages(r){
+  if(!r||!r.proposal)return r;
+  const p=r.proposal;
+  const resolveImgs=async imgs=>Promise.all((imgs||[]).map(async img=>{
+    if(img&&img.startsWith('https://'))return await fetchHttpsImgAsData(img);
+    return img;
+  }));
+  const bt=await Promise.all((p.beforeTabs||[]).map(async t=>({...t,imgs:await resolveImgs(t.imgs)})));
+  const at=await Promise.all((p.afterTabs||[]).map(async t=>({...t,imgs:await resolveImgs(t.imgs)})));
+  return{...r,proposal:{...p,beforeTabs:bt,afterTabs:at}};
+}
 async function downloadPropExcel(){
   const rid=document.getElementById('pv-rid').value;
   const rRaw=tableData.find(x=>x.id==rid);
   if(!rRaw||!rRaw.proposal) return;
-  const r=await resolveProposalImages(rRaw);
+  const rIdb=await resolveProposalImages(rRaw);
+  const r=await resolveHttpsImages(rIdb);
   // 이미지 레지스트리 (Content-Location 방식)
   const images=[];const imgMap=new Map();
   function regImg(dataUri){
